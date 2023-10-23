@@ -16,6 +16,8 @@ public static class BuildPieces
     public static void Init()
     {
         Station = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentScrollStation");
+        Station.GetComponent<Piece>().m_name = "$kg_enchantment_scrollstation";
+        Station.GetComponent<Piece>().m_description = "$kg_enchantment_scrollstation_description";
         StationReqs = ValheimEnchantmentSystem.config("Enchantment Scroll Station", "Station Build Requirements", "SurtlingCore:10:true:Stone:30:true:GreydwarfEye:50:true", "Station requirements.");
         
         StationReqs.SettingChanged += StationRequirementsChanged;
