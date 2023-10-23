@@ -41,7 +41,7 @@ public static class ScrollItems
         { 'D', new[]{"HardAntler,1","SurtlingCore,1", "GreydwarfEye,20"}},
         { 'C', new[]{"TrophyTheElder,1", "AncientSeed,2", "SilverNecklace,1"}},
         { 'B', new[]{"TrophyBonemass,1", "Chitin,5", "BoneFragments,10"}},
-        { 'A', new[]{"TrophyGoblinShaman,1", "GoblinTotem,2", "Deathsquito_sting,20", "LoxPelt,3"}},
+        { 'A', new[]{"TrophyGoblinShaman,1", "GoblinTotem,2", "Needle,20", "LoxPelt,3"}},
         { 'S', new[]{"TrophySeekerBrute,1", "Eitr,5", "RoyalJelly,25", "Carapace,40"}},
     };
     
