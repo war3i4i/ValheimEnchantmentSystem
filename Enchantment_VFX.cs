@@ -68,6 +68,24 @@ public static class Enchantment_VFX
     }
 
 
+    private static void AttachMeshEffect(GameObject item, Color c, int variant)
+    {
+        GameObject go = Object.Instantiate(VFXs[variant], item.transform);
+        PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
+        update.MeshObject = item;
+        update.UpdateMeshEffect();
+        go.GetComponentInChildren<Light>().color = c;
+        Light l = go.GetComponentInChildren<Light>();
+        l.color = c;
+        l.intensity *= c.a;
+        foreach (var renderer in item.GetComponentsInChildren<Renderer>())
+        {
+            foreach (var material in renderer.materials)
+                if (material.name.Contains("Enchant_VFX_Mat"))
+                    material.SetColor(TintColor, c * INTENSITY[variant]);
+        }
+    }
+
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLeftHandEquipped))]
     private static class MockLeft
     {
@@ -96,21 +114,7 @@ public static class Enchantment_VFX
                 {
                     Color c = leftColor.ToColorAlpha();
                     int variant = __instance.m_nview.m_zdo.GetInt("VEX_leftitemColor_variant");
-                    GameObject go =
-                        Object.Instantiate(VFXs[variant], __instance.m_leftItemInstance.transform);
-                    PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
-                    update.MeshObject = __instance.m_leftItemInstance;
-                    update.UpdateMeshEffect();
-                    go.GetComponentInChildren<Light>().color = c;
-                    Light l = go.GetComponentInChildren<Light>();
-                    l.color = c;
-                    l.intensity *= c.a;
-                    foreach (var renderer in __instance.m_leftItemInstance.GetComponentsInChildren<Renderer>())
-                    {
-                        foreach (var material in renderer.materials)
-                            if (material.name.Contains("Enchant_VFX_Mat"))
-                                material.SetColor(TintColor, c * INTENSITY[variant]);
-                    }
+                    AttachMeshEffect(__instance.m_leftItemInstance, c, variant);
                 }
             }
         }
@@ -144,22 +148,7 @@ public static class Enchantment_VFX
                 {
                     Color c = rightColor.ToColorAlpha();
                     int variant = __instance.m_nview.m_zdo.GetInt("VEX_rightitemColor_variant");
-                    GameObject go =
-                        Object.Instantiate(VFXs[variant], __instance.m_rightItemInstance.transform);
-                    PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
-                    update.MeshObject = __instance.m_rightItemInstance;
-                    update.UpdateMeshEffect();
-                    Light l = go.GetComponentInChildren<Light>();
-                    l.color = c;
-                    l.intensity *= c.a;
-                    foreach (var renderer in __instance.m_rightItemInstance.GetComponentsInChildren<Renderer>())
-                    {
-                        foreach (var material in renderer.materials)
-                            if (material.name.Contains("Enchant_VFX_Mat"))
-                            {
-                                material.SetColor(TintColor, c * INTENSITY[variant]);
-                            }
-                    }
+                    AttachMeshEffect(__instance.m_rightItemInstance, c, variant);
                 }
             }
         }
@@ -193,18 +182,7 @@ public static class Enchantment_VFX
                 {
                     Color c = leftColor.ToColorAlpha();
                     int variant = __instance.m_nview.m_zdo.GetInt("VEX_leftbackitemColor_variant");
-                    GameObject go =
-                        Object.Instantiate(VFXs[variant], __instance.m_leftBackItemInstance.transform);
-                    PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
-                    update.MeshObject = __instance.m_leftBackItemInstance;
-                    update.UpdateMeshEffect();
-                    go.GetComponentInChildren<Light>().color = c;
-                    foreach (var renderer in __instance.m_leftBackItemInstance.GetComponentsInChildren<Renderer>())
-                    {
-                        foreach (var material in renderer.materials)
-                            if (material.name.Contains("Enchant_VFX_Mat"))
-                                material.SetColor(TintColor, c * INTENSITY[variant]);
-                    }
+                    AttachMeshEffect(__instance.m_leftBackItemInstance, c, variant);
                 }
             }
         }
@@ -237,18 +215,7 @@ public static class Enchantment_VFX
                 {
                     Color c = leftColor.ToColorAlpha();
                     int variant = __instance.m_nview.m_zdo.GetInt("VEX_rightbackitemColor_variant");
-                    GameObject go =
-                        Object.Instantiate(VFXs[variant], __instance.m_rightBackItemInstance.transform);
-                    PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
-                    update.MeshObject = __instance.m_rightBackItemInstance;
-                    update.UpdateMeshEffect();
-                    go.GetComponentInChildren<Light>().color = c;
-                    foreach (var renderer in __instance.m_rightBackItemInstance.GetComponentsInChildren<Renderer>())
-                    {
-                        foreach (var material in renderer.materials)
-                            if (material.name.Contains("Enchant_VFX_Mat"))
-                                material.SetColor(TintColor, c * INTENSITY[variant]);
-                    }
+                    AttachMeshEffect(__instance.m_rightBackItemInstance, c, variant);
                 }
             }
         }
@@ -261,21 +228,29 @@ public static class Enchantment_VFX
         private static void Postfix(ItemDrop __instance)
         {
             if(__instance.m_itemData.Data()?.Get<Enchantment.EnchantedItem>() is not {} en) return;
-            
             string prefabName = global::Utils.GetPrefabName(__instance.gameObject);
             string color = SyncedData.GetColor(prefabName, en.level, out int variant, false);
-            GameObject go = Object.Instantiate(VFXs[variant], __instance.transform);
-            PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
-            update.MeshObject = __instance.gameObject;
-            update.UpdateMeshEffect();
-            Color c = color.ToColorAlpha();
-            go.GetComponentInChildren<Light>().color = c;
-            foreach (var renderer in __instance.GetComponentsInChildren<Renderer>())
-            {
-                foreach (var material in renderer.materials)
-                    if (material.name.Contains("Enchant_VFX_Mat"))
-                        material.SetColor(TintColor, c * INTENSITY[variant]);
-            }
+            AttachMeshEffect(__instance.gameObject, color.ToColorAlpha(), variant);
+        }
+    }
+    
+    [HarmonyPatch(typeof(ItemStand),nameof(ItemStand.SetVisualItem))]
+    private static class ItemStand_SetVisualItem_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(ItemStand __instance)
+        {
+            var visualItem = __instance.m_visualItem;
+            if (!visualItem) return;
+            
+            string itemPrefab = __instance.m_nview.GetZDO().GetString(ZDOVars.s_item);
+            GameObject prefab = ZNetScene.instance.GetPrefab(itemPrefab);
+            if(!prefab) return;
+            ItemDrop.ItemData itemData = prefab.GetComponent<ItemDrop>().m_itemData.Clone();
+            ItemDrop.LoadFromZDO(itemData, __instance.m_nview.m_zdo);
+            if(itemData.Data()?.Get<Enchantment.EnchantedItem>() is not {} en) return;
+            string color = SyncedData.GetColor(itemPrefab, en.level, out int variant, false);
+            AttachMeshEffect(visualItem, color.ToColorAlpha(), variant);
         }
     }
     
