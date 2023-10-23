@@ -75,25 +75,38 @@ public static class ScrollItems
             {
                 Configurable = Configurability.Recipe
             };
-            weaponScroll.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"Enchant Scroll: Weapon ({c})";
+            weaponScroll.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"$kg_enchantscroll_weapon_{c}";
+            weaponScroll.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_description = $"$kg_enchantscroll_weapon_description_{c}";
+            weaponScroll.Name.English($"Enchant Scroll: Weapon ({c})");
+            weaponScroll.Description.English($"Used to enchant weapons with {c}-tier requirements.");
             FillRecipe(weaponScroll, c, false);
             Item weaponScroll_Bless = new Item(ValheimEnchantmentSystem._asset, $"kg_EnchantScroll_Weapon_Blessed_{c}")
             {
                 Configurable = Configurability.Recipe
             };
-            weaponScroll_Bless.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"Blessed Enchant Scroll: Weapon ({c})";
+            weaponScroll_Bless.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"$kg_enchantscroll_weapon_blessed_{c}";
+            weaponScroll_Bless.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_description = $"$kg_enchantscroll_weapon_blessed_description_{c}";
+            weaponScroll_Bless.Name.English($"Blessed Enchant Scroll: Weapon ({c})");
+            weaponScroll_Bless.Description.English($"Used to enchant weapons with {c}-tier requirements. <color=green>Saves the weapon from destruction on failure.</color>");
             FillRecipe(weaponScroll_Bless, c, true);
             Item armorScroll = new Item(ValheimEnchantmentSystem._asset, $"kg_EnchantScroll_Armor_{c}")
             {
                 Configurable = Configurability.Recipe
             };
-            armorScroll.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"Enchant Scroll: Armor ({c})";
+            armorScroll.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"$kg_enchantscroll_armor_{c}";
+            armorScroll.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_description = $"$kg_enchantscroll_armor_description_{c}";
+            armorScroll.Name.English($"Enchant Scroll: Armor ({c})");
+            armorScroll.Description.English($"Used to enchant armor with {c}-tier requirements.");
             FillRecipe(armorScroll, c, false);
             Item armorScroll_Bless = new Item(ValheimEnchantmentSystem._asset, $"kg_EnchantScroll_Armor_Blessed_{c}")
             {
                 Configurable = Configurability.Recipe
             };
-            armorScroll_Bless.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"Blessed Enchant Scroll: Armor ({c})";
+            armorScroll_Bless.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_name = $"$kg_enchantscroll_armor_blessed_{c}";
+            armorScroll_Bless.Prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_description = $"$kg_enchantscroll_armor_blessed_description_{c}";
+            armorScroll_Bless.Name.English($"Blessed Enchant Scroll: Armor ({c})");
+            armorScroll_Bless.Description.English($"Used to enchant armor with {c}-tier requirements. <color=green>Saves the armor from destruction on failure.</color>");
+            
             FillRecipe(armorScroll_Bless, c, true);
         }
     }
