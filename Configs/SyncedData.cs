@@ -18,8 +18,7 @@ public static class SyncedData
     private static string YAML_Ovverides_Chances;
     private static string YAML_Ovverides_Stats;
     private static string YAML_Ovverides_Colors;
-
-
+    
     public static void Init()
     {
         SafetyLevel = ValheimEnchantmentSystem.config("Enchantment", "SafetyLevel", 3,

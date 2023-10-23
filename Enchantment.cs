@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
+using fastJSON;
 using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
@@ -143,7 +145,7 @@ public static class Enchantment
                 level++;
                 Save();
                 ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
-                msg = "$enchantment_success".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
+                msg = "$enchantment_success".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString()); 
                 return true; 
             }
             
@@ -222,19 +224,17 @@ public static class Enchantment
         }
     }
 
-    [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetTooltip), typeof(ItemDrop.ItemData),
-        typeof(int), typeof(bool), typeof(float))]
-    public class UpdateDurabilityDisplay
+    [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetTooltip), typeof(ItemDrop.ItemData), typeof(int), typeof(bool), typeof(float))]
+    public class TooltipPatch
     {
         [UsedImplicitly]
-        public static void Postfix(ItemDrop.ItemData item, bool crafting, ref string __result, int qualityLevel)
+        public static void Postfix(ItemDrop.ItemData item, bool crafting, int qualityLevel, ref string __result)
         {
-            if (item == null) return;
             bool blockShowEnchant = false;
-            if (!crafting && item.Data().Get<EnchantedItem>() is { level: > 0 } data)
+            if (item.Data().Get<EnchantedItem>() is { level: > 0 } en)
             {
-                string color = SyncedData.GetColor(data, out _, true).IncreaseColorLight();
-                int currentPotency = SyncedData.GetStatIncrease(data);
+                string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
+                int currentPotency = SyncedData.GetStatIncrease(en);
                 __result = new Regex("(\\$item_durability.*)").Replace(__result,
                     $"$1 (<color={color}>$enchantment_increasedwithenchantment</color>)");
 
@@ -269,7 +269,7 @@ public static class Enchantment
                 __result +=
                     $"\n\n<color={color}>•</color> $enchantment_bonusespercent (<color={color}>+{currentPotency}%</color>)";
 
-                int chance = data.GetEnchantmentChance();
+                int chance = en.GetEnchantmentChance();
                 if (SyncedData.ShowEnchantmentChance.Value && chance > 0)
                 {
                     __result += $"\n<color={color}>•</color> $enchantment_chance (<color={color}>{chance}%</color>)";
@@ -280,8 +280,8 @@ public static class Enchantment
                     __result += $"\n<color={color}>•</color> $enchantment_maxedout";
                 }
                 
-                blockShowEnchant = data.GetEnchantmentChance() <= 0;
-                var fails = data.failed_enchantments;
+                blockShowEnchant = en.GetEnchantmentChance() <= 0;
+                var fails = en.failed_enchantments;
                 if (fails.Count > 0)
                 {
                     if (Input.GetKey(KeyCode.LeftShift))
@@ -302,7 +302,7 @@ public static class Enchantment
 
 
             if (blockShowEnchant) return;
-            string dropName = crafting ? Utils.GetPrefabNameByItemName(item.m_shared.m_name) : item.m_dropPrefab.name;
+            string dropName = item.m_dropPrefab ? item.m_dropPrefab.name : Utils.GetPrefabNameByItemName(item.m_shared.m_name);
             if (SyncedData.GetReqs(dropName) is { } reqs)
             {
                 string canBe = $"\n• $enchantment_canbeenchantedwith:";
@@ -320,6 +320,42 @@ public static class Enchantment
                 }
                 __result += canBe;
             }
+        }
+    }
+    
+    [HarmonyPatch(typeof(InventoryGui),nameof(InventoryGui.UpdateRecipe))]
+    private static class InventoryGui_UpdateRecipe_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(InventoryGui __instance)
+        {
+            EnchantedItem en = __instance.m_selectedRecipe.Value?.Data().Get<EnchantedItem>();
+            if (!en) return;
+            string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
+            __instance.m_recipeName.text  += $" (<color={color}>+{en!.level}</color>)";
+        }
+    }
+    
+    [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.AddRecipeToList))]
+    private static class InventoryGui_AddRecipeToList_Patch
+    {
+        private static void Modify(ref string text, ItemDrop.ItemData item)
+        {
+            EnchantedItem en = item?.Data().Get<EnchantedItem>();
+            if (!en) return;
+            string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
+            text  += $" (<color={color}>+{en!.level}</color>)";
+        }
+
+        [UsedImplicitly]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> code)
+        {
+            CodeMatcher matcher = new(code);
+            matcher.MatchForward(false, new CodeMatch(OpCodes.Stloc_2));
+            if (matcher.IsInvalid) return matcher.InstructionEnumeration();
+            var method = AccessTools.Method(typeof(InventoryGui_AddRecipeToList_Patch), nameof(Modify));
+            matcher.Advance(1).InsertAndAdvance(new CodeInstruction(OpCodes.Ldloca_S, 2)).InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_3)).InsertAndAdvance(new CodeInstruction(OpCodes.Call, method));
+            return matcher.InstructionEnumeration();
         }
     }
 
