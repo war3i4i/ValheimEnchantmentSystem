@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using HarmonyLib;
@@ -67,7 +68,7 @@ public static class Enchantment
             set => _internal.level = value;
         }
 
-        private Dictionary<int, int> failed_enchantments => _internal.failed_enchantments;
+        public Dictionary<int, int> failed_enchantments => _internal.failed_enchantments;
 
         public override void Save()
         {
@@ -150,6 +151,7 @@ public static class Enchantment
             {
                 if (SyncedData.ItemDestroyedOnFailure.Value)
                 {
+                    
                     Player.m_localPlayer.UnequipItem(Item);
                     Player.m_localPlayer.m_inventory.RemoveItem(Item);
                     msg = "$enchantment_fail_destroyed".Localize(Item.m_shared.m_name.Localize());
@@ -157,6 +159,8 @@ public static class Enchantment
                 else
                 {
                     int prevLevel = level;
+                    if (failed_enchantments.ContainsKey(level)) failed_enchantments[level]++;
+                    else failed_enchantments.Add(level, 1);
                     level = Mathf.Max(0, level - 1);
                     Save();
                     ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
@@ -232,7 +236,7 @@ public static class Enchantment
                 string color = SyncedData.GetColor(data, out _, true).IncreaseColorLight();
                 int currentPotency = SyncedData.GetStatIncrease(data);
                 __result = new Regex("(\\$item_durability.*)").Replace(__result,
-                    $"$1 (<color={color}>{"$enchantment_increasedwithenchantment".Localize()}</color>)");
+                    $"$1 (<color={color}>$enchantment_increasedwithenchantment</color>)");
 
                 Player.m_localPlayer.GetSkills().GetRandomSkillRange(out float minFactor, out float maxFactor,
                     item.m_shared.m_skillType);
@@ -263,22 +267,37 @@ public static class Enchantment
                     $"$1 (<color={color}>+{item.GetArmor(qualityLevel, item.m_worldLevel) * currentPotency / 100f}</color>)");
 
                 __result +=
-                    $"\n\n<color={color}>•</color> {"$enchantment_bonusespercent".Localize()} (<color={color}>+{currentPotency}%</color>)";
+                    $"\n\n<color={color}>•</color> $enchantment_bonusespercent (<color={color}>+{currentPotency}%</color>)";
 
                 int chance = data.GetEnchantmentChance();
                 if (SyncedData.ShowEnchantmentChance.Value && chance > 0)
                 {
-                    __result += $"\n<color={color}>•</color> {"$enchantment_chance".Localize()} (<color={color}>{chance}%</color>)";
+                    __result += $"\n<color={color}>•</color> $enchantment_chance (<color={color}>{chance}%</color>)";
                 }
 
                 if (chance <= 0)
                 {
-                    __result += $"\n<color={color}>•</color> {"$enchantment_maxedout".Localize()}";
+                    __result += $"\n<color={color}>•</color> $enchantment_maxedout";
                 }
-
-                __result += "\n";
-
+                
                 blockShowEnchant = data.GetEnchantmentChance() <= 0;
+                var fails = data.failed_enchantments;
+                if (fails.Count > 0)
+                {
+                    if (Input.GetKey(KeyCode.LeftShift))
+                    {
+                        __result += "\n• $enchantment_failedenchantments:\n";
+                        foreach (var fail in fails.OrderBy(f => f.Key))
+                        {
+                            __result += $"• Lvl {fail.Key} - <color=yellow>x{fail.Value}</color>\n";
+                        }
+                    }
+                    else
+                    {
+                        __result += "\n• $enchantment_holdshift\n";
+                    }
+                }
+               
             }
 
 
@@ -286,7 +305,7 @@ public static class Enchantment
             string dropName = crafting ? Utils.GetPrefabNameByItemName(item.m_shared.m_name) : item.m_dropPrefab.name;
             if (SyncedData.GetReqs(dropName) is { } reqs)
             {
-                string canBe = $"\n• {"$enchantment_canbeenchantedwith".Localize()}:";
+                string canBe = $"\n• $enchantment_canbeenchantedwith:";
                 if (reqs.enchant_prefab.IsValid())
                 {
                     string mainName = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab).GetComponent<ItemDrop>().m_itemData.m_shared.m_name;
