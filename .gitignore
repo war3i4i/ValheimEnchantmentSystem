@@ -1,0 +1,7 @@
+﻿bin
+obj
+/packages
+Jewelcrafting.sln.DotSettings.user
+.idea
+.vs
+Directory.Build.targets

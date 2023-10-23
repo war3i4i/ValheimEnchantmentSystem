@@ -21,6 +21,9 @@ public static class TerminalCommands
                 Enchantment.EnchantedItem en = weapon.Data().GetOrCreate<Enchantment.EnchantedItem>();
                 en.level = level;
                 en.Save();
+                Chat.instance.m_hideTimer = 0f;
+                Chat.instance.AddString("Enchantment level set to " + level);
+                ValheimEnchantmentSystem._thistype.StartCoroutine(Enchantment.FrameSkipEquip(weapon));
             });
         }
     }

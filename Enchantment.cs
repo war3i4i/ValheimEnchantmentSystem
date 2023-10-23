@@ -356,7 +356,6 @@ public static class Enchantment
         {
             if (__instance.Data().Get<EnchantedItem>() is { } data)
             {
-                Utils.print($"Modifying damage for {__instance.m_shared.m_name}");
                 __result.Modify(1 + SyncedData.GetStatIncrease(data) / 100f);
             }
         }
