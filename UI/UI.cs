@@ -444,7 +444,7 @@ public static class VES_UI
             _enchantmentButton = UnityEngine.Object
                 .Instantiate(__instance.m_repairButton.gameObject, __instance.m_repairButton.transform.parent)
                 .GetComponent<Button>();
-            _enchantmentButton.name = "$enchantment_menu".Localize();
+            _enchantmentButton.name = "enchantment_menu";
             _enchantmentButton.onClick.RemoveAllListeners();
             _enchantmentButton.onClick.AddListener(() =>
             {
@@ -452,7 +452,7 @@ public static class VES_UI
                 else Show();
                 PlayClick();
             });
-            _enchantmentButton.GetComponent<UITooltip>().m_text = "Enchant an item";
+            _enchantmentButton.GetComponent<UITooltip>().m_text = "$enchantment_menu".Localize();
             RectTransform rect = _enchantmentButton.GetComponent<RectTransform>();
             rect.anchoredPosition += new Vector2(0, 74);
             _enchantmentButton.transform.Find("Glow").gameObject.SetActive(false);

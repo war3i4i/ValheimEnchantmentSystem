@@ -15,18 +15,8 @@ public static class ScrollItems
     private static ConfigEntry<float> DropChance_Blessed_Bosses;
     
     private static ConfigEntry<bool> MonsterDroppingScrolls;
-
-    private static readonly Dictionary<Heightmap.Biome, char> BiomeMapper = new()
-    {
-        { Heightmap.Biome.Meadows, 'D' },
-        { Heightmap.Biome.BlackForest, 'C' },
-        { Heightmap.Biome.Swamp, 'B' },
-        { Heightmap.Biome.Ocean, 'B' },
-        { Heightmap.Biome.AshLands, 'B' },
-        { Heightmap.Biome.Mountain, 'A' },
-        { Heightmap.Biome.Plains, 'A' },
-        { Heightmap.Biome.Mistlands, 'S' },
-    };
+    
+    private static readonly Dictionary<Heightmap.Biome, ConfigEntry<string>> BiomeMapper = new();
 
     private static readonly Dictionary<char, string[]> DefaultRecipes = new()
     {
@@ -67,6 +57,17 @@ public static class ScrollItems
         DropChance_Bosses = ValheimEnchantmentSystem.config("Scrolls", "Drop Chance (Bosses)", 100f, "Chance to drop from bosses.");
         DropChance_Blessed = ValheimEnchantmentSystem.config("Scrolls", "Blessed Drop Chance", 0.25f, "Chance to drop from enemies.");
         DropChance_Blessed_Bosses = ValheimEnchantmentSystem.config("Scrolls", "Blessed Drop Chance (Bosses)", 40f, "Chance to drop from bosses.");
+        
+        BiomeMapper.Add(Heightmap.Biome.Meadows,ValheimEnchantmentSystem.config("Scrolls", "Meadows Tier", "D", "Tier of scrolls Meadows (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.BlackForest,ValheimEnchantmentSystem.config("Scrolls", "BlackForest Tier", "C", "Tier of scrolls BlackForest (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Swamp,ValheimEnchantmentSystem.config("Scrolls", "Swamp Tier", "B", "Tier of scrolls Swamp (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Ocean,ValheimEnchantmentSystem.config("Scrolls", "Ocean Tier", "B", "Tier of scrolls Ocean (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Mountain,ValheimEnchantmentSystem.config("Scrolls", "Mountain Tier", "A", "Tier of scrolls Mountain (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Plains,ValheimEnchantmentSystem.config("Scrolls", "Plains Tier", "A", "Tier of scrolls Plains (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Mistlands,ValheimEnchantmentSystem.config("Scrolls", "Mistlands Tier", "S", "Tier of scrolls Mistlands (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.AshLands,ValheimEnchantmentSystem.config("Scrolls", "Ashlands Tier", "S", "Tier of scrolls Ashlands (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.DeepNorth,ValheimEnchantmentSystem.config("Scrolls", "Deepnorth Tier", "S", "Tier of scrolls Deepnorth (D C B A S)"));
+        
         
         char[] DCBAS = {'D', 'C', 'B', 'A', 'S'};
         foreach (var c in DCBAS)
@@ -154,10 +155,11 @@ public static class ScrollItems
         {
             if (!MonsterDroppingScrolls.Value || __instance.IsPlayer() || !__instance.m_nview.IsOwner() || __instance.IsTamed()) return;
             Heightmap.Biome biome = EnvMan.instance.m_currentBiome;
-            if(!BiomeMapper.TryGetValue(biome, out char tier)) return;
+            if(!BiomeMapper.TryGetValue(biome, out ConfigEntry<string> tier)) return;
             var position = __instance.transform.position;
-            TryDropDefault(tier, __instance.IsBoss(), position);
-            TryDropBlessed(tier, __instance.IsBoss(), position);
+            char tierValue = tier.Value[0];
+            TryDropDefault(tierValue, __instance.IsBoss(), position);
+            TryDropBlessed(tierValue, __instance.IsBoss(), position);
         }
     }
 }
