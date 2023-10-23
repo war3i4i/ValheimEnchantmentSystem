@@ -74,6 +74,11 @@ public static class Utils
     {
         return string.IsNullOrEmpty(text) ? string.Empty : Localization.instance.Localize(text);
     }
+    
+    public static string Localize(this string text, params string[] args)
+    {
+        return string.IsNullOrEmpty(text) ? string.Empty : Localization.instance.Localize(text, args);
+    }
 
     public static bool StlocIndex(this object obj, int index) =>
         obj is LocalBuilder builder && builder.LocalIndex == index;

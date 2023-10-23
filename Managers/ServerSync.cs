@@ -375,7 +375,7 @@ public class ConfigSync
 
             byte packageFlags = package.ReadByte();
 
-            kg.ValheimEnchantmentSystem.Utils.print($"Started processing configs...");
+            kg.ValheimEnchantmentSystem.Utils.print("Started processing configs...");
             
             if ((packageFlags & FRAGMENTED_CONFIG) != 0)
             {
@@ -468,7 +468,7 @@ public class ConfigSync
         }
         finally
         {
-            kg.ValheimEnchantmentSystem.Utils.print($"Finished processing configs...");
+            kg.ValheimEnchantmentSystem.Utils.print("Finished processing configs...");
             ProcessingServerUpdate = false;
         }
     }

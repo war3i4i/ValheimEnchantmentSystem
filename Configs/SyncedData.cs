@@ -28,6 +28,8 @@ public static class SyncedData
             "Show the chance of enchantment in the item tooltip.");
         DropEnchantmentOnUpgrade = ValheimEnchantmentSystem.config("Enchantment", "DropEnchantmentOnUpgrade", false,
             "Drop enchantment on item upgrade.");
+        ItemDestroyedOnFailure = ValheimEnchantmentSystem.config("Enchantment", "ItemDestroyedOnFailure", false,
+            "Destroy item on enchantment failure. Otherwise decrease enchantment level by 1.");
 
         YAML_Stats_Weapons = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Weapons.yml");
         YAML_Stats_Armor = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Armor.yml");
@@ -145,6 +147,8 @@ public static class SyncedData
     
     public static string GetColor(string dropPrefab, int level, out int variant, bool trimApha)
     {
+        variant = 0;
+        if (level == 0) return trimApha ? "#000000" : "#00000000";
         if (dropPrefab != null && Overrides_EnchantmentColors.Value.TryGetValue(dropPrefab, out var overriden))
         {
             if (overriden.TryGetValue(level, out var overrideVfxData))
@@ -162,8 +166,6 @@ public static class SyncedData
             variant = Mathf.Clamp(vfxData.variant, 0, Enchantment_VFX.VFXs.Count - 1);
             return result;
         }
-
-        variant = 0;
         return trimApha ? "#000000" : "#00000000";
     }
 
@@ -184,6 +186,7 @@ public static class SyncedData
 
     public static int GetStatIncrease(Enchantment.EnchantedItem en)
     {
+        if (en.level == 0) return 0;
         string dropPrefab = en.Item.m_dropPrefab?.name;
         if (dropPrefab != null && Overrides_EnchantmentStats.Value.TryGetValue(dropPrefab, out var overriden))
         {
@@ -202,6 +205,7 @@ public static class SyncedData
     public static ConfigEntry<int> SafetyLevel;
     public static ConfigEntry<bool> ShowEnchantmentChance;
     public static ConfigEntry<bool> DropEnchantmentOnUpgrade;
+    public static ConfigEntry<bool> ItemDestroyedOnFailure;
 
     private static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
         new(ValheimEnchantmentSystem.configSync, "EnchantmentGlobalChances",

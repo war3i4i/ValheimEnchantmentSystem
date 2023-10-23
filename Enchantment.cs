@@ -13,9 +13,6 @@ namespace kg.ValheimEnchantmentSystem;
 
 public static class Enchantment
 {
-    public static int GetEnchantment(this ItemDrop.ItemData item) =>
-        item?.Data().Get<EnchantedItem>() is { } en ? en.level : 0;
-
     public static IEnumerator FrameSkipEquip(ItemDrop.ItemData weapon)
     {
         if(!Player.m_localPlayer.IsItemEquiped(weapon)) yield break;
@@ -34,7 +31,7 @@ public static class Enchantment
     {
         private class enchantment_internal : ISerializableParameter
         {
-            public int level = 1;
+            public int level;
             public Dictionary<int, int> failed_enchantments = new();
 
             public void Serialize(ref ZPackage pkg)
@@ -124,61 +121,57 @@ public static class Enchantment
             return random <= chance;
         }
 
-        public bool Enchant(bool safeEnchant)
+        public bool Enchant(bool safeEnchant, out string msg)
         {
+            msg = "";
             if (!CanEnchant())
             {
-                MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft,
-                    "<color=red>Can't enchant this item</color>");
-                MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                    "<color=red>Can't enchant this item</color>");
+                msg = "$enchantment_cannotbe".Localize();
                 return false;
             }
 
             if (!HaveReqs(safeEnchant))
             {
-                MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft,
-                    "<color=red>Doesn't meet requirements</color>");
-                MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                    "<color=red>Doesn't meet requirements</color>");
+                msg = "$enchantment_nomaterials".Localize();
                 return false;
             }
 
             if (CheckRandom())
             {
+                int prevLevel = level;
                 level++;
                 Save();
-                MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft,
-                    "<color=green>Enchantment successful</color>");
-                MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                    "<color=green>Enchantment successful</color>");
                 ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
+                msg = "$enchantment_success".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
                 return true; 
             }
-            else
+            
+            if (SyncedData.SafetyLevel.Value <= level && !safeEnchant)
             {
-                if (SyncedData.SafetyLevel.Value <= level && !safeEnchant)
+                if (SyncedData.ItemDestroyedOnFailure.Value)
                 {
                     Player.m_localPlayer.UnequipItem(Item);
                     Player.m_localPlayer.m_inventory.RemoveItem(Item);
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft,
-                        "<color=#AF0000>Enchantment failed and item was destroyed</color>");
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                        "<color=#AF0000>Enchantment failed and item was destroyed</color>");
+                    msg = "$enchantment_fail_destroyed".Localize(Item.m_shared.m_name.Localize());
                 }
                 else
                 {
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft,
-                        "<color=#AF0000>Enchantment failed</color>");
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                        "<color=#AF0000>Enchantment failed</color>");
-                    if(failed_enchantments.ContainsKey(level)) failed_enchantments[level]++;
-                    else failed_enchantments.Add(level, 1);
+                    int prevLevel = level;
+                    level = Mathf.Max(0, level - 1);
                     Save();
+                    ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
+                    msg = "$enchantment_fail_leveldown".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
                 }
-
-                return false;
             }
+            else
+            {
+                msg = "$enchantment_fail_nochange".Localize(Item.m_shared.m_name.Localize(), level.ToString());
+                if (failed_enchantments.ContainsKey(level)) failed_enchantments[level]++;
+                else failed_enchantments.Add(level, 1);
+                Save();
+            }
+            
+            return false;
         }
         
         public static implicit operator bool (EnchantedItem item) => item != null;
@@ -191,12 +184,10 @@ public static class Enchantment
         private static void Prefix(InventoryGrid __instance, ItemDrop.ItemData item, out string __state)
         {
             __state = null;
-            if (item != null && item.Data().Get<EnchantedItem>() is { } idm)
-            {
-                __state = item.m_shared.m_name;
-                string color = SyncedData.GetColor(idm, out _, true).IncreaseColorLight();
-                item.m_shared.m_name += $" (<color={color}>+{idm.level}</color>)";
-            }
+            if (item?.Data().Get<EnchantedItem>() is not { level: > 0 } idm) return;
+            __state = item.m_shared.m_name;
+            string color = SyncedData.GetColor(idm, out _, true).IncreaseColorLight();
+            item.m_shared.m_name += $" (<color={color}>+{idm.level}</color>)";
         }
 
         [UsedImplicitly]
@@ -213,13 +204,11 @@ public static class Enchantment
         private static void Prefix(ItemDrop __instance, out string __state)
         {
             __state = null;
-            if (__instance.m_itemData?.Data().Get<EnchantedItem>() is { } idm)
-            {
-                __state = __instance.m_itemData.m_shared.m_name;
-                string color = SyncedData.GetColor(idm, out _, true)
-                    .IncreaseColorLight();
-                __instance.m_itemData.m_shared.m_name += $" (<color={color}>+{idm.level}</color>)";
-            }
+            if (__instance.m_itemData?.Data().Get<EnchantedItem>() is not { level: > 0 } idm) return;
+            __state = __instance.m_itemData.m_shared.m_name;
+            string color = SyncedData.GetColor(idm, out _, true)
+                .IncreaseColorLight();
+            __instance.m_itemData.m_shared.m_name += $" (<color={color}>+{idm.level}</color>)";
         }
 
         [UsedImplicitly]
@@ -233,17 +222,17 @@ public static class Enchantment
         typeof(int), typeof(bool), typeof(float))]
     public class UpdateDurabilityDisplay
     {
+        [UsedImplicitly]
         public static void Postfix(ItemDrop.ItemData item, bool crafting, ref string __result, int qualityLevel)
         {
             if (item == null) return;
             bool blockShowEnchant = false;
-            if (!crafting && item.Data().Get<EnchantedItem>() is { } data)
+            if (!crafting && item.Data().Get<EnchantedItem>() is { level: > 0 } data)
             {
-                string color = SyncedData.GetColor(data, out _, true)
-                    .IncreaseColorLight();
+                string color = SyncedData.GetColor(data, out _, true).IncreaseColorLight();
                 int currentPotency = SyncedData.GetStatIncrease(data);
                 __result = new Regex("(\\$item_durability.*)").Replace(__result,
-                    $"$1 (<color={color}>Increased with Enchantment</color>)");
+                    $"$1 (<color={color}>{"$enchantment_increasedwithenchantment".Localize()}</color>)");
 
                 Player.m_localPlayer.GetSkills().GetRandomSkillRange(out float minFactor, out float maxFactor,
                     item.m_shared.m_skillType);
@@ -274,17 +263,17 @@ public static class Enchantment
                     $"$1 (<color={color}>+{item.GetArmor(qualityLevel, item.m_worldLevel) * currentPotency / 100f}</color>)");
 
                 __result +=
-                    $"\n\n<color={color}>•</color> Enchantment bonuses (<color={color}>+{currentPotency}%</color>)";
+                    $"\n\n<color={color}>•</color> {"$enchantment_bonusespercent".Localize()} (<color={color}>+{currentPotency}%</color>)";
 
                 int chance = data.GetEnchantmentChance();
                 if (SyncedData.ShowEnchantmentChance.Value && chance > 0)
                 {
-                    __result += $"\n<color={color}>•</color> Enchantment chance (<color={color}>{chance}%</color>)";
+                    __result += $"\n<color={color}>•</color> {"$enchantment_chance".Localize()} (<color={color}>{chance}%</color>)";
                 }
 
                 if (chance <= 0)
                 {
-                    __result += $"\n<color={color}>•</color> Enchantment is maxed out";
+                    __result += $"\n<color={color}>•</color> {"$enchantment_maxedout".Localize()}";
                 }
 
                 __result += "\n";
@@ -297,14 +286,19 @@ public static class Enchantment
             string dropName = crafting ? Utils.GetPrefabNameByItemName(item.m_shared.m_name) : item.m_dropPrefab.name;
             if (SyncedData.GetReqs(dropName) is { } reqs)
             {
-                string mainName = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab).GetComponent<ItemDrop>()
-                    .m_itemData.m_shared.m_name;
-                int val1 = reqs.enchant_prefab.amount;
-                string blessName = ZNetScene.instance.GetPrefab(reqs.blessed_enchant_prefab.prefab)
-                    .GetComponent<ItemDrop>().m_itemData.m_shared.m_name;
-                int val2 = reqs.blessed_enchant_prefab.amount;
-                string canBe =
-                    $"\n• Can be enchanted with:\n<color=yellow>• {mainName} x{val1}\n• {blessName} x{val2}</color>\n";
+                string canBe = $"\n• {"$enchantment_canbeenchantedwith".Localize()}:";
+                if (reqs.enchant_prefab.IsValid())
+                {
+                    string mainName = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab).GetComponent<ItemDrop>().m_itemData.m_shared.m_name;
+                    int val1 = reqs.enchant_prefab.amount;
+                    canBe += $"\n<color=yellow>• {mainName} x{val1}</color>";
+                }
+                if (reqs.blessed_enchant_prefab.IsValid())
+                {
+                    string blessName = ZNetScene.instance.GetPrefab(reqs.blessed_enchant_prefab.prefab).GetComponent<ItemDrop>().m_itemData.m_shared.m_name;
+                    int val2 = reqs.blessed_enchant_prefab.amount;
+                    canBe += $"\n<color=yellow>• {blessName} x{val2}</color>";
+                }
                 __result += canBe;
             }
         }
@@ -316,7 +310,7 @@ public static class Enchantment
         [UsedImplicitly]
         private static void Postfix(ItemDrop.ItemData __instance, ref float __result)
         {
-            if (__instance.Data().Get<EnchantedItem>() is { } data)
+            if (__instance.Data().Get<EnchantedItem>() is { level: > 0 } data)
             {
                 __result *= 1 + SyncedData.GetStatIncrease(data) / 100f;
             }
@@ -335,7 +329,7 @@ public static class Enchantment
         [UsedImplicitly]
         private static void Postfix(ItemDrop.ItemData __instance, ref float __result)
         {
-            if (__instance.Data().Get<EnchantedItem>() is { } data)
+            if (__instance.Data().Get<EnchantedItem>() is { level: > 0 } data)
             {
                 __result *= 1 + SyncedData.GetStatIncrease(data) / 100f;
             }
@@ -354,7 +348,7 @@ public static class Enchantment
         [UsedImplicitly]
         private static void Postfix(ItemDrop.ItemData __instance, ref HitData.DamageTypes __result)
         {
-            if (__instance.Data().Get<EnchantedItem>() is { } data)
+            if (__instance.Data().Get<EnchantedItem>() is { level: > 0 } data)
             {
                 __result.Modify(1 + SyncedData.GetStatIncrease(data) / 100f);
             }
@@ -367,7 +361,7 @@ public static class Enchantment
         [UsedImplicitly]
         private static void Postfix(ItemDrop.ItemData __instance, ref float __result)
         {
-            if (__instance.Data().Get<EnchantedItem>() is { } data)
+            if (__instance.Data().Get<EnchantedItem>() is { level: > 0 } data)
             {
                 __result *= 1 + SyncedData.GetStatIncrease(data) / 100f;
             }

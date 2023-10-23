@@ -123,6 +123,7 @@
         <Compile Include="Enchantment_VFX.cs" />
         <Compile Include="Items_Structures\ScrollItems.cs" />
         <Compile Include="Items_Structures\BuildPieces.cs" />
+        <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Misc\External_AsmLoad.cs" />
         <Compile Include="UI\UI.cs" />
         <Compile Include="Utils\TerminalCommands.cs" />
@@ -151,6 +152,7 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="ILRepack.targets" />
+      <EmbeddedResource Include="translations\English.yml" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <Import Project="packages\ILRepack.Lib.MSBuild.Task.2.0.18.2\build\ILRepack.Lib.MSBuild.Task.targets" Condition="Exists('packages\ILRepack.Lib.MSBuild.Task.2.0.18.2\build\ILRepack.Lib.MSBuild.Task.targets')" />

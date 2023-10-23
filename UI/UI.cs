@@ -69,6 +69,8 @@ public static class VES_UI
         UI.SetActive(false);
         UnityEngine.Object.DontDestroyOnLoad(UI);
 
+        UI.transform.Find("Canvas/Header/Text").GetComponent<Text>().text = "$enchantment_header".Localize();
+        
         Item_Transform = UI.transform.Find("Canvas/Background/Item");
         Item_Text = Item_Transform.Find("Text").GetComponent<Text>();
         Item_Icon = Item_Transform.Find("Icon").GetComponent<Image>();
@@ -81,6 +83,8 @@ public static class VES_UI
 
         UseBless_Transform = UI.transform.Find("Canvas/Background/UseBless");
         UseBless_Icon = UseBless_Transform.Find("Icon").GetComponent<Image>();
+        UseBless_Transform.Find("Text").GetComponent<Text>().text = "$enchantment_usebless".Localize();
+        UseBless_Transform.Find("Text").GetComponent<Text>().color = Color.yellow;
 
         Start_Transform = UI.transform.Find("Canvas/Background/Start");
         Start_Text = Start_Transform.Find("Text").GetComponent<Text>();
@@ -150,7 +154,7 @@ public static class VES_UI
 
             _enchantProcessing = true;
             _enchantTimer = Input.GetKey(KeyCode.LeftShift) ? 0 : TIMER_MAX;
-            Start_Text.text = "Cancel";
+            Start_Text.text = "$enchantment_cancel".Localize();
 
             Progress_Transform.gameObject.SetActive(true);
             Progress_Fill.fillAmount = 0f;
@@ -176,7 +180,7 @@ public static class VES_UI
         if (!IsVisible()) return;
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            Hide();
+            ValheimEnchantmentSystem._thistype.DelayedInvoke(Hide, 1);
             return;
         }
 
@@ -186,80 +190,60 @@ public static class VES_UI
             return;
         }
 
-        if (_enchantProcessing)
+        if (!_enchantProcessing) return;
+        if (_currentItem == null || !Player.m_localPlayer ||
+            !Player.m_localPlayer.m_inventory.ContainsItem(_currentItem))
         {
-            if (_currentItem == null || !Player.m_localPlayer ||
-                !Player.m_localPlayer.m_inventory.ContainsItem(_currentItem))
-            {
-                Hide();
-                return;
-            }
+            Hide();
+            return;
+        }
 
-            _enchantTimer -= Time.deltaTime;
+        _enchantTimer -= Time.deltaTime;
 
-            if (_enchantTimer <= 0)
-            {
-                RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
-                Item_Rect.anchoredPosition = new Vector2(0, 0);
+        if (_enchantTimer <= 0)
+        {
+            RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
+            Item_Rect.anchoredPosition = new Vector2(0, 0);
+            Item_Transform.localScale = new Vector3(1.4f, 1.4f, 1f);
 
-                _enchantProcessing = false;
-                _enchantTimer = 0;
-                Scroll_Transform.gameObject.SetActive(false);
-                Progress_Transform.gameObject.SetActive(false);
+            _enchantProcessing = false;
+            _enchantTimer = 0;
+            Scroll_Transform.gameObject.SetActive(false);
+            Progress_Transform.gameObject.SetActive(false);
 
-                bool enchanted;
-                string itemName = _currentItem.m_shared.m_name.Localize();
+            Enchantment.EnchantedItem en = _currentItem.Data().GetOrCreate<Enchantment.EnchantedItem>();
+            bool enchanted = en.Enchant(_useBless, out string msg);
 
-                if (_currentItem.Data().Get<Enchantment.EnchantedItem>() is { } en)
-                {
-                    enchanted = en.Enchant(_useBless);
-                    string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
-                    itemName += $" (<color={color}>+{en.level}</color>)";
-                }
-                else
-                {
-                    Enchantment.EnchantedItem newEn = _currentItem.Data().GetOrCreate<Enchantment.EnchantedItem>();
-                    newEn.level = 1;
-                    newEn.Save();
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft,
-                        "<color=green>Enchantment successful</color>");
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                        "<color=green>Enchantment successful</color>");
-                    ValheimEnchantmentSystem._thistype.StartCoroutine(Enchantment.FrameSkipEquip(newEn.Item));
-                    string color = SyncedData.GetColor(newEn, out _, true).IncreaseColorLight();
-                    itemName += $" (<color={color}>+{newEn.level}</color>)";
-                    enchanted = true;
-                }
+            Item_Text.text = msg;
+            Item_Text.color = enchanted ? Color.green : Color.red;
+            Item_Visual.color = enchanted ? Color.green : Color.red;
+            UnityEngine.Object.Instantiate(VFX1, Item_Visual.transform);
+            AUsrc.PlayOneShot(enchanted ? SuccessSound : FailSound);
 
-                Item_Text.text = enchanted
-                    ? itemName
-                    : $"<color=red>Enchantment failed</color>";
-                Item_Visual.color = enchanted ? new Color(0f, 1f, 0f, 1f) : new Color(1f, 0f, 0f, 1f);
-                UnityEngine.Object.Instantiate(VFX1, Item_Visual.transform);
-                AUsrc.PlayOneShot(enchanted ? SuccessSound : FailSound);
+            _shouldReselect = true;
+            Start_Transform.gameObject.SetActive(true);
+            Start_Text.text = "$enchantment_ok".Localize();
+        }
+        else
+        {
+            Progress_Fill.fillAmount = 1f - (_enchantTimer / TIMER_MAX);
+            Progress_VFX.GetComponent<RectTransform>().anchoredPosition =
+                new Vector2(_fillDistance * Progress_Fill.fillAmount, 0f);
 
-                _shouldReselect = true;
-                Start_Transform.gameObject.SetActive(true);
-                Start_Text.text = "Ok";
-            }
-            else
-            {
-                Progress_Fill.fillAmount = 1f - (_enchantTimer / TIMER_MAX);
-                Progress_VFX.GetComponent<RectTransform>().anchoredPosition =
-                    new Vector2(_fillDistance * Progress_Fill.fillAmount, 0f);
+            Item_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
+            Scroll_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
 
-                Item_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
-                Scroll_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
-
-                RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
-                Item_Rect.anchoredPosition =
-                    new Vector2(Mathf.Lerp(_itemStartX, 0f, Progress_Fill.fillAmount),
-                        Mathf.Lerp(_startY, 0f, Progress_Fill.fillAmount));
-                RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
-                Scroll_Rect.anchoredPosition =
-                    new Vector2(Mathf.Lerp(_scrollStartX, 0f, Progress_Fill.fillAmount),
-                        Mathf.Lerp(_startY, 0f, Progress_Fill.fillAmount));
-            }
+            RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
+            Item_Rect.anchoredPosition =
+                new Vector2(Mathf.Lerp(_itemStartX, 0f, Progress_Fill.fillAmount),
+                    Mathf.Lerp(_startY, 0f, Progress_Fill.fillAmount));
+            RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
+            Scroll_Rect.anchoredPosition =
+                new Vector2(Mathf.Lerp(_scrollStartX, 0f, Progress_Fill.fillAmount),
+                    Mathf.Lerp(_startY, 0f, Progress_Fill.fillAmount));
+                
+            Item_Transform.localScale = new Vector3(1f + Progress_Fill.fillAmount * 0.4f, 1f + Progress_Fill.fillAmount * 0.4f, 1f);
+            Scroll_Transform.localScale = new Vector3(1f + Progress_Fill.fillAmount * 0.4f, 1f + Progress_Fill.fillAmount * 0.4f, 1f);
         }
     }
 
@@ -274,14 +258,17 @@ public static class VES_UI
         RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
         Item_Rect.anchoredPosition = new Vector2(0, _startY);
         Item_Transform.gameObject.SetActive(true);
-        Item_Text.text = "Select an item";
+        Item_Transform.localScale = Vector3.one;
+        Item_Text.text = "$enchantment_selectanitem".Localize();
+        Item_Text.color = Color.white;
         Item_Icon.sprite = Default_QuestionMark;
         Item_Visual.color = Color.clear;
 
         RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
         Scroll_Rect.anchoredPosition = new Vector2(_scrollStartX, _startY);
         Scroll_Transform.gameObject.SetActive(false);
-        Scroll_Text.text = "No Enchant Item";
+        Scroll_Transform.localScale = Vector3.one;
+        Scroll_Text.text = "$enchantment_noenchantitems".Localize();
         Scroll_Text.color = Color.red;
         Scroll_Icon.sprite = Default_QuestionMark;
         Scroll_Visual.color = Color.clear;
@@ -318,7 +305,7 @@ public static class VES_UI
         }
         else
         {
-            Scroll_Text.text = "No Enchant Item";
+            Scroll_Text.text = "$enchantment_noenchantitems".Localize();
             Scroll_Text.color = Color.red;
             Scroll_Icon.sprite = Default_QuestionMark;
         }
@@ -329,15 +316,11 @@ public static class VES_UI
         if (!IsVisible() || _enchantProcessing || item == null) return;
         Default();
         InventoryGui.instance.SetupDragItem(null, null, 1);
-        var reqs = SyncedData.GetReqs(item.m_dropPrefab?.name);
-        if (reqs == null)
-        {
-            MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft, "This item cannot be enchanted");
-            MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, "This item cannot be enchanted");
-            return;
-        }
-
         if (!Player.m_localPlayer.m_inventory.ContainsItem(item)) return;
+        var reqs = SyncedData.GetReqs(item.m_dropPrefab?.name);
+        if (reqs == null) return;
+        Enchantment.EnchantedItem en = item.Data().Get<Enchantment.EnchantedItem>();
+        if(en && en!.GetEnchantmentChance() <= 0) return;
 
         _currentItem = item;
 
@@ -346,10 +329,14 @@ public static class VES_UI
         Item_Transform.gameObject.SetActive(true);
         string itemName = item.m_shared.m_name.Localize();
 
-        if (item.Data().Get<Enchantment.EnchantedItem>() is { } en)
+        if (en)
         {
             string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
             itemName += $" (<color={color}>+{en.level}</color>)";
+        }
+        else
+        {
+            itemName += " (<color=#FFFFFF>+0</color>)";
         }
 
         Item_Text.text = itemName;
@@ -365,18 +352,15 @@ public static class VES_UI
         if (reqs.enchant_prefab.IsValid())
         {
             var enchant_item = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab);
-            Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() +
-                               " <color=yellow>x" + reqs.enchant_prefab.amount + "</color>";
+            Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() + " <color=yellow>x" + reqs.enchant_prefab.amount + "</color>";
             Scroll_Icon.sprite = enchant_item.GetComponent<ItemDrop>().m_itemData.GetIcon();
-
             Scroll_Text.color = Utils.CustomCountItemsNoLevel(reqs.enchant_prefab.prefab) >= reqs.enchant_prefab.amount ? Color.white : Color.red;
-            
             Start_Transform.gameObject.SetActive(true);
-            Start_Text.text = "Enchant";
+            Start_Text.text = "$enchantment_enchant".Localize();
         }
         else
         {
-            Scroll_Text.text = "No Enchant Item";
+            Scroll_Text.text = "$enchantment_noenchantitems".Localize();
             Scroll_Text.color = Color.red;
             Scroll_Icon.sprite = Default_QuestionMark;
         }
@@ -460,7 +444,7 @@ public static class VES_UI
             _enchantmentButton = UnityEngine.Object
                 .Instantiate(__instance.m_repairButton.gameObject, __instance.m_repairButton.transform.parent)
                 .GetComponent<Button>();
-            _enchantmentButton.name = "EnchantmentButton";
+            _enchantmentButton.name = "$enchantment_menu".Localize();
             _enchantmentButton.onClick.RemoveAllListeners();
             _enchantmentButton.onClick.AddListener(() =>
             {
@@ -495,5 +479,12 @@ public static class VES_UI
             InventoryGui_Awake_Patch._enchantmentBackground.gameObject.SetActive(true);
             InventoryGui_Awake_Patch._enchantmentButton.gameObject.SetActive(true);
         }
+    }
+    
+    [HarmonyPatch(typeof(InventoryGui),nameof(InventoryGui.Hide))]
+    private static class InventoryGui_Hide_Patch
+    {
+        [UsedImplicitly]
+        private static bool Prefix() => !IsVisible();
     }
 }

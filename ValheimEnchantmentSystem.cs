@@ -7,6 +7,7 @@ using HarmonyLib;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Items_Structures;
 using kg.ValheimEnchantmentSystem.Misc;
+using LocalizationManager;
 using ServerSync;
 using UnityEngine;
 
@@ -33,12 +34,13 @@ namespace kg.ValheimEnchantmentSystem
         
         private void Awake()
         {
+            Localizer.Load();
             ConfigFolder = Path.Combine(Paths.ConfigPath, "ValheimEnchantmentSystem");
             if (!Directory.Exists(ConfigFolder))
                 Directory.CreateDirectory(ConfigFolder);
             
             Config = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}.cfg"), false);
-            ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, $"ScrollRecipes.cfg"), false);
+            ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, "ScrollRecipes.cfg"), false);
             _thistype = this;
             _asset = GetAssetBundle("kg_enchantment");
             External_AsmLoad.Init();
