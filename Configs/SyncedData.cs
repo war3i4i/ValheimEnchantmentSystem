@@ -95,11 +95,7 @@ public static class SyncedData
     
     private static void ConfigChanged(object sender, FileSystemEventArgs e)
     {
-        if (!ZNet.instance || !ZNet.instance.IsServer())
-        {
-            Utils.print($"FSW: Not a server, ignoring ({e.Name})", ConsoleColor.Red);
-            return;
-        }
+        if (!Game.instance || !ZNet.instance || !ZNet.instance.IsServer()) return;
         if (e.ChangeType != WatcherChangeTypes.Changed) return;
         if (e.FullPath == YAML_Chances)
         {
