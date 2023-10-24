@@ -168,7 +168,7 @@ public static class Utils
         }
         catch (Exception ex)
         {
-            print($"Erorr while deserializing {path}: {ex.Message}");
+            print($"Error while deserializing {path}:\n{ex}");
             return new T();
         }
     }

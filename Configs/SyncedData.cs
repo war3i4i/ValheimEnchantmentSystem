@@ -21,6 +21,14 @@ public static class SyncedData
     private static string YAML_Ovverides_Stats;
     private static string YAML_Ovverides_Colors;
 
+    private static string Directory_Overrides_Chances;
+    private static string Directory_Overrides_Stats;
+    private static string Directory_Overrides_Colors;
+    private static string Directory_Reqs;
+    
+
+    private static readonly Dictionary<string, Action> FSW_Mapper = new();
+
     public static void Init()
     {
         SafetyLevel = ValheimEnchantmentSystem.config("Enchantment", "SafetyLevel", 3,
@@ -40,10 +48,23 @@ public static class SyncedData
         YAML_Colors = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentColors.yml");
         YAML_Reqs = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentReqs.yml");
         YAML_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentChances.yml");
-        YAML_Ovverides_Chances =
-            Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentChances.yml");
+        YAML_Ovverides_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentChances.yml");
         YAML_Ovverides_Stats = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentStats.yml");
         YAML_Ovverides_Colors = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentColors.yml");
+        Directory_Reqs = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalEnchantmentReqs");
+        Directory_Overrides_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentChances");
+        Directory_Overrides_Stats = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentStats");
+        Directory_Overrides_Colors = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentColors");
+        
+        if (!Directory.Exists(Directory_Reqs))
+            Directory.CreateDirectory(Directory_Reqs);
+        if (!Directory.Exists(Directory_Overrides_Chances))
+            Directory.CreateDirectory(Directory_Overrides_Chances);
+        if (!Directory.Exists(Directory_Overrides_Stats))
+            Directory.CreateDirectory(Directory_Overrides_Stats);
+        if (!Directory.Exists(Directory_Overrides_Colors))
+            Directory.CreateDirectory(Directory_Overrides_Colors);
+        
 
         if (!File.Exists(YAML_Chances))
             YAML_Chances.WriteFile(Defaults.YAML_Chances);
@@ -66,13 +87,26 @@ public static class SyncedData
         Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>();
         Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>();
         Synced_EnchantmentColors.Value = YAML_Colors.FromYAML<Dictionary<int, VFX_Data>>();
-        Synced_EnchantmentReqs.Value = YAML_Reqs.FromYAML<List<EnchantmentReqs>>();
-        Overrides_EnchantmentChances.Value =
-            YAML_Ovverides_Chances.FromYAML<Dictionary<string, Dictionary<int, int>>>();
-        Overrides_EnchantmentStats.Value =
-            YAML_Ovverides_Stats.FromYAML<Dictionary<string, Dictionary<int, Stat_Data>>>();
-        Overrides_EnchantmentColors.Value =
-            YAML_Ovverides_Colors.FromYAML<Dictionary<string, Dictionary<int, VFX_Data>>>();
+        ReadReqs();
+        ReadOverrideChances();
+        ReadOverrideStats();
+        ReadOverrideColors();
+        
+        FSW_Mapper.Add(YAML_Chances, () => Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, int>>());
+        FSW_Mapper.Add(YAML_Stats_Weapons, () => Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>());
+        FSW_Mapper.Add(YAML_Stats_Armor, () => Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>());
+        FSW_Mapper.Add(YAML_Colors, () => Synced_EnchantmentColors.Value = YAML_Colors.FromYAML<Dictionary<int, VFX_Data>>());
+        FSW_Mapper.Add(YAML_Reqs, ReadReqs);
+        FSW_Mapper.Add(YAML_Ovverides_Chances, ReadOverrideChances);
+        FSW_Mapper.Add(YAML_Ovverides_Stats, ReadOverrideStats);
+        FSW_Mapper.Add(YAML_Ovverides_Colors, ReadOverrideColors);
+        FSW_Mapper.Add(ValheimEnchantmentSystem.Config.ConfigFilePath, () => ValheimEnchantmentSystem.Config.Reload());
+        FSW_Mapper.Add(ValheimEnchantmentSystem.ItemConfig.ConfigFilePath, () => ValheimEnchantmentSystem.ItemConfig.Reload());
+        FSW_Mapper.Add(Directory_Reqs, ReadReqs);
+        FSW_Mapper.Add(Directory_Overrides_Chances, ReadOverrideChances);
+        FSW_Mapper.Add(Directory_Overrides_Stats, ReadOverrideStats);
+        FSW_Mapper.Add(Directory_Overrides_Colors, ReadOverrideColors);
+        
         Synced_EnchantmentChances.ValueChanged += ResetInventory;
         Synced_EnchantmentStats_Weapons.ValueChanged += ResetInventory;
         Synced_EnchantmentStats_Armor.ValueChanged += ResetInventory;
@@ -84,71 +118,102 @@ public static class SyncedData
         FSW = new FileSystemWatcher(ValheimEnchantmentSystem.ConfigFolder)
         {
             EnableRaisingEvents = true,
-            IncludeSubdirectories = false,
+            IncludeSubdirectories = true,
             NotifyFilter = NotifyFilters.LastWrite,
             SynchronizingObject = ThreadingHelper.SynchronizingObject
         };
         FSW.Changed += ConfigChanged;
     }
 
+    private static void ReadReqs()
+    {
+        List<EnchantmentReqs> result = new();
+        if(YAML_Reqs.FromYAML<List<EnchantmentReqs>>() is { } yamlData)
+            result.AddRange(yamlData);
+        
+        foreach (var file in Directory.GetFiles(Directory_Reqs, "*.yml"))
+            if (file.FromYAML<List<EnchantmentReqs>>() is { } data)
+                result.AddRange(data);
+        
+        Synced_EnchantmentReqs.Value = result;
+    }
+    private static void ReadOverrideChances()
+    {
+        Dictionary<string, Dictionary<int, int>> result = new();
+        if (YAML_Ovverides_Chances.FromYAML<Dictionary<string, Dictionary<int, int>>>() is { } yamlData)
+            foreach (var yml in yamlData)
+                result[yml.Key] = yml.Value;
+
+        foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml"))
+            if (file.FromYAML<Dictionary<string, Dictionary<int, int>>>() is {} data)
+                foreach (var yml in data)
+                    result[yml.Key] = yml.Value;
+        
+        Overrides_EnchantmentChances.Value = result;
+    }
+    private static void ReadOverrideStats()
+    {
+        Dictionary<string, Dictionary<int, Stat_Data>> result = new();
+        if (YAML_Ovverides_Stats.FromYAML<Dictionary<string, Dictionary<int, Stat_Data>>>() is { } yamlData)
+            foreach (var yml in yamlData)
+                result[yml.Key] = yml.Value;
+
+        foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml"))
+            if (file.FromYAML<Dictionary<string, Dictionary<int, Stat_Data>>>() is {} data)
+                foreach (var yml in data)
+                    result[yml.Key] = yml.Value;
+        
+        Overrides_EnchantmentStats.Value = result;
+    }
+    private static void ReadOverrideColors()
+    {
+        Dictionary<string, Dictionary<int, VFX_Data>> result = new();
+        if (YAML_Ovverides_Colors.FromYAML<Dictionary<string, Dictionary<int, VFX_Data>>>() is { } yamlData)
+            foreach (var yml in yamlData)
+                result[yml.Key] = yml.Value;
+
+        foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml"))
+            if (file.FromYAML<Dictionary<string, Dictionary<int, VFX_Data>>>() is {} data)
+                foreach (var yml in data)
+                    result[yml.Key] = yml.Value;
+        
+        Overrides_EnchantmentColors.Value = result;
+    }
+    
     private static void ResetInventory() => Player.m_localPlayer?.m_inventory?.Changed();
     
     private static void ConfigChanged(object sender, FileSystemEventArgs e)
     {
         if (!Game.instance || !ZNet.instance || !ZNet.instance.IsServer()) return;
         if (e.ChangeType != WatcherChangeTypes.Changed) return;
-        if (e.FullPath == YAML_Chances)
+        string extention = Path.GetExtension(e.FullPath);
+        if (extention != ".yml" && extention != ".cfg") return;
+        if (FSW_Mapper.TryGetValue(e.FullPath, out var action))
         {
-            Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, int>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
+            try
+            {
+                Utils.print($"Reloading config {e.FullPath}");
+                action.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Utils.print($"Error while reloading config {e.FullPath}: {ex}", ConsoleColor.Red);
+            }
+            return;
         }
-        else if (e.FullPath == YAML_Stats_Weapons)
+        string folder = Path.GetDirectoryName(e.FullPath);
+        if (folder == null) return;
+        if (FSW_Mapper.TryGetValue(folder, out action))
         {
-            Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == YAML_Stats_Armor)
-        {
-            Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == YAML_Colors)
-        {
-            Synced_EnchantmentColors.Value = YAML_Colors.FromYAML<Dictionary<int, VFX_Data>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == YAML_Reqs)
-        {
-            Synced_EnchantmentReqs.Value = YAML_Reqs.FromYAML<List<EnchantmentReqs>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == YAML_Ovverides_Chances)
-        {
-            Overrides_EnchantmentChances.Value =
-                YAML_Ovverides_Chances.FromYAML<Dictionary<string, Dictionary<int, int>>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == YAML_Ovverides_Stats)
-        {
-            Overrides_EnchantmentStats.Value =
-                YAML_Ovverides_Stats.FromYAML<Dictionary<string, Dictionary<int, Stat_Data>>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == YAML_Ovverides_Colors)
-        {
-            Overrides_EnchantmentColors.Value =
-                YAML_Ovverides_Colors.FromYAML<Dictionary<string, Dictionary<int, VFX_Data>>>();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == ValheimEnchantmentSystem.Config.ConfigFilePath)
-        {
-            ValheimEnchantmentSystem.Config.Reload();
-            Utils.print($"{e.FullPath} changed. Reloading");
-        }
-        else if (e.FullPath == ValheimEnchantmentSystem.ItemConfig.ConfigFilePath)
-        {
-            ValheimEnchantmentSystem.ItemConfig.Reload();
-            Utils.print($"{e.FullPath} changed. Reloading");
+            try
+            {
+                Utils.print($"Reloading config {e.FullPath}");
+                action.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Utils.print($"Error while reloading config {e.FullPath}: {ex}", ConsoleColor.Red);
+            }
         }
     }
 
