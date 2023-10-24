@@ -149,7 +149,9 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="GithubReadme\app.js" />
+      <Content Include="GithubReadme\EnchantmentScrolls.md" />
       <Content Include="GithubReadme\InstallationAndConfigs.md" />
+      <Content Include="GithubReadme\ItemEnchantment.md" />
       <Content Include="GithubReadme\Localization.md" />
       <Content Include="GithubReadme\MainInfo.md" />
       <Content Include="GithubReadme\node use.bat" />
