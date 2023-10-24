@@ -46,7 +46,7 @@ public static class Enchantment_VFX
         private static string GetEnchantmentColor(ItemDrop.ItemData item, out int variant, bool trimAlpha = false)
         {
             variant = 0;
-            if (item?.Data().Get<Enchantment.EnchantedItem>() is { level: > 0 } en)
+            if (item?.Data().Get<Enchantment_Core.Enchanted>() is { level: > 0 } en)
             {
                 return SyncedData.GetColor(en, out variant, trimAlpha);
             }
@@ -227,7 +227,7 @@ public static class Enchantment_VFX
         [UsedImplicitly]
         private static void Postfix(ItemDrop __instance)
         {
-            if(__instance.m_itemData.Data()?.Get<Enchantment.EnchantedItem>() is not { level: > 0 } en) return;
+            if(__instance.m_itemData.Data()?.Get<Enchantment_Core.Enchanted>() is not { level: > 0 } en) return;
             string prefabName = global::Utils.GetPrefabName(__instance.gameObject);
             string color = SyncedData.GetColor(prefabName, en.level, out int variant, false);
             AttachMeshEffect(__instance.gameObject, color.ToColorAlpha(), variant);
@@ -248,7 +248,7 @@ public static class Enchantment_VFX
             if(!prefab) return;
             ItemDrop.ItemData itemData = prefab.GetComponent<ItemDrop>().m_itemData.Clone();
             ItemDrop.LoadFromZDO(itemData, __instance.m_nview.m_zdo);
-            if(itemData.Data()?.Get<Enchantment.EnchantedItem>() is not {level: > 0} en) return;
+            if(itemData.Data()?.Get<Enchantment_Core.Enchanted>() is not {level: > 0} en) return;
             string color = SyncedData.GetColor(itemPrefab, en.level, out int variant, false);
             AttachMeshEffect(visualItem, color.ToColorAlpha(), variant);
         }
@@ -336,7 +336,7 @@ public static class Enchantment_VFX
             {
                 HotkeyBar.ElementData element = __instance.m_elements[itemData.m_gridPos.x];
                 Transform ves = element.m_go.transform.Find("VES_Level");
-                Enchantment.EnchantedItem en = itemData.Data().Get<Enchantment.EnchantedItem>();
+                Enchantment_Core.Enchanted en = itemData.Data().Get<Enchantment_Core.Enchanted>();
                 if (en && en!.level > 0)
                 {
                     ves.gameObject.SetActive(true);
@@ -376,7 +376,7 @@ public static class Enchantment_VFX
             {
                 InventoryGrid.Element element = __instance.GetElement(itemData.m_gridPos.x, itemData.m_gridPos.y, width);
                 Transform ves = element.m_go.transform.Find("VES_Level");
-                Enchantment.EnchantedItem en = itemData.Data().Get<Enchantment.EnchantedItem>();
+                Enchantment_Core.Enchanted en = itemData.Data().Get<Enchantment_Core.Enchanted>();
                 if (en && en.level > 0)
                 {
                     ves.gameObject.SetActive(true);

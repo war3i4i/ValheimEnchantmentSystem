@@ -178,6 +178,12 @@ public static class VES_UI
     public static void Update()
     {
         if (!IsVisible()) return;
+        if (!Player.m_localPlayer)
+        {
+            Hide();
+            return;
+        }
+            
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ValheimEnchantmentSystem._thistype.DelayedInvoke(Hide, 1);
@@ -191,8 +197,7 @@ public static class VES_UI
         }
 
         if (!_enchantProcessing) return;
-        if (_currentItem == null || !Player.m_localPlayer ||
-            !Player.m_localPlayer.m_inventory.ContainsItem(_currentItem))
+        if (_currentItem == null || !Player.m_localPlayer.m_inventory.ContainsItem(_currentItem))
         {
             Hide();
             return;
@@ -211,7 +216,7 @@ public static class VES_UI
             Scroll_Transform.gameObject.SetActive(false);
             Progress_Transform.gameObject.SetActive(false);
 
-            Enchantment.EnchantedItem en = _currentItem.Data().GetOrCreate<Enchantment.EnchantedItem>();
+            Enchantment_Core.Enchanted en = _currentItem.Data().GetOrCreate<Enchantment_Core.Enchanted>();
             bool enchanted = en.Enchant(_useBless, out string msg);
 
             Item_Text.text = msg;
@@ -319,7 +324,7 @@ public static class VES_UI
         if (!Player.m_localPlayer.m_inventory.ContainsItem(item)) return;
         var reqs = SyncedData.GetReqs(item.m_dropPrefab?.name);
         if (reqs == null) return;
-        Enchantment.EnchantedItem en = item.Data().Get<Enchantment.EnchantedItem>();
+        Enchantment_Core.Enchanted en = item.Data().Get<Enchantment_Core.Enchanted>();
         if(en && en!.GetEnchantmentChance() <= 0) return;
 
         _currentItem = item;

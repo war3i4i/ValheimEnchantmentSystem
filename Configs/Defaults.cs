@@ -5,15 +5,51 @@ namespace kg.ValheimEnchantmentSystem.Configs;
 
 public static class Defaults
 {
-    private static readonly Dictionary<int, int> DefaultStats_Weapons = new Dictionary<int, int>()
+    private static readonly Dictionary<int, SyncedData.Stat_Data> DefaultStats_Weapons = new Dictionary<int, SyncedData.Stat_Data>()
     {
-        { 1, 2 }, { 2, 4 }, { 3, 8 }, { 4, 12 }, { 5, 16 }, { 6, 20 }, { 7, 24 }, { 8, 28 }, { 9, 32 }, { 10, 40 },
-        { 11, 44 }, { 12, 48 }, { 13, 52 }, { 14, 56 }, { 15, 60 }, { 16, 65 }, { 17, 70 }, { 18, 80 }, { 19, 90 }, { 20, 100 }
+        { 1, new()  { damage_percentage = 2  } }, 
+        { 2, new()  { damage_percentage = 4  } }, 
+        { 3, new()  { damage_percentage = 8  } },
+        { 4, new()  { damage_percentage = 12 } }, 
+        { 5, new()  { damage_percentage = 16 } },
+        { 6, new()  { damage_percentage = 20 } },
+        { 7, new()  { damage_percentage = 24 } },
+        { 8, new()  { damage_percentage = 28 } },
+        { 9, new()  { damage_percentage = 32 } }, 
+        { 10, new() { damage_percentage = 40 } },
+        { 11, new() { damage_percentage = 44 } },
+        { 12, new() { damage_percentage = 48 } },
+        { 13, new() { damage_percentage = 52 } },
+        { 14, new() { damage_percentage = 56 } },
+        { 15, new() { damage_percentage = 60 } },
+        { 16, new() { damage_percentage = 65 } },
+        { 17, new() { damage_percentage = 70 } },
+        { 18, new() { damage_percentage = 80 } }, 
+        { 19, new() { damage_percentage = 90 } },
+        { 20, new() { damage_percentage = 100} },
     };
-    private static readonly Dictionary<int, int> DefaultStats_Armor = new Dictionary<int, int>()
+    private static readonly Dictionary<int, SyncedData.Stat_Data> DefaultStats_Armor = new Dictionary<int, SyncedData.Stat_Data>()
     {
-        { 1, 2 }, { 2, 4 }, { 3, 6 }, { 4, 8 }, { 5, 10 }, { 6, 12 }, { 7, 14 }, { 8, 16 }, { 9, 18 }, { 10, 20 },
-        { 11, 22 }, { 12, 24 }, { 13, 26 }, { 14, 28 }, { 15, 30 }, { 16, 33 }, { 17, 36 }, { 18, 39 }, { 19, 42 }, { 20, 45 }
+        { 1,  new() { armor_percentage = 2 }},
+        { 2,  new() { armor_percentage = 4 }},
+        { 3,  new() { armor_percentage = 6 }},
+        { 4,  new() { armor_percentage = 8 }},
+        { 5,  new() { armor_percentage = 10}},
+        { 6,  new() { armor_percentage = 12}},
+        { 7,  new() { armor_percentage = 14}}, 
+        { 8,  new() { armor_percentage = 16}},
+        { 9,  new() { armor_percentage = 18}},
+        { 10, new() { armor_percentage = 20}},
+        { 11, new() { armor_percentage = 22}},
+        { 12, new() { armor_percentage = 24}},
+        { 13, new() { armor_percentage = 26}},
+        { 14, new() { armor_percentage = 28}},
+        { 15, new() { armor_percentage = 30}},
+        { 16, new() { armor_percentage = 33}},
+        { 17, new() { armor_percentage = 36}},
+        { 18, new() { armor_percentage = 39}},
+        { 19, new() { armor_percentage = 42}},
+        { 20, new() { armor_percentage = 45}},
     };
     private static readonly Dictionary<int, int> DefaultChances = new()
     {
@@ -118,20 +154,29 @@ public static class Defaults
         }}
     };
     
-    private static readonly Dictionary<string, Dictionary<int, int>> DefaultOverrides_Stats = new()
+    private static readonly Dictionary<string, Dictionary<int, SyncedData.Stat_Data>> DefaultOverrides_Stats = new()
     {
         {"SwordCheat", new()
         {
-            { 1, 5 }, { 2, 10 }, { 3, 15 }, { 4, 20 }, { 5, 25 }, { 6, 30 }, { 7, 35 }, { 8, 40 }, { 9, 45 }, { 10, 50 }
+            { 1,  new(){ damage_percentage = 5 } }, 
+            { 2,  new(){ damage_percentage = 10} }, 
+            { 3,  new(){ damage_percentage = 15} }, 
+            { 4,  new(){ damage_percentage = 20} }, 
+            { 5,  new(){ damage_percentage = 25} }, 
+            { 6,  new(){ damage_percentage = 30} }, 
+            { 7,  new(){ damage_percentage = 35} }, 
+            { 8,  new(){ damage_percentage = 40} }, 
+            { 9,  new(){ damage_percentage = 45} }, 
+            { 10, new(){ damage_percentage = 50} }, 
         }}
     };
     
-    public static string YAML_Stats_Weapons => new SerializerBuilder().Build().Serialize(DefaultStats_Weapons);
-    public static string YAML_Stats_Armor => new SerializerBuilder().Build().Serialize(DefaultStats_Armor);
-    public static string YAML_Reqs => new SerializerBuilder().Build().Serialize(DefaultReqs);
-    public static string YAML_Colors => new SerializerBuilder().Build().Serialize(DefaultColors);
-    public static string YAML_Chances => new SerializerBuilder().Build().Serialize(DefaultChances);
-    public static string YAML_Overrides_Chances => new SerializerBuilder().Build().Serialize(DefaultOverrides_Chances);
-    public static string YAML_Overrides_Colors => new SerializerBuilder().Build().Serialize(DefaultOverrides_Colors);
-    public static string YAML_Overrides_Stats => new SerializerBuilder().Build().Serialize(DefaultOverrides_Stats);
+    public static string YAML_Stats_Weapons => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultStats_Weapons);
+    public static string YAML_Stats_Armor => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultStats_Armor);
+    public static string YAML_Reqs => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultReqs);
+    public static string YAML_Colors => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultColors);
+    public static string YAML_Chances => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultChances);
+    public static string YAML_Overrides_Chances => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultOverrides_Chances);
+    public static string YAML_Overrides_Colors => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultOverrides_Colors);
+    public static string YAML_Overrides_Stats => new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).Build().Serialize(DefaultOverrides_Stats);
 }

@@ -18,12 +18,12 @@ public static class TerminalCommands
                 int level = int.Parse(args[1]);
                 ItemDrop.ItemData weapon = Player.m_localPlayer.GetCurrentWeapon();
                 if(weapon == null || !weapon.m_dropPrefab) return;
-                Enchantment.EnchantedItem en = weapon.Data().GetOrCreate<Enchantment.EnchantedItem>();
+                Enchantment_Core.Enchanted en = weapon.Data().GetOrCreate<Enchantment_Core.Enchanted>();
                 en.level = level;
                 en.Save();
                 Chat.instance.m_hideTimer = 0f;
                 Chat.instance.AddString("Enchantment level set to " + level);
-                ValheimEnchantmentSystem._thistype.StartCoroutine(Enchantment.FrameSkipEquip(weapon));
+                ValheimEnchantmentSystem._thistype.StartCoroutine(Enchantment_Core.FrameSkipEquip(weapon));
             });
         }
     }
