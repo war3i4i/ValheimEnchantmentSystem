@@ -26,10 +26,13 @@ public static class Fixing_JC_Item
     private static ItemDrop.ItemData ReplaceWithCopy(ItemDrop.ItemData original)
     {
         const string key = "kg.ValheimEnchantmentSystem#kg.ValheimEnchantmentSystem.Enchantment_Core+Enchanted";
-        ItemDrop.ItemData copy = original.Clone();
-        if(!SyncedData.AllowJewelcraftingMirrorCopyEnchant.Value)
+        if (!SyncedData.AllowJewelcraftingMirrorCopyEnchant.Value)
+        {
+            ItemDrop.ItemData copy = original.Clone();
             copy.m_customData.Remove(key);
-        return copy;
+            return copy;
+        }
+        return original;
     }
     
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> code)

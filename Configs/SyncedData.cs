@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx;
@@ -91,11 +92,14 @@ public static class SyncedData
     }
 
     private static void ResetInventory() => Player.m_localPlayer?.m_inventory?.Changed();
-
-
+    
     private static void ConfigChanged(object sender, FileSystemEventArgs e)
     {
-        if (!Game.instance) return;
+        if (!ZNet.instance || !ZNet.instance.IsServer())
+        {
+            Utils.print($"FSW: Not a server, ignoring ({e.Name})", ConsoleColor.Red);
+            return;
+        }
         if (e.ChangeType != WatcherChangeTypes.Changed) return;
         if (e.FullPath == YAML_Chances)
         {
