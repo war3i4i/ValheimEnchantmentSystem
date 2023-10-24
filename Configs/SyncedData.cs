@@ -30,6 +30,9 @@ public static class SyncedData
             "Drop enchantment on item upgrade.");
         ItemDestroyedOnFailure = ValheimEnchantmentSystem.config("Enchantment", "ItemDestroyedOnFailure", false,
             "Destroy item on enchantment failure. Otherwise decrease enchantment level by 1.");
+        AllowJewelcraftingMirrorCopyEnchant = ValheimEnchantmentSystem.config("Enchantment",
+            "AllowJewelcraftingMirrorCopyEnchant", false,
+            "Allow jewelcrafting to copy enchantment from one item to another using mirror.");
 
         YAML_Stats_Weapons = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Weapons.yml");
         YAML_Stats_Armor = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Armor.yml");
@@ -214,6 +217,7 @@ public static class SyncedData
     public static ConfigEntry<bool> ShowEnchantmentChance;
     public static ConfigEntry<bool> DropEnchantmentOnUpgrade;
     public static ConfigEntry<bool> ItemDestroyedOnFailure;
+    public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;
 
     private static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
         new(ValheimEnchantmentSystem.configSync, "EnchantmentGlobalChances",

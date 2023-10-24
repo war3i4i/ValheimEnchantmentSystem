@@ -19,7 +19,7 @@ public static class BuildPieces
         Station.GetComponent<Piece>().m_category = Piece.PieceCategory.Crafting;
         Station.GetComponent<Piece>().m_name = "$kg_enchantment_scrollstation";
         Station.GetComponent<Piece>().m_description = "$kg_enchantment_scrollstation_description";
-        StationReqs = ValheimEnchantmentSystem.config("Enchantment Scroll Station", "Station Build Requirements", "SurtlingCore:10:true:Stone:30:false:Flint:20:false", "Station requirements.");
+        StationReqs = ValheimEnchantmentSystem.config("Enchantment Scroll Station", "Station Build Requirements", "SurtlingCore:3:true:Stone:30:false:Flint:20:false", "Station requirements.");
         
         StationReqs.SettingChanged += StationRequirementsChanged;
     } 

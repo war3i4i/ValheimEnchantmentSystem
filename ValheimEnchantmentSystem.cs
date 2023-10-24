@@ -25,7 +25,7 @@ namespace kg.ValheimEnchantmentSystem
         public new static ConfigFile Config;
         public static ConfigFile ItemConfig;
         public static string ConfigFolder;
-
+        private static readonly Harmony _harmony = new(GUID);
         public static readonly ConfigSync configSync = new(GUID)
         {
             DisplayName = GUID, ModRequired = true, 
@@ -49,7 +49,8 @@ namespace kg.ValheimEnchantmentSystem
             Enchantment_VFX.Init(); 
             BuildPieces.Init();
             ScrollItems.Init();
-            new Harmony(GUID).PatchAll();
+            _harmony.PatchAll();
+            Fixing_JC_Item.Fix();
         }
 
         private void Update() => VES_UI.Update();

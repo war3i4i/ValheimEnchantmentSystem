@@ -121,6 +121,7 @@
         <Compile Include="Configs\SyncedData.cs" />
         <Compile Include="Enchantment_Core.cs" />
         <Compile Include="Enchantment_VFX.cs" />
+        <Compile Include="Fixing_JC_Item.cs" />
         <Compile Include="Items_Structures\ScrollItems.cs" />
         <Compile Include="Items_Structures\BuildPieces.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
@@ -292,6 +293,8 @@
       <Content Include="GithubReadme\Patchnotes.md" />
       <Content Include="ILRepack.targets" />
       <Content Include="ThunderstorePackage\image.png" />
+      <Content Include="ThunderstorePackage\manifest.json" />
+      <Content Include="ThunderstorePackage\README.md" />
       <EmbeddedResource Include="translations\English.yml" />
     </ItemGroup>
     <ItemGroup>
