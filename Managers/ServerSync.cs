@@ -89,7 +89,7 @@ public abstract class CustomSyncedValueBase
 
     protected CustomSyncedValueBase(ConfigSync configSync, string identifier, Type type, Config_Priority priority = Config_Priority.Last)
     {
-        Identifier = "kg.Marketplace" + identifier;
+        Identifier = "VES_" + identifier;
         Type = type;
         Priority = priority;
         configSync.AddCustomValue(this);
@@ -492,7 +492,6 @@ public class ConfigSync
             string groupName = package.ReadString();
             string configName = package.ReadString();
             string typeName = package.ReadString();
-
             Type type = Type.GetType(typeName);
             if (typeName == "" || type != null)
             {

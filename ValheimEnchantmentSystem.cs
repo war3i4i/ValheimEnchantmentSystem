@@ -18,7 +18,7 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.1.0";
+        private const string PLUGIN_VERSION = "1.2.0";
         
         public static ValheimEnchantmentSystem _thistype;
         public static AssetBundle _asset;
@@ -30,7 +30,7 @@ namespace kg.ValheimEnchantmentSystem
         {
             DisplayName = GUID, ModRequired = true, 
             MinimumRequiredVersion = PLUGIN_VERSION, CurrentVersion = PLUGIN_VERSION
-        };
+        }; 
         
         private void Awake()
         {

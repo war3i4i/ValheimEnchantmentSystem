@@ -9,9 +9,10 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
     Patchnotes
 </span></b></summary>
 
-| Version | Changes       |
-|---------|---------------|
-| 1.0.0   | Mod released  |
+| Version   | Changes                                                               |
+|-----------|-----------------------------------------------------------------------|
+| 1.1.0     | Added 4 directories for Override + Requirements additional .yml files |
+| 1.0.0     | Mod released                                                          |
 </details>
 
 ## Guides and description here: https://kg-dev.xyz/ves/

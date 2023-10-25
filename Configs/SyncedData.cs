@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using BepInEx;
 using BepInEx.Configuration;
@@ -83,6 +84,19 @@ public static class SyncedData
         if (!File.Exists(YAML_Ovverides_Colors))
             YAML_Ovverides_Colors.WriteFile(Defaults.YAML_Overrides_Colors);
 
+        Synced_EnchantmentChances.ValueChanged += ResetInventory;
+        Synced_EnchantmentStats_Weapons.ValueChanged += ResetInventory;
+        Synced_EnchantmentStats_Armor.ValueChanged += ResetInventory;
+        Synced_EnchantmentColors.ValueChanged += ResetInventory;
+        Synced_EnchantmentReqs.ValueChanged += ResetInventory;
+        Overrides_EnchantmentChances.ValueChanged += ResetInventory;
+        Overrides_EnchantmentStats.ValueChanged += ResetInventory;
+        Overrides_EnchantmentColors.ValueChanged += ResetInventory;
+        
+        Overrides_EnchantmentChances.ValueChanged += OptimizeChances;
+        Overrides_EnchantmentStats.ValueChanged += OptimizeStats;
+        Overrides_EnchantmentColors.ValueChanged += OptimizeColors;
+        
         Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, int>>();
         Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>();
         Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>();
@@ -91,6 +105,9 @@ public static class SyncedData
         ReadOverrideChances();
         ReadOverrideStats();
         ReadOverrideColors();
+        OptimizeChances();
+        OptimizeStats();
+        OptimizeColors();
         
         FSW_Mapper.Add(YAML_Chances, () => Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, int>>());
         FSW_Mapper.Add(YAML_Stats_Weapons, () => Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>());
@@ -106,15 +123,6 @@ public static class SyncedData
         FSW_Mapper.Add(Directory_Overrides_Chances, ReadOverrideChances);
         FSW_Mapper.Add(Directory_Overrides_Stats, ReadOverrideStats);
         FSW_Mapper.Add(Directory_Overrides_Colors, ReadOverrideColors);
-        
-        Synced_EnchantmentChances.ValueChanged += ResetInventory;
-        Synced_EnchantmentStats_Weapons.ValueChanged += ResetInventory;
-        Synced_EnchantmentStats_Armor.ValueChanged += ResetInventory;
-        Synced_EnchantmentColors.ValueChanged += ResetInventory;
-        Synced_EnchantmentReqs.ValueChanged += ResetInventory;
-        Overrides_EnchantmentChances.ValueChanged += ResetInventory;
-        Overrides_EnchantmentStats.ValueChanged += ResetInventory;
-        Overrides_EnchantmentColors.ValueChanged += ResetInventory;
         FSW = new FileSystemWatcher(ValheimEnchantmentSystem.ConfigFolder)
         {
             EnableRaisingEvents = true,
@@ -124,7 +132,27 @@ public static class SyncedData
         };
         FSW.Changed += ConfigChanged;
     }
-
+    private static void OptimizeChances()
+    {
+        OPTIMIZED_Overrides_EnchantmentChances.Clear();
+        foreach (var chance in Overrides_EnchantmentChances.Value)
+            foreach (var entry in chance.Items)
+                 OPTIMIZED_Overrides_EnchantmentChances[entry] = chance.Chances;
+    }
+    private static void OptimizeColors()
+    {
+        OPTIMIZED_Overrides_EnchantmentColors.Clear();
+        foreach (var chance in Overrides_EnchantmentColors.Value)
+            foreach (var entry in chance.Items)
+                OPTIMIZED_Overrides_EnchantmentColors[entry] = chance.Colors;
+    }
+    private static void OptimizeStats()
+    {
+        OPTIMIZED_Overrides_EnchantmentStats.Clear();
+        foreach (var chance in Overrides_EnchantmentStats.Value)
+            foreach (var entry in chance.Items)
+                OPTIMIZED_Overrides_EnchantmentStats[entry] = chance.Stats;
+    }
     private static void ReadReqs()
     {
         List<EnchantmentReqs> result = new();
@@ -139,43 +167,43 @@ public static class SyncedData
     }
     private static void ReadOverrideChances()
     {
-        Dictionary<string, Dictionary<int, int>> result = new();
-        if (YAML_Ovverides_Chances.FromYAML<Dictionary<string, Dictionary<int, int>>>() is { } yamlData)
+        List<Defaults.OverrideChances> result = new();
+        if (YAML_Ovverides_Chances.FromYAML<List<Defaults.OverrideChances>>() is { } yamlData)
             foreach (var yml in yamlData)
-                result[yml.Key] = yml.Value;
+                result.Add(yml);
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml"))
-            if (file.FromYAML<Dictionary<string, Dictionary<int, int>>>() is {} data)
+            if (file.FromYAML<List<Defaults.OverrideChances>>() is {} data)
                 foreach (var yml in data)
-                    result[yml.Key] = yml.Value;
+                    result.Add(yml);
         
         Overrides_EnchantmentChances.Value = result;
     }
     private static void ReadOverrideStats()
     {
-        Dictionary<string, Dictionary<int, Stat_Data>> result = new();
-        if (YAML_Ovverides_Stats.FromYAML<Dictionary<string, Dictionary<int, Stat_Data>>>() is { } yamlData)
+        List<Defaults.OverrideStats> result = new();
+        if (YAML_Ovverides_Stats.FromYAML<List<Defaults.OverrideStats>>() is { } yamlData)
             foreach (var yml in yamlData)
-                result[yml.Key] = yml.Value;
+                result.Add(yml);
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml"))
-            if (file.FromYAML<Dictionary<string, Dictionary<int, Stat_Data>>>() is {} data)
+            if (file.FromYAML<List<Defaults.OverrideStats>>() is {} data)
                 foreach (var yml in data)
-                    result[yml.Key] = yml.Value;
+                    result.Add(yml);
         
         Overrides_EnchantmentStats.Value = result;
     }
     private static void ReadOverrideColors()
     {
-        Dictionary<string, Dictionary<int, VFX_Data>> result = new();
-        if (YAML_Ovverides_Colors.FromYAML<Dictionary<string, Dictionary<int, VFX_Data>>>() is { } yamlData)
+        List<Defaults.OverrideColors> result = new();
+        if (YAML_Ovverides_Colors.FromYAML<List<Defaults.OverrideColors>>() is { } yamlData)
             foreach (var yml in yamlData)
-                result[yml.Key] = yml.Value;
+                result.Add(yml);
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml"))
-            if (file.FromYAML<Dictionary<string, Dictionary<int, VFX_Data>>>() is {} data)
+            if (file.FromYAML<List<Defaults.OverrideColors>>() is {} data)
                 foreach (var yml in data)
-                    result[yml.Key] = yml.Value;
+                    result.Add(yml);
         
         Overrides_EnchantmentColors.Value = result;
     }
@@ -224,7 +252,7 @@ public static class SyncedData
     {
         variant = 0;
         if (level == 0) return trimApha ? "#000000" : "#00000000";
-        if (dropPrefab != null && Overrides_EnchantmentColors.Value.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out var overriden))
         {
             if (overriden.TryGetValue(level, out var overrideVfxData))
             {
@@ -249,7 +277,7 @@ public static class SyncedData
     {
         if (en.level == 0) return 100;
         string dropPrefab = en.Item.m_dropPrefab?.name;
-        if (dropPrefab != null && Overrides_EnchantmentChances.Value.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentChances.TryGetValue(dropPrefab, out var overriden))
         {
             if (overriden.TryGetValue(en.level, out var overrideChance))
                 return overrideChance;
@@ -264,7 +292,7 @@ public static class SyncedData
     {
         if (en.level == 0) return null;
         string dropPrefab = en.Item.m_dropPrefab?.name;
-        if (dropPrefab != null && Overrides_EnchantmentStats.Value.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentStats.TryGetValue(dropPrefab, out var overriden))
         {
             return overriden.TryGetValue(en.level, out var overrideChance) ? overrideChance : null;
         }
@@ -293,30 +321,32 @@ public static class SyncedData
             new Dictionary<int, VFX_Data>());
 
     private static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Weapons =
-        new(ValheimEnchantmentSystem.configSync, "OverridenEnchantmentStats_Weapons",
+        new(ValheimEnchantmentSystem.configSync, "EnchantmentStats_Weapons",
             new Dictionary<int, Stat_Data>());
-
-    private static readonly CustomSyncedValue<Dictionary<string, Dictionary<int, int>>> Overrides_EnchantmentChances =
-        new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentChances",
-            new Dictionary<string, Dictionary<int, int>>());
-
-    private static readonly CustomSyncedValue<Dictionary<string, Dictionary<int, VFX_Data>>>
-        Overrides_EnchantmentColors =
-            new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentColors",
-                new Dictionary<string, Dictionary<int, VFX_Data>>());
-
-    private static readonly CustomSyncedValue<Dictionary<string, Dictionary<int, Stat_Data>>>
-        Overrides_EnchantmentStats =
-            new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentStats",
-                new Dictionary<string, Dictionary<int, Stat_Data>>());
-
+    
     private static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Armor =
-        new(ValheimEnchantmentSystem.configSync, "OverridenEnchantmentStats_Armor",
+        new(ValheimEnchantmentSystem.configSync, "EnchantmentStats_Armor",
             new Dictionary<int, Stat_Data>());
+
+    private static readonly CustomSyncedValue<List<Defaults.OverrideChances>> Overrides_EnchantmentChances =
+        new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentChances",
+            new());
+
+    private static readonly CustomSyncedValue<List<Defaults.OverrideColors>> Overrides_EnchantmentColors =
+            new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentColors",
+                new());
+
+    private static readonly CustomSyncedValue<List<Defaults.OverrideStats>> Overrides_EnchantmentStats =
+            new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentStats",
+                new());
 
     private static readonly CustomSyncedValue<List<EnchantmentReqs>> Synced_EnchantmentReqs =
         new(ValheimEnchantmentSystem.configSync, "EnchantmentReqs",
             new List<EnchantmentReqs>());
+
+    private static readonly Dictionary<string, Dictionary<int, int>> OPTIMIZED_Overrides_EnchantmentChances = new();
+    private static readonly Dictionary<string, Dictionary<int, VFX_Data>> OPTIMIZED_Overrides_EnchantmentColors = new();
+    private static readonly Dictionary<string, Dictionary<int, Stat_Data>> OPTIMIZED_Overrides_EnchantmentStats = new();
 
     public class Stat_Data : ISerializableParameter
     {
@@ -364,7 +394,7 @@ public static class SyncedData
         }
 
         public static implicit operator bool(Stat_Data data) => data != null;
-
+        
         public void Serialize(ref ZPackage pkg)
         {
             pkg.Write(durability);
@@ -462,7 +492,6 @@ public static class SyncedData
     {
         public string color;
         public int variant;
-
         public void Serialize(ref ZPackage pkg)
         {
             pkg.Write(color ?? "#00000000");

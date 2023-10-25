@@ -126,6 +126,7 @@
         <Compile Include="Items_Structures\BuildPieces.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Misc\External_AsmLoad.cs" />
+        <Compile Include="StatsPanel.cs" />
         <Compile Include="UI\UI.cs" />
         <Compile Include="Utils\TerminalCommands.cs" />
         <Compile Include="Utils\Utils.cs" />
@@ -284,7 +285,7 @@
       <Content Include="GithubReadme\parsed\NPC.md" />
       <Content Include="GithubReadme\parsed\Patchnotes.md" />
       <Content Include="GithubReadme\parsed\Quests.md" />
-      <Content Include="GithubReadme\parsed\QuestsEvents.md" />
+      <Content Include="GithubReadme\parsed\QuestsEvents.md" /> 
       <Content Include="GithubReadme\parsed\ServerInfo.md" />
       <Content Include="GithubReadme\parsed\Teleporter.md" />
       <Content Include="GithubReadme\parsed\TerritorySystem.md" />
