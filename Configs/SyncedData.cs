@@ -313,35 +313,35 @@ public static class SyncedData
     public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;
 
     private static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
-        new(ValheimEnchantmentSystem.configSync, "EnchantmentGlobalChances",
+        new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentGlobalChances",
             new Dictionary<int, int>());
 
     private static readonly CustomSyncedValue<Dictionary<int, VFX_Data>> Synced_EnchantmentColors =
-        new(ValheimEnchantmentSystem.configSync, "OverridenEnchantmentColors",
+        new(ValheimEnchantmentSystem.ConfigSync, "OverridenEnchantmentColors",
             new Dictionary<int, VFX_Data>());
 
     private static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Weapons =
-        new(ValheimEnchantmentSystem.configSync, "EnchantmentStats_Weapons",
+        new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentStats_Weapons",
             new Dictionary<int, Stat_Data>());
     
     private static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Armor =
-        new(ValheimEnchantmentSystem.configSync, "EnchantmentStats_Armor",
+        new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentStats_Armor",
             new Dictionary<int, Stat_Data>());
 
     private static readonly CustomSyncedValue<List<Defaults.OverrideChances>> Overrides_EnchantmentChances =
-        new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentChances",
+        new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentChances",
             new());
 
     private static readonly CustomSyncedValue<List<Defaults.OverrideColors>> Overrides_EnchantmentColors =
-            new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentColors",
+            new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentColors",
                 new());
 
     private static readonly CustomSyncedValue<List<Defaults.OverrideStats>> Overrides_EnchantmentStats =
-            new(ValheimEnchantmentSystem.configSync, "Overrides_EnchantmentStats",
+            new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentStats",
                 new());
 
     private static readonly CustomSyncedValue<List<EnchantmentReqs>> Synced_EnchantmentReqs =
-        new(ValheimEnchantmentSystem.configSync, "EnchantmentReqs",
+        new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentReqs",
             new List<EnchantmentReqs>());
 
     private static readonly Dictionary<string, Dictionary<int, int>> OPTIMIZED_Overrides_EnchantmentChances = new();

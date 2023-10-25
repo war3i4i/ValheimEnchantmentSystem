@@ -244,7 +244,7 @@ public static class Defaults
             blessed_enchant_prefab = new("kg_EnchantScroll_Weapon_Blessed_S", 1), Items = new()
             {
                 "AtgeirHimminAfl", "AxeJotunBane", "BowSpineSnap", "PickaxeBlackMetal", "ShieldCarapace",
-                "ShieldCarapaceBuckler", "SledgeDemolisher", "SpearCarapace",
+                "ShieldCarapaceBuckler", "SledgeDemolisher", "SpearCarapace", 
                 "StaffFireball", "StaffIceShards", "StaffShield", "StaffSkeleton", "SwordMistwalker", "THSwordKrom",
                 "CrossbowArbalest", "SwordCheat", "KnifeSkollAndHat"
             }

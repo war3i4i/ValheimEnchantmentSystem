@@ -91,7 +91,7 @@ public class Skill
 	}
 
 	public static Skills.SkillType fromName(string englishName) => (Skills.SkillType)Math.Abs(englishName.GetStableHashCode());
-
+ 
 	public static class LocalizationCache
 	{
 		private static readonly Dictionary<string, Localization> localizations = new();

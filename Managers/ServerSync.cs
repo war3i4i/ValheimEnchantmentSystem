@@ -281,8 +281,7 @@ public class ConfigSync
 
             IEnumerator WatchAdminListChanges()
             {
-                SyncedList adminList =
-                    (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
+                SyncedList adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
                 List<string> CurrentList = new(adminList.GetList());
                 for (;;)
                 {

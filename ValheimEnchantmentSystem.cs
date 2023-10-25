@@ -25,8 +25,8 @@ namespace kg.ValheimEnchantmentSystem
         public new static ConfigFile Config;
         public static ConfigFile ItemConfig;
         public static string ConfigFolder;
-        private static readonly Harmony _harmony = new(GUID);
-        public static readonly ConfigSync configSync = new(GUID)
+        private static readonly Harmony Harmony = new(GUID);
+        public static readonly ConfigSync ConfigSync = new(GUID)
         {
             DisplayName = GUID, ModRequired = true, 
             MinimumRequiredVersion = PLUGIN_VERSION, CurrentVersion = PLUGIN_VERSION
@@ -49,7 +49,7 @@ namespace kg.ValheimEnchantmentSystem
             Enchantment_VFX.Init(); 
             BuildPieces.Init();
             ScrollItems.Init();
-            _harmony.PatchAll();
+            Harmony.PatchAll();
             Fixing_JC_Item.Fix();
         }
 
@@ -67,7 +67,7 @@ namespace kg.ValheimEnchantmentSystem
             bool synchronizedSetting = true)
         {
             ConfigEntry<T> configEntry = Config.Bind(group, name, value, description);
-            SyncedConfigEntry<T> syncedConfigEntry = configSync.AddConfigEntry(configEntry);
+            SyncedConfigEntry<T> syncedConfigEntry = ConfigSync.AddConfigEntry(configEntry);
             syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
             return configEntry;
         }
