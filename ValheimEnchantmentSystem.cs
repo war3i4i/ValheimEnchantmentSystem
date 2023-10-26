@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
@@ -14,11 +15,12 @@ using UnityEngine;
 namespace kg.ValheimEnchantmentSystem
 {
     [BepInPlugin(GUID, PLUGIN_NAME, PLUGIN_VERSION)]
+    [BepInDependency("org.bepinex.plugins.jewelcrafting", BepInDependency.DependencyFlags.SoftDependency)]
     public class ValheimEnchantmentSystem : BaseUnityPlugin
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.2.0";
+        private const string PLUGIN_VERSION = "1.3.0";
         
         public static ValheimEnchantmentSystem _thistype;
         public static AssetBundle _asset;
@@ -27,11 +29,11 @@ namespace kg.ValheimEnchantmentSystem
         public static string ConfigFolder;
         private static readonly Harmony Harmony = new(GUID);
         public static readonly ConfigSync ConfigSync = new(GUID)
-        {
+        { 
             DisplayName = GUID, ModRequired = true, 
             MinimumRequiredVersion = PLUGIN_VERSION, CurrentVersion = PLUGIN_VERSION
         }; 
-        
+         
         private void Awake()
         {
             Localizer.Load();

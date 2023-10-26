@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
-using HarmonyLib;
-using kg.ValheimEnchantmentSystem.Configs;
+﻿using kg.ValheimEnchantmentSystem.Configs;
 
 namespace kg.ValheimEnchantmentSystem;
 
@@ -11,37 +6,18 @@ public static class Fixing_JC_Item
 {
     public static void Fix()
     {
-        try
-        {
-            Type jc_gemstones = Type.GetType("Jewelcrafting.GemStones, Jewelcrafting");
-            if (jc_gemstones == null) return;
-            MethodInfo method = AccessTools.Method(jc_gemstones, "HandleSocketingFrameAndMirrors");
-            if (method == null) return;
-            HarmonyMethod transpiler = new(AccessTools.Method(typeof(Fixing_JC_Item), nameof(Transpiler)));
-            new Harmony("enchantmentJC").Patch(method, transpiler: transpiler);
-        }
-        catch { }
+        Jewelcrafting.API.OnItemMirrored(OnItemMirror);
     }
 
-    private static ItemDrop.ItemData ReplaceWithCopy(ItemDrop.ItemData original)
+    private static bool OnItemMirror(ItemDrop.ItemData item)
     {
         const string key = "kg.ValheimEnchantmentSystem#kg.ValheimEnchantmentSystem.Enchantment_Core+Enchanted";
         if (!SyncedData.AllowJewelcraftingMirrorCopyEnchant.Value)
         {
-            ItemDrop.ItemData copy = original.Clone();
-            copy.m_customData.Remove(key);
-            return copy;
+            item.m_customData.Remove(key);
         }
-        return original;
-    }
-    
-    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> code)
-    {
-        CodeMatcher matcher = new(code);
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Ldloc_0), new CodeMatch(OpCodes.Ldarg_1), new CodeMatch(OpCodes.Stfld));
-        if (matcher.IsInvalid) return matcher.InstructionEnumeration();
-        matcher.Advance(2).Insert(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Fixing_JC_Item), nameof(ReplaceWithCopy))));
-        return matcher.InstructionEnumeration();
+
+        return true;
     }
     
 }

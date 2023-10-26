@@ -186,4 +186,8 @@ public static class Utils
         mb.StartCoroutine(DelayedAction(invoke, skipFrames));
     }
     
+    public static float RoundOne(this float f)
+    {
+        return f < 100 ? Mathf.Round(f * 10.0f) * 0.1f : Mathf.Round(f);
+    }
 }

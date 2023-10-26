@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -214,32 +215,32 @@ public static class Enchantment_Core
                         Player.m_localPlayer.GetSkills().GetRandomSkillRange(out float minFactor, out float maxFactor, item.m_shared.m_skillType);
                         var damage = item.GetDamage(qualityLevel, item.m_worldLevel);
                         __result = new Regex("(\\$inventory_damage.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_damage * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_damage * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_damage * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_damage * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_blunt.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_blunt * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_blunt * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_blunt * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_blunt * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_slash.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_slash * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_slash * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_slash * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_slash * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_pierce.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_pierce * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_pierce * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_pierce * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_pierce * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_fire.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_fire * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_fire * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_fire * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_fire * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_frost.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_frost * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_frost * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_frost * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_frost * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_lightning.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_lightning * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_lightning * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_lightning * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_lightning * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_poison.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_poison * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_poison * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_poison * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_poison * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_spirit.*)").Replace(__result,
-                            $"$1 (<color={color}>+{Mathf.RoundToInt(damage.m_spirit * damagePercent / 100f * minFactor)} - {Mathf.RoundToInt(damage.m_spirit * damagePercent / 100f * maxFactor)}</color>)");
+                            $"$1 (<color={color}>+{(damage.m_spirit * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_spirit * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result += $"\n<color={color}>•</color> $enchantment_bonusespercentdamage (<color={color}>+{damagePercent}%</color>)";
+                        
+                        
                     }
                     int armorPercent = stats.armor_percentage;
                     if (armorPercent > 0)
                     {
-                        __result = new Regex("(\\$item_blockarmor.*)").Replace(__result,
-                            $"$1 (<color={color}>+{item.GetBaseBlockPower(qualityLevel) * damagePercent / 100f}</color>)");
-                        __result = new Regex("(\\$item_armor.*)").Replace(__result,
-                            $"$1 (<color={color}>+{item.GetArmor(qualityLevel, item.m_worldLevel) * damagePercent / 100f}</color>)");
+                        __result = new Regex("(\\$item_blockarmor.*)").Replace(__result, $"$1 (<color={color}>+{(item.GetBaseBlockPower(qualityLevel) * armorPercent / 100f).RoundOne()}</color>)");
+                        __result = new Regex("(\\$item_armor.*)").Replace(__result, $"$1 (<color={color}>+{(item.GetArmor(qualityLevel, item.m_worldLevel) * armorPercent / 100f).RoundOne()}</color>)");
                         __result += $"\n<color={color}>•</color> $enchantment_bonusespercentarmor (<color={color}>+{armorPercent}%</color>)";
                     }
 
