@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using TMPro;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace kg.ValheimEnchantmentSystem;
 
@@ -303,7 +306,7 @@ public static class Enchantment_VFX
     private static class HotkeyBar_UpdateIcons_Patch
     {
         public static bool FirstInit;
-        public static int _needUpdate = -1;
+        public static int _needUpdateFrame = -1;
 
         [UsedImplicitly]
         public static void Postfix(HotkeyBar __instance)
@@ -319,14 +322,8 @@ public static class Enchantment_VFX
                 newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(-20, 0);
                 newIcon.gameObject.SetActive(false);
             }
-
             if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
-            if (_needUpdate != 0)
-            {
-                --_needUpdate;
-                return;
-            }
-            --_needUpdate;
+            if (_needUpdateFrame != Time.frameCount) return;
             foreach (HotkeyBar.ElementData element in __instance.m_elements.Where(element => !element.m_used))
             {
                 element.m_go.transform.Find("VES_Level").gameObject.SetActive(false);
@@ -354,18 +351,12 @@ public static class Enchantment_VFX
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.UpdateGui))]
     private static class InventoryGrid_UpdateGui_Patch
     {
-        public static int _needUpdate;
+        public static int _needUpdateFrame = -1;
 
         [UsedImplicitly]
         public static void Postfix(InventoryGrid __instance)
         {
-            if (_needUpdate != 0)
-            {
-                --_needUpdate;
-                return;
-            }
-            --_needUpdate;
-
+            if (_needUpdateFrame != Time.frameCount) return;
             int width = __instance.m_inventory.GetWidth();
             foreach (InventoryGrid.Element element in __instance.m_elements)
             {
@@ -392,36 +383,46 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.Changed))]
-    private static class UPD_1
+    private static class EventsToUpdate
     {
         [UsedImplicitly]
         private static void Postfix(Inventory __instance)
         {
-            if (__instance != Player.m_localPlayer?.m_inventory) return;
-            HotkeyBar_UpdateIcons_Patch._needUpdate = 1;
-            InventoryGrid_UpdateGui_Patch._needUpdate = 1;
+            if(__instance != Player.m_localPlayer?.m_inventory) return;
+            HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
+            InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
         }
     }
-    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.EquipItem))]
-    private static class UPD_2
+    [HarmonyPatch]
+    private static class EventsToUpdate_Bulk1
     {
+        [UsedImplicitly]
+        private static IEnumerable<MethodInfo> TargetMethods()
+        {
+            yield return AccessTools.Method(typeof(Humanoid), nameof(Humanoid.EquipItem));
+            yield return AccessTools.Method(typeof(Humanoid), nameof(Humanoid.UnequipItem));
+        }
         [UsedImplicitly]
         private static void Postfix(Humanoid __instance)
         {
             if(__instance != Player.m_localPlayer) return;
-            HotkeyBar_UpdateIcons_Patch._needUpdate = 1;
-            InventoryGrid_UpdateGui_Patch._needUpdate = 1;
+            HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
+            InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
         }
     }
-    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UnequipItem))]
-    private static class UPD_3
+    [HarmonyPatch]
+    private static class EventsToUpdate_Bulk2
     {
         [UsedImplicitly]
-        private static void Postfix(Humanoid __instance)
+        private static IEnumerable<MethodInfo> TargetMethods()
         {
-            if(__instance != Player.m_localPlayer) return;
-            HotkeyBar_UpdateIcons_Patch._needUpdate = 1;
-            InventoryGrid_UpdateGui_Patch._needUpdate = 1;
+            yield return AccessTools.Method(typeof(InventoryGui), nameof(InventoryGui.Show));
+        }
+        [UsedImplicitly]
+        private static void Postfix()
+        {
+            HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
+            InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
         }
     }
 }

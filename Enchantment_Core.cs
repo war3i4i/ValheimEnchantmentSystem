@@ -17,7 +17,7 @@ public static class Enchantment_Core
 {
     public static IEnumerator FrameSkipEquip(ItemDrop.ItemData weapon)
     {
-        if (!Player.m_localPlayer.IsItemEquiped(weapon)) yield break;
+        if (!Player.m_localPlayer.IsItemEquiped(weapon) || !weapon.IsWeapon()) yield break;
         Player.m_localPlayer.UnequipItem(weapon);
         yield return new WaitForEndOfFrame();
         yield return new WaitForEndOfFrame();
@@ -25,7 +25,7 @@ public static class Enchantment_Core
         yield return new WaitForEndOfFrame();
         yield return new WaitForEndOfFrame();
         yield return new WaitForEndOfFrame();
-        if (weapon != null && Player.m_localPlayer && Player.m_localPlayer.m_inventory.ContainsItem(weapon))
+        if (Player.m_localPlayer && Player.m_localPlayer.m_inventory.ContainsItem(weapon))
             Player.m_localPlayer?.EquipItem(weapon);
     }
 
