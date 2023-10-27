@@ -114,13 +114,12 @@ public class Localizer
 		localizationLanguage.Add(__instance, language);
 
 		Dictionary<string, string> localizationFiles = new();
-		foreach (string file in Directory.GetFiles(Path.GetDirectoryName(Paths.PluginPath)!, $"{plugin.Info.Metadata.Name}.*", SearchOption.AllDirectories).Where(f => fileExtensions.IndexOf(Path.GetExtension(f)) >= 0))
+		foreach (string file in Directory.GetFiles(Path.GetDirectoryName(Paths.PluginPath)!, $"{plugin.Info.Metadata.GUID}.*", SearchOption.AllDirectories).Where(f => fileExtensions.IndexOf(Path.GetExtension(f)) >= 0))
 		{
-			string key = Path.GetFileNameWithoutExtension(file).Split('.')[1];
+			string key = Path.GetFileNameWithoutExtension(file).Split('.')[2];
 			if (localizationFiles.ContainsKey(key))
 			{
-				// Handle duplicate key
-				UnityEngine.Debug.LogWarning($"Duplicate key {key} found for {plugin.Info.Metadata.Name}. The duplicate file found at {file} will be skipped.");
+				UnityEngine.Debug.LogWarning($"Duplicate key {key} found for {plugin.Info.Metadata.GUID}. The duplicate file found at {file} will be skipped.");
 			}
 			else
 			{
@@ -130,13 +129,13 @@ public class Localizer
 
 		if (LoadTranslationFromAssembly("English") is not { } englishAssemblyData)
 		{
-			throw new Exception($"Found no English localizations in mod {plugin.Info.Metadata.Name}. Expected an embedded resource translations/English.json or translations/English.yml.");
+			throw new Exception($"Found no English localizations in mod {plugin.Info.Metadata.GUID}. Expected an embedded resource translations/English.json or translations/English.yml.");
 		}
 
 		Dictionary<string, string>? localizationTexts = new DeserializerBuilder().IgnoreFields().Build().Deserialize<Dictionary<string, string>?>(System.Text.Encoding.UTF8.GetString(englishAssemblyData));
 		if (localizationTexts is null)
 		{
-			throw new Exception($"Localization for mod {plugin.Info.Metadata.Name} failed: Localization file was empty.");
+			throw new Exception($"Localization for mod {plugin.Info.Metadata.GUID} failed: Localization file was empty.");
 		}
 
 		string? localizationData = null;
