@@ -8,7 +8,6 @@ public static class External_AsmLoad
 {
     public static void Init()
     {
-        LoadAsm("PS_MeshEffects");
         LoadAsm("UI_VFX");
     }
     private static void LoadAsm(string name)

@@ -144,9 +144,6 @@
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Include="Resources\PS_MeshEffects.dll" />
-    </ItemGroup>
-    <ItemGroup>
       <EmbeddedResource Include="Resources\kg_enchantment" />
     </ItemGroup>
     <ItemGroup>

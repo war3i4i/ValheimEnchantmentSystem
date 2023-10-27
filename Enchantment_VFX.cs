@@ -25,14 +25,14 @@ public static class Enchantment_VFX
         10f
     };
 
-    public static readonly List<GameObject> VFXs = new List<GameObject>();
+    public static readonly List<Material> VFXs = new List<Material>();
 
     public static void Init()
     {
-        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_VFX1"));
-        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_VFX2"));
-        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_VFX3"));
-        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_VFX4"));
+        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat1"));
+        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat2"));
+        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat3")); 
+        VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat4"));
         HOTBAR_PART = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_HotbarPart");
     }
 
@@ -69,24 +69,24 @@ public static class Enchantment_VFX
             InsertColor(p, "VEX_rightbackitemColor", GetEnchantmentColor(p!.m_hiddenRightItem, out int variantrib), variantrib);
         }
     }
-
-
+    
     private static void AttachMeshEffect(GameObject item, Color c, int variant)
     {
-        GameObject go = Object.Instantiate(VFXs[variant], item.transform);
-        PSMeshRendererUpdater update = go.GetComponent<PSMeshRendererUpdater>();
-        update.MeshObject = item;
-        update.UpdateMeshEffect();
-        go.GetComponentInChildren<Light>().color = c;
-        Light l = go.GetComponentInChildren<Light>();
+        Light l = item.AddComponent<Light>();
+        l.type = LightType.Point;
         l.color = c;
-        l.intensity *= c.a;
-        foreach (var renderer in item.GetComponentsInChildren<Renderer>())
+        l.intensity *= 2.5f * c.a;
+        l.range = 9f;
+        List<MeshRenderer> renderers = item.GetComponentsInChildren<SkinnedMeshRenderer>(true).Cast<MeshRenderer>().Concat(item.GetComponentsInChildren<MeshRenderer>(true)).ToList();
+        foreach (var renderer in renderers)
         {
-            foreach (var material in renderer.materials)
-                if (material.name.Contains("Enchant_VFX_Mat"))
-                    material.SetColor(TintColor, c * INTENSITY[variant]);
+            List<Material> list = renderer.sharedMaterials.ToList();
+            list.Add(VFXs[variant]);
+            renderer.sharedMaterials = list.ToArray();
         }
+        foreach (var material in renderers.SelectMany(m => m.materials))
+                if (material.name.Contains("Enchantment_VFX_Mat"))
+                    material.SetColor(TintColor, c * INTENSITY[variant]);
     }
 
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLeftHandEquipped))]
