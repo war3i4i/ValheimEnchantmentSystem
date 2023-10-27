@@ -367,13 +367,58 @@ public static class SyncedData
         public int damage_poison;
         public int damage_spirit;
 
+        public HitData.DamageModifier resistance_blunt;
+        public HitData.DamageModifier resistance_slash;
+        public HitData.DamageModifier resistance_pierce;
+        public HitData.DamageModifier resistance_chop;
+        public HitData.DamageModifier resistance_pickaxe;
+        public HitData.DamageModifier resistance_fire;
+        public HitData.DamageModifier resistance_frost;
+        public HitData.DamageModifier resistance_lightning;
+        public HitData.DamageModifier resistance_poison;
+        public HitData.DamageModifier resistance_spirit;
+
+        private bool ShouldShow()
+        {
+            return damage_true != 0 || damage_blunt != 0 || damage_slash != 0 || damage_pierce != 0 ||
+                   damage_chop != 0 || damage_pickaxe != 0 || damage_fire != 0 || damage_frost != 0 ||
+                   damage_lightning != 0 || damage_poison != 0 || damage_spirit != 0 || armor != 0 ||
+                   durability != 0 || resistance_blunt != HitData.DamageModifier.Normal || resistance_slash != HitData.DamageModifier.Normal ||
+                   resistance_pierce != HitData.DamageModifier.Normal || resistance_chop != HitData.DamageModifier.Normal ||
+                   resistance_pickaxe != HitData.DamageModifier.Normal || resistance_fire != HitData.DamageModifier.Normal ||
+                   resistance_frost != HitData.DamageModifier.Normal || resistance_lightning != HitData.DamageModifier.Normal ||
+                   resistance_poison != HitData.DamageModifier.Normal || resistance_spirit != HitData.DamageModifier.Normal;
+        }
+        
+        private List<HitData.DamageModPair> cached_resistance_pairs;
+        public List<HitData.DamageModPair> GetResistancePairs()
+        {
+            if (cached_resistance_pairs != null) return cached_resistance_pairs;
+            cached_resistance_pairs = new()
+            {
+                new() { m_type = HitData.DamageType.Blunt, m_modifier = resistance_blunt },
+                new() { m_type = HitData.DamageType.Slash, m_modifier = resistance_slash },
+                new() { m_type = HitData.DamageType.Pierce, m_modifier = resistance_pierce },
+                new() { m_type = HitData.DamageType.Chop, m_modifier = resistance_chop },
+                new() { m_type = HitData.DamageType.Pickaxe, m_modifier = resistance_pickaxe },
+                new() { m_type = HitData.DamageType.Fire, m_modifier = resistance_fire },
+                new() { m_type = HitData.DamageType.Frost, m_modifier = resistance_frost },
+                new() { m_type = HitData.DamageType.Lightning, m_modifier = resistance_lightning },
+                new() { m_type = HitData.DamageType.Poison, m_modifier = resistance_poison },
+                new() { m_type = HitData.DamageType.Spirit, m_modifier = resistance_spirit },
+            };
+            return cached_resistance_pairs;
+        }
+
+        private string cached_tooltip;
         public string BuildTooltip(string color)
         {
-            if (damage_true == 0 && damage_blunt == 0 && damage_slash == 0 && damage_pierce == 0 &&
-                damage_chop == 0 && damage_pickaxe == 0 && damage_fire == 0 && damage_frost == 0 &&
-                damage_lightning == 0 && damage_poison == 0 && damage_spirit == 0 && armor == 0 &&
-                durability == 0) return "";
-            
+            if (cached_tooltip != null) return cached_tooltip;
+            if (!ShouldShow())
+            {
+                cached_tooltip = "\n";
+                return cached_tooltip;
+            }
             StringBuilder builder = new StringBuilder();
             builder.Append($"\n<color={color}>•</color> $enchantment_additionalstats:");
             if (damage_true > 0) builder.Append($"\n<color={color}>•</color> $enchantment_truedamage: {damage_true}");
@@ -389,8 +434,12 @@ public static class SyncedData
             if (damage_spirit > 0) builder.Append($"\n<color={color}>•</color> $inventory_spirit: <color=#FFFFA0>{damage_spirit}</color>");
             if (armor > 0) builder.Append($"\n<color={color}>•</color> $item_armor: <color=#808080>{armor}</color>");
             if (durability > 0) builder.Append($"\n<color={color}>•</color> $item_durability: <color=#7393B3>{durability}</color>");
+            
+            builder.Append(SE_Stats.GetDamageModifiersTooltipString(GetResistancePairs()).Replace("\n", $"\n<color={color}>•</color> "));
+            
             builder.Append("\n");
-            return builder.ToString();
+            cached_tooltip = builder.ToString();
+            return cached_tooltip;
         }
 
         public static implicit operator bool(Stat_Data data) => data != null;
@@ -413,6 +462,17 @@ public static class SyncedData
             pkg.Write(damage_lightning);
             pkg.Write(damage_poison);
             pkg.Write(damage_spirit);
+            
+            pkg.Write((int)resistance_blunt);
+            pkg.Write((int)resistance_slash);
+            pkg.Write((int)resistance_pierce);
+            pkg.Write((int)resistance_chop);
+            pkg.Write((int)resistance_pickaxe);
+            pkg.Write((int)resistance_fire);
+            pkg.Write((int)resistance_frost);
+            pkg.Write((int)resistance_lightning);
+            pkg.Write((int)resistance_poison);
+            pkg.Write((int)resistance_spirit);
         }
 
         public void Deserialize(ref ZPackage pkg)
@@ -433,6 +493,17 @@ public static class SyncedData
             damage_lightning = pkg.ReadInt();
             damage_poison = pkg.ReadInt();
             damage_spirit = pkg.ReadInt();
+            
+            resistance_blunt = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_slash = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_pierce = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_chop = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_pickaxe = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_fire = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_frost = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_lightning = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_poison = (HitData.DamageModifier)pkg.ReadInt();
+            resistance_spirit = (HitData.DamageModifier)pkg.ReadInt();
         }
     }
 

@@ -11,6 +11,8 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
 
 | Version | Changes                                                                                                                                                                 |
 |---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.3   | Added new enchantment modifiers to .yml (resistance_blunt, resistance_slash and so on)                                                                                  |
+| 1.3.2   | VFX now correctly applies to items with multiple mesh parts (crossbows, modded items)                                                                                   |
 | 1.3.1   | Fixed small issue with UI updates when putting item in chest                                                                                                            |
 | 1.3.0   | Fixed wrong tooltip values bug<br/>Fixed incompatibility with Jewelcrafting + Extended inventory new visual slots                                                       |
 | 1.2.0   | Replaced Override .yml files to be able to affect group of items, instead of individual one<br/>Please remove Override_ yml files before start so they can be recteated |

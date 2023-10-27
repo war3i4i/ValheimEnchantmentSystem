@@ -388,6 +388,26 @@ public static class Enchantment_Core
             }
         }
     }
+    
+    [HarmonyPatch(typeof(Player),nameof(Player.ApplyArmorDamageMods))]
+    private static class Player_ApplyArmorDamageMods_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(Player __instance, ref HitData.DamageModifiers mods)
+        {
+            if (__instance.m_chestItem?.Data().Get<Enchanted>() is { level: > 0 } en_chest && SyncedData.GetStatIncrease(en_chest) is {} stats_chest)
+                mods.Apply(stats_chest.GetResistancePairs());
+            
+            if (__instance.m_legItem?.Data().Get<Enchanted>() is { level: > 0 } en_legs && SyncedData.GetStatIncrease(en_legs) is {} stats_legs)
+                mods.Apply(stats_legs.GetResistancePairs());
+            
+            if (__instance.m_helmetItem?.Data().Get<Enchanted>() is { level: > 0 } en_helmet && SyncedData.GetStatIncrease(en_helmet) is {} stats_helmet)
+                mods.Apply(stats_helmet.GetResistancePairs());
+            
+            if (__instance.m_shoulderItem?.Data().Get<Enchanted>() is { level: > 0 } en_shoulder && SyncedData.GetStatIncrease(en_shoulder) is {} stats_shoulder)
+                mods.Apply(stats_shoulder.GetResistancePairs());
+        }
+    }
 
     [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetMaxDurability), typeof(int))]
     public class ApplySkillToDurability

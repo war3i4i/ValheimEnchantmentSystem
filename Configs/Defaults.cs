@@ -115,6 +115,17 @@ public static class Defaults
                 pkg.Write(stat.Value.damage_lightning);
                 pkg.Write(stat.Value.damage_poison);
                 pkg.Write(stat.Value.damage_spirit);
+                
+                pkg.Write((int)stat.Value.resistance_blunt);
+                pkg.Write((int)stat.Value.resistance_slash);
+                pkg.Write((int)stat.Value.resistance_pierce);
+                pkg.Write((int)stat.Value.resistance_chop);
+                pkg.Write((int)stat.Value.resistance_pickaxe);
+                pkg.Write((int)stat.Value.resistance_fire);
+                pkg.Write((int)stat.Value.resistance_frost);
+                pkg.Write((int)stat.Value.resistance_lightning);
+                pkg.Write((int)stat.Value.resistance_poison);
+                pkg.Write((int)stat.Value.resistance_spirit);
             }
         }
 
@@ -148,7 +159,17 @@ public static class Defaults
                     damage_frost = pkg.ReadInt(),
                     damage_lightning = pkg.ReadInt(),
                     damage_poison = pkg.ReadInt(),
-                    damage_spirit = pkg.ReadInt()
+                    damage_spirit = pkg.ReadInt(),
+                    resistance_blunt = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_slash = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_pierce = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_chop = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_pickaxe = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_fire = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_frost = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_lightning = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_poison = (HitData.DamageModifier)pkg.ReadInt(),
+                    resistance_spirit = (HitData.DamageModifier)pkg.ReadInt(),
                 });
             }
         }
