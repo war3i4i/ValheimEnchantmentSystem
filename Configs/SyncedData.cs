@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using BepInEx;
 using BepInEx.Configuration;
+using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem.Misc;
 using ServerSync;
 using UnityEngine;
 
 namespace kg.ValheimEnchantmentSystem.Configs;
 
+[VES_Autoload(VES_Autoload.Priority.First)]
 public static class SyncedData
 {
     private static FileSystemWatcher FSW;
@@ -30,7 +33,8 @@ public static class SyncedData
 
     private static readonly Dictionary<string, Action> FSW_Mapper = new();
 
-    public static void Init()
+    [UsedImplicitly]
+    private static void OnInit()
     {
         SafetyLevel = ValheimEnchantmentSystem.config("Enchantment", "SafetyLevel", 3,
             "The level until which enchantments won't destroy the item. Set to 0 to disable.");

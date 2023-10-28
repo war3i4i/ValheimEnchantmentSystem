@@ -1,10 +1,14 @@
-﻿using kg.ValheimEnchantmentSystem.Configs;
+﻿using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem.Configs;
+using kg.ValheimEnchantmentSystem.Misc;
 
 namespace kg.ValheimEnchantmentSystem;
 
+[VES_Autoload]
 public static class Fixing_JC_Item
 {
-    public static void Fix()
+    [UsedImplicitly]
+    private static void OnInit()
     {
         Jewelcrafting.API.OnItemMirrored(OnItemMirror);
     }

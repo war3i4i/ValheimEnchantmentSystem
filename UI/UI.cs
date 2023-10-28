@@ -4,11 +4,13 @@ using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
+using kg.ValheimEnchantmentSystem.Misc;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace kg.ValheimEnchantmentSystem;
 
+[VES_Autoload(VES_Autoload.Priority.Normal)]
 public static class VES_UI
 {
     private static bool IsVisible() => UI && UI.activeSelf;
@@ -55,9 +57,9 @@ public static class VES_UI
     private static bool _shouldReselect;
 
     private const float TIMER_MAX = 6f;
-
-
-    public static void Init()
+    
+    [UsedImplicitly]
+    private static void OnInit()
     {
         UI = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI"));
         VFX1 = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI_VFX1");
@@ -388,6 +390,7 @@ public static class VES_UI
     private static void PlayClick() => AUsrc.PlayOneShot(Click);
 
     [HarmonyPatch(typeof(TextInput), nameof(TextInput.IsVisible))]
+    [ClientOnlyPatch]
     private static class TextInput_IsVisible_Patch
     {
         [UsedImplicitly]
@@ -395,6 +398,7 @@ public static class VES_UI
     }
 
     [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.IsVisible))]
+    [ClientOnlyPatch]
     private static class StoreGui_IsVisible_Patch
     {
         [UsedImplicitly]
@@ -402,6 +406,7 @@ public static class VES_UI
     }
 
     [HarmonyPatch(typeof(AudioMan), nameof(AudioMan.Awake))]
+    [ClientOnlyPatch]
     private static class AudioMan_Awake_Patch
     {
         [UsedImplicitly]
@@ -420,6 +425,7 @@ public static class VES_UI
     }
  
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.SetupDragItem))]
+    [ClientOnlyPatch]
     static class InventoryGui_SetupDragItem_Patch
     {
         [UsedImplicitly]
@@ -433,6 +439,7 @@ public static class VES_UI
     }
 
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.Awake))]
+    [ClientOnlyPatch]
     private static class InventoryGui_Awake_Patch
     {
         public static Button _enchantmentButton;
@@ -468,6 +475,7 @@ public static class VES_UI
     }
 
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.Show))]
+    [ClientOnlyPatch]
     private static class InventoryGui_Show_Patch
     {
         [UsedImplicitly]
@@ -487,6 +495,7 @@ public static class VES_UI
     }
     
     [HarmonyPatch(typeof(InventoryGui),nameof(InventoryGui.Hide))]
+    [ClientOnlyPatch]
     private static class InventoryGui_Hide_Patch
     {
         [UsedImplicitly]

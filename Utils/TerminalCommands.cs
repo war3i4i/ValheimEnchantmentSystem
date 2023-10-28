@@ -1,12 +1,14 @@
 ﻿using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem.Misc;
 
 namespace kg.ValheimEnchantmentSystem;
 
 public static class TerminalCommands
 {
     [HarmonyPatch(typeof(Terminal),nameof(Terminal.InitTerminal))]
+    [ClientOnlyPatch]
     private static class Terminal_InitTerminal_Patch
     {
         [UsedImplicitly]

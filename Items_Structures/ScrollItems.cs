@@ -3,10 +3,12 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using ItemManager;
 using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem.Misc;
 using UnityEngine;
 
 namespace kg.ValheimEnchantmentSystem.Items_Structures;
 
+[VES_Autoload]
 public static class ScrollItems
 {
     private static ConfigEntry<float> DropChance;
@@ -47,10 +49,11 @@ public static class ScrollItems
             var amount = int.Parse(split[1]);
             item.RequiredItems.Add(name, amount);
         }
-        item.Crafting.Add(BuildPieces.Station.name, 1);
+        item.Crafting.Add("kg_EnchantmentScrollStation", 1);
     }
     
-    public static void Init()
+    [UsedImplicitly]
+    private static void OnInit()
     {
         MonsterDroppingScrolls = ValheimEnchantmentSystem.config("Scrolls", "Drop From Monsters", true, "Allow monsters to drop scrolls.");
         DropChance = ValheimEnchantmentSystem.config("Scrolls", "Drop Chance", 3f, "Chance to drop from enemies.");
@@ -104,6 +107,7 @@ public static class ScrollItems
     }
     
     [HarmonyPatch(typeof(Character), nameof(Character.OnDeath))]
+    [ClientOnlyPatch]
     static class Tome_SpawnLoot_Patch
     {
         static void DropItem(GameObject prefab, Vector3 centerPos, float dropArea)

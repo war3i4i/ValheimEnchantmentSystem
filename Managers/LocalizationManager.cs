@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using BepInEx;
@@ -116,7 +117,16 @@ public class Localizer
 		Dictionary<string, string> localizationFiles = new();
 		foreach (string file in Directory.GetFiles(Path.GetDirectoryName(Paths.PluginPath)!, $"{plugin.Info.Metadata.GUID}.*", SearchOption.AllDirectories).Where(f => fileExtensions.IndexOf(Path.GetExtension(f)) >= 0))
 		{
-			string key = Path.GetFileNameWithoutExtension(file).Split('.')[2];
+			string key = "";
+			try
+			{
+				key = Path.GetFileNameWithoutExtension(file).Split('.')[2];
+			}
+			catch
+			{
+				continue;
+			}
+
 			if (localizationFiles.ContainsKey(key))
 			{
 				UnityEngine.Debug.LogWarning($"Duplicate key {key} found for {plugin.Info.Metadata.GUID}. The duplicate file found at {file} will be skipped.");

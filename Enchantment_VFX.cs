@@ -6,12 +6,14 @@ using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
+using kg.ValheimEnchantmentSystem.Misc;
 using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace kg.ValheimEnchantmentSystem;
 
+[VES_Autoload(VES_Autoload.Priority.Normal)]
 public static class Enchantment_VFX
 {
     private static GameObject HOTBAR_PART;
@@ -27,7 +29,8 @@ public static class Enchantment_VFX
 
     public static readonly List<Material> VFXs = new List<Material>();
 
-    public static void Init()
+    [UsedImplicitly]
+    private static void OnInit()
     {
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat1"));
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat2"));
@@ -37,6 +40,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.SetupVisEquipment))]
+    [ClientOnlyPatch]
     [HarmonyPriority(-10000)]
     private static class Humanoid_SetupVisEquipment_Patch
     {
@@ -90,6 +94,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLeftHandEquipped))]
+    [ClientOnlyPatch]
     private static class MockLeft
     {
         private static bool Transfer;
@@ -124,6 +129,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetRightHandEquipped))]
+    [ClientOnlyPatch]
     private static class MockRight
     {
         private static bool Transfer;
@@ -158,6 +164,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLeftBackItem))]
+    [ClientOnlyPatch]
     private static class MockLeftBack
     {
         private static bool Transfer;
@@ -192,6 +199,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetRightBackItem))]
+    [ClientOnlyPatch]
     private static class MockRightBack
     {
         private static bool Transfer;
@@ -225,6 +233,7 @@ public static class Enchantment_VFX
     }
     
     [HarmonyPatch(typeof(ItemDrop),nameof(ItemDrop.Start))]
+    [ClientOnlyPatch]
     private static class ItemDrop_Start_Patch
     {
         [UsedImplicitly]
@@ -238,6 +247,7 @@ public static class Enchantment_VFX
     }
     
     [HarmonyPatch(typeof(ItemStand),nameof(ItemStand.SetVisualItem))]
+    [ClientOnlyPatch]
     private static class ItemStand_SetVisualItem_Patch
     {
         [UsedImplicitly]
@@ -259,6 +269,7 @@ public static class Enchantment_VFX
     
 
     [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.Awake))]
+    [ClientOnlyPatch]
     private static class FejdStartup_Awake_Patch
     {
         private static bool done;
@@ -280,6 +291,7 @@ public static class Enchantment_VFX
 
 
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.Awake))]
+    [ClientOnlyPatch]
     public static class InventoryGrid_Awake_Patch
     {
         [UsedImplicitly]
@@ -296,6 +308,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.Awake))]
+    [ClientOnlyPatch]
     private static class Game_Awake_Patch_Transmog
     {
         [UsedImplicitly] private static void Postfix() => HotkeyBar_UpdateIcons_Patch.FirstInit = false;
@@ -303,6 +316,7 @@ public static class Enchantment_VFX
 
 
     [HarmonyPatch(typeof(HotkeyBar), nameof(HotkeyBar.UpdateIcons))]
+    [ClientOnlyPatch]
     private static class HotkeyBar_UpdateIcons_Patch
     {
         public static bool FirstInit;
@@ -349,6 +363,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.UpdateGui))]
+    [ClientOnlyPatch]
     private static class InventoryGrid_UpdateGui_Patch
     {
         public static int _needUpdateFrame = -1;
@@ -383,6 +398,7 @@ public static class Enchantment_VFX
     }
 
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.Changed))]
+    [ClientOnlyPatch]
     private static class EventsToUpdate
     {
         [UsedImplicitly]
@@ -394,6 +410,7 @@ public static class Enchantment_VFX
         }
     }
     [HarmonyPatch]
+    [ClientOnlyPatch]
     private static class EventsToUpdate_Bulk1
     {
         [UsedImplicitly]
@@ -411,6 +428,7 @@ public static class Enchantment_VFX
         }
     }
     [HarmonyPatch]
+    [ClientOnlyPatch]
     private static class EventsToUpdate_Bulk2
     {
         [UsedImplicitly]

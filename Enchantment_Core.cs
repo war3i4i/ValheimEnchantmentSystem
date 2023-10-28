@@ -8,6 +8,7 @@ using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
+using kg.ValheimEnchantmentSystem.Misc;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -150,6 +151,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]
+    [ClientOnlyPatch]
     private static class InventoryGrid_CreateItemTooltip_Patch
     {
         [UsedImplicitly]
@@ -170,6 +172,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch(typeof(ItemDrop), nameof(ItemDrop.GetHoverText))]
+    [ClientOnlyPatch]
     private static class ItemDrop_GetHoverText_Patch
     {
         [UsedImplicitly]
@@ -192,6 +195,7 @@ public static class Enchantment_Core
 
     [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetTooltip), typeof(ItemDrop.ItemData),
         typeof(int), typeof(bool), typeof(float))]
+    [ClientOnlyPatch]
     public class TooltipPatch
     {
         [UsedImplicitly]
@@ -288,6 +292,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.UpdateRecipe))]
+    [ClientOnlyPatch]
     private static class InventoryGui_UpdateRecipe_Patch
     {
         [UsedImplicitly]
@@ -301,6 +306,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.AddRecipeToList))]
+    [ClientOnlyPatch]
     private static class InventoryGui_AddRecipeToList_Patch
     {
         private static void Modify(ref string text, ItemDrop.ItemData item)
@@ -326,6 +332,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetBlockPower), typeof(float))]
+    [ClientOnlyPatch]
     private static class ModifyBlockPower
     {
         [UsedImplicitly]
@@ -340,6 +347,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch]
+    [ClientOnlyPatch]
     private static class ModifyArmor
     {
         [UsedImplicitly]
@@ -360,6 +368,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch]
+    [ClientOnlyPatch]
     private static class ModifyDamage
     {
         [UsedImplicitly]
@@ -390,6 +399,7 @@ public static class Enchantment_Core
     }
     
     [HarmonyPatch(typeof(Player),nameof(Player.ApplyArmorDamageMods))]
+    [ClientOnlyPatch]
     private static class Player_ApplyArmorDamageMods_Patch
     {
         [UsedImplicitly]
@@ -410,6 +420,7 @@ public static class Enchantment_Core
     }
 
     [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetMaxDurability), typeof(int))]
+    [ClientOnlyPatch]
     public class ApplySkillToDurability
     {
         [UsedImplicitly]

@@ -4,16 +4,18 @@ using System.Linq;
 using BepInEx.Configuration;
 using HarmonyLib;
 using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem.Misc;
 using UnityEngine; 
 
 namespace kg.ValheimEnchantmentSystem.Items_Structures;
 
+[VES_Autoload]
 public static class BuildPieces
 {
     public static GameObject Station;
     private static ConfigEntry<string> StationReqs;
     
-    public static void Init()
+    private static void OnInit()
     {
         Station = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentScrollStation");
         Station.GetComponent<Piece>().m_category = Piece.PieceCategory.Crafting;
@@ -61,6 +63,7 @@ public static class BuildPieces
 
 
     [HarmonyPatch(typeof(ZNetScene),nameof(ZNetScene.Awake))]
+    [ClientOnlyPatch]
     private static class ZNetScene_Awake_Patch
     {
         [UsedImplicitly]

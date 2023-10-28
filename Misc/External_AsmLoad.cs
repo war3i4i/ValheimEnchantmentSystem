@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace kg.ValheimEnchantmentSystem.Misc;
 
+[VES_Autoload(VES_Autoload.Priority.Init)]
 public static class External_AsmLoad
 {
-    public static void Init()
+    [UsedImplicitly]
+    private static void OnInit()
     {
         LoadAsm("UI_VFX");
     }
