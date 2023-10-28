@@ -77,7 +77,7 @@ public static class Enchantment_VFX
         l.color = c;
         l.intensity *= 2.5f * c.a;
         l.range = 9f;
-        List<MeshRenderer> renderers = item.GetComponentsInChildren<SkinnedMeshRenderer>(true).Cast<MeshRenderer>().Concat(item.GetComponentsInChildren<MeshRenderer>(true)).ToList();
+        List<Renderer> renderers = item.GetComponentsInChildren<SkinnedMeshRenderer>(true).Cast<Renderer>().Concat(item.GetComponentsInChildren<MeshRenderer>(true)).ToList();
         foreach (var renderer in renderers)
         {
             List<Material> list = renderer.sharedMaterials.ToList();
