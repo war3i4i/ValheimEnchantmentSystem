@@ -77,10 +77,13 @@ public static class Enchantment_VFX
     private static void AttachMeshEffect(GameObject item, Color c, int variant)
     {
         Light l = item.AddComponent<Light>();
-        l.type = LightType.Point;
-        l.color = c;
-        l.intensity *= 2.5f * c.a;
-        l.range = 9f;
+        if (l)
+        {
+            l.type = LightType.Point;
+            l.color = c;
+            l.intensity *= 2.5f * c.a;
+            l.range = 9f;
+        }
         List<Renderer> renderers = item.GetComponentsInChildren<SkinnedMeshRenderer>(true).Cast<Renderer>().Concat(item.GetComponentsInChildren<MeshRenderer>(true)).ToList();
         foreach (var renderer in renderers)
         {
@@ -251,10 +254,25 @@ public static class Enchantment_VFX
     private static class ItemStand_SetVisualItem_Patch
     {
         [UsedImplicitly]
-        private static void Postfix(ItemStand __instance)
+        private static void Prefix(ItemStand __instance,out bool __state, string itemName, int variant)
         {
+            if (__instance.m_visualName == itemName && __instance.m_visualVariant == variant)
+            {
+                __state = false;
+            }
+            else
+            {
+                __state = true;
+            }
+        }
+        
+        
+        [UsedImplicitly]
+        private static void Postfix(ItemStand __instance, bool __state)
+        {
+            if(!__state) return;
             var visualItem = __instance.m_visualItem;
-            if (!visualItem) return;
+            if (!visualItem) return;   
             
             string itemPrefab = __instance.m_nview.GetZDO().GetString(ZDOVars.s_item);
             GameObject prefab = ZNetScene.instance.GetPrefab(itemPrefab);

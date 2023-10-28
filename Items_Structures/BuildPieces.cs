@@ -15,6 +15,7 @@ public static class BuildPieces
     public static GameObject Station;
     private static ConfigEntry<string> StationReqs;
     
+    [UsedImplicitly]
     private static void OnInit()
     {
         Station = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentScrollStation");

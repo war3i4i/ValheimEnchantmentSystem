@@ -11,6 +11,7 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
 
 | Version | Changes                                                                                                                                                                 |
 |---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.5   | Fixed ItemStand items with enchantment bug                                                                                                                              |
 | 1.3.4   | Fixed localization not working                                                                                                                                          |
 | 1.3.3   | Added new enchantment modifiers to .yml (resistance_blunt, resistance_slash and so on)                                                                                  |
 | 1.3.2   | VFX now correctly applies to items with multiple mesh parts (crossbows, modded items)                                                                                   |
