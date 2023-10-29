@@ -328,7 +328,6 @@
         <Exec Command="copy /Y &quot;$(TargetDir)$(AssemblyName).dll.mdb&quot; &quot;D:\SteamLibrary\steamapps\common\Valheim Dedicated Server\BepInEx\plugins\$(AssemblyName).dll.mdb&quot;" />
 
         <Exec Command="copy /Y &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(ProjectDir)ThunderstorePackage\$(AssemblyName).dll&quot;" />
-        <Exec Command="copy /Y &quot;$(TargetDir)$(AssemblyName).dll.mdb&quot; &quot;$(ProjectDir)ThunderstorePackage\$(AssemblyName).dll.mdb&quot;" />
     </Target>
     
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

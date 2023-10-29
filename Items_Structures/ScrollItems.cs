@@ -79,9 +79,10 @@ public static class ScrollItems
         DropChance_Blessed = ValheimEnchantmentSystem.config("Scrolls", "Blessed Drop Chance", 0.25f, "Chance to drop from enemies.");
         DropChance_Blessed_Bosses = ValheimEnchantmentSystem.config("Scrolls", "Blessed Drop Chance (Bosses)", 40f, "Chance to drop from bosses.");
         DropChance_Skill = ValheimEnchantmentSystem.config("Skill Scrolls", "Drop Chance (Skill exp)", 0.10f, "Chance to drop from enemies.");
-        DropChance_Skill_Bosses = ValheimEnchantmentSystem.config("Skill  Scrolls", "Drop Chance (Skill exp)", 25f, "Chance to drop from bosses.");
+        DropChance_Skill_Bosses = ValheimEnchantmentSystem.config("Skill Scrolls", "Drop Chance (Skill exp)", 25f, "Chance to drop from bosses.");
         ExcludePrefabsFromDrop = ValheimEnchantmentSystem.config("Scrolls", "Exclude Prefabs From Drop", "TentaRoot", "Comma separated list of prefabs to exclude from dropping scrolls.");
         ExcludePrefabsFromDrop.SettingChanged += FillExclude;
+        FillExclude();
         
         BiomeMapper.Add(Heightmap.Biome.Meadows,ValheimEnchantmentSystem.config("Scrolls", "Meadows Tier", "D", "Tier of scrolls Meadows (D C B A S)"));
         BiomeMapper.Add(Heightmap.Biome.BlackForest,ValheimEnchantmentSystem.config("Scrolls", "BlackForest Tier", "C", "Tier of scrolls BlackForest (D C B A S)"));
@@ -133,7 +134,7 @@ public static class ScrollItems
         SkillScrolls.ForEach(x => x.AddComponent<ExpScroll>());
     }
 
-    private static void FillExclude(object sender, EventArgs e)
+    private static void FillExclude(object sender = null, EventArgs e = null)
     {
         ExludedDroPrefabs.Clear();
         if(string.IsNullOrWhiteSpace(ExcludePrefabsFromDrop.Value)) return;
@@ -206,9 +207,9 @@ public static class ScrollItems
         [UsedImplicitly]
         private static void Prefix(Character __instance)
         {
+            if (!MonsterDroppingScrolls.Value || __instance.IsPlayer() || !__instance.m_nview.IsOwner() || __instance.IsTamed()) return;
             string prefabName = global::Utils.GetPrefabName(__instance.gameObject);
             if (ExludedDroPrefabs.Contains(prefabName)) return;
-            if (!MonsterDroppingScrolls.Value || __instance.IsPlayer() || !__instance.m_nview.IsOwner() || __instance.IsTamed()) return;
             Heightmap.Biome biome = EnvMan.instance.m_currentBiome;
             if(!BiomeMapper.TryGetValue(biome, out ConfigEntry<string> tier)) return;
             var position = __instance.transform.position;
@@ -236,9 +237,9 @@ public static class ScrollItems
         [UsedImplicitly]
         private static void Prefix(Character __instance)
         {
+            if (!MonsterDroppingSkilllScrolls.Value || __instance.IsPlayer() || !__instance.m_nview.IsOwner() || __instance.IsTamed()) return;
             string prefabName = global::Utils.GetPrefabName(__instance.gameObject);
             if (ExludedDroPrefabs.Contains(prefabName)) return;
-            if (!MonsterDroppingSkilllScrolls.Value || __instance.IsPlayer() || !__instance.m_nview.IsOwner() || __instance.IsTamed()) return;
             Heightmap.Biome biome = EnvMan.instance.m_currentBiome;
             if(!BiomeMapper.TryGetValue(biome, out ConfigEntry<string> tier)) return;
             var position = __instance.transform.position;
