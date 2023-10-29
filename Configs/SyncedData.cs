@@ -47,6 +47,8 @@ public static class SyncedData
         AllowJewelcraftingMirrorCopyEnchant = ValheimEnchantmentSystem.config("Enchantment",
             "AllowJewelcraftingMirrorCopyEnchant", false,
             "Allow jewelcrafting to copy enchantment from one item to another using mirror.");
+        AdditionalEnchantmentChancePerLevel = ValheimEnchantmentSystem.config("Enchantment", "AdditionalEnchantmentChancePerLevel", 0.06f,
+            "Additional enchantment chance per level of Enchantment skill.");
 
         YAML_Stats_Weapons = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Weapons.yml");
         YAML_Stats_Armor = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Armor.yml");
@@ -310,11 +312,19 @@ public static class SyncedData
         return prefab == null ? null : Synced_EnchantmentReqs.Value.Find(x => x.Items.Contains(prefab));
     }
 
+    public static float GetAdditionalEnchantmentChance()
+    {
+        if (!Player.m_localPlayer) return 0;
+        float enchantmentLevel = Player.m_localPlayer.GetSkillLevel(Enchantment_Skill.SkillType_Enchantment);
+        return enchantmentLevel * AdditionalEnchantmentChancePerLevel.Value;
+    }
+
     public static ConfigEntry<int> SafetyLevel;
     public static ConfigEntry<bool> ShowEnchantmentChance;
     public static ConfigEntry<bool> DropEnchantmentOnUpgrade;
     public static ConfigEntry<bool> ItemDestroyedOnFailure;
     public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;
+    public static ConfigEntry<float> AdditionalEnchantmentChancePerLevel;
 
     private static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentGlobalChances",
@@ -532,6 +542,7 @@ public static class SyncedData
                 !string.IsNullOrEmpty(prefab) && amount > 0 && ZNetScene.instance.GetPrefab(prefab);
         }
 
+        public int required_skill = 0;
         public req enchant_prefab = new();
         public req blessed_enchant_prefab = new();
         public List<string> Items = new();

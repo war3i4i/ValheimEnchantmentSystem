@@ -326,6 +326,10 @@ public static class VES_UI
         if (!Player.m_localPlayer.m_inventory.ContainsItem(item)) return;
         var reqs = SyncedData.GetReqs(item.m_dropPrefab?.name);
         if (reqs == null) return;
+
+        int enchantSkillLvl = (int)Player.m_localPlayer.GetSkillLevel(Enchantment_Skill.SkillType_Enchantment);
+        if (enchantSkillLvl < reqs.required_skill) return;
+        
         Enchantment_Core.Enchanted en = item.Data().Get<Enchantment_Core.Enchanted>();
         if(en && en!.GetEnchantmentChance() <= 0) return;
 

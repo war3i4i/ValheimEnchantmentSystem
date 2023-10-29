@@ -12,7 +12,7 @@ namespace kg.ValheimEnchantmentSystem.Items_Structures;
 [VES_Autoload]
 public static class BuildPieces
 {
-    public static GameObject Station;
+    private static GameObject Station;
     private static ConfigEntry<string> StationReqs;
     
     [UsedImplicitly]
@@ -64,7 +64,6 @@ public static class BuildPieces
 
 
     [HarmonyPatch(typeof(ZNetScene),nameof(ZNetScene.Awake))]
-    [ClientOnlyPatch]
     private static class ZNetScene_Awake_Patch
     {
         [UsedImplicitly]

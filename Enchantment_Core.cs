@@ -92,7 +92,8 @@ public static class Enchantment_Core
         {
             int random = Random.Range(1, 101);
             int chance = GetEnchantmentChance();
-            return random <= chance;
+            int additionalChance = Mathf.RoundToInt(SyncedData.GetAdditionalEnchantmentChance());
+            return random <= chance + additionalChance;
         }
 
         public bool Enchant(bool safeEnchant, out string msg)
@@ -255,6 +256,11 @@ public static class Enchantment_Core
                 if (SyncedData.ShowEnchantmentChance.Value && chance > 0)
                 {
                     __result += $"\n<color={color}>•</color> $enchantment_chance (<color={color}>{chance}%</color>)";
+                    float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
+                    if (additionalChance > 0)
+                    {
+                        __result += $" (<color={color}>+{additionalChance.RoundOne()}%</color> $enchantment_additionalchance)";
+                    }
                 }
                 if (chance <= 0)
                 {
@@ -286,6 +292,12 @@ public static class Enchantment_Core
                     int val2 = reqs.blessed_enchant_prefab.amount;
                     canBe += $"\n<color=yellow>• {blessName} x{val2}</color>";
                 }
+
+                if (reqs.required_skill > 0)
+                {
+                    canBe += "\n<color=yellow>• $enchantment_requiresskilllevel</color>".Localize(reqs.required_skill.ToString());
+                }
+                
                 __result += canBe;
             }
         }

@@ -186,8 +186,39 @@ public static class Utils
         mb.StartCoroutine(DelayedAction(invoke, skipFrames));
     }
     
-    public static float RoundOne(this float f)
+    public static double RoundOne(this float f)
+    {
+        return Math.Round(f, 1);
+    }
+    
+    
+    public static void IncreaseSkillEXP(Skills.SkillType skillType, float expToAdd)
+    {
+        Skills.Skill skill = Player.m_localPlayer.m_skills.GetSkill(skillType);
+
+        if (skill != null)
+        {
+            while (expToAdd > 0)
+            {
+                float nextLevelRequirement = skill.GetNextLevelRequirement();
+                if (skill.m_accumulator + expToAdd >= nextLevelRequirement)
+                {
+                    expToAdd -= nextLevelRequirement - skill.m_accumulator;
+                    skill.m_accumulator = 0;
+                    skill.m_level++;
+                    skill.m_level = Mathf.Clamp(skill.m_level, 0f, 100f);
+                }
+                else
+                {
+                    skill.m_accumulator += expToAdd;
+                    expToAdd = 0;
+                }
+            }
+        }
+    }
+    
+    /*public static float RoundOne(this float f)
     {
         return f < 100 ? Mathf.Round(f * 10.0f) * 0.1f : Mathf.Round(f);
-    }
+    }*/
 }

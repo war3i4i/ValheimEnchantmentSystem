@@ -27,13 +27,14 @@
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
+        <DebugType>full</DebugType>
         <Optimize>true</Optimize>
         <OutputPath>bin\Release\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony">
@@ -123,6 +124,7 @@
         <Compile Include="Configs\Defaults.cs" />
         <Compile Include="Configs\SyncedData.cs" />
         <Compile Include="Enchantment_Core.cs" />
+        <Compile Include="Enchantment_Skill.cs" />
         <Compile Include="Enchantment_VFX.cs" />
         <Compile Include="Fixing_JC_Item.cs" />
         <Compile Include="Items_Structures\ScrollItems.cs" />
@@ -293,6 +295,7 @@
       <Content Include="GithubReadme\parsed\Trader.md" />
       <Content Include="GithubReadme\parsed\Transmog.md" />
       <Content Include="GithubReadme\Patchnotes.md" />
+      <EmbeddedResource Include="icons\enchantment.png" />
       <Content Include="ILRepack.targets" />
       <Content Include="ThunderstorePackage\icon.png" />
       <Content Include="ThunderstorePackage\manifest.json" />

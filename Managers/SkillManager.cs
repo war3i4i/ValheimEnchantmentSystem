@@ -86,7 +86,7 @@ public class Skill
 		internalSkillName = sanitizedName;
 		skillName = englishName;
 
-		Name = new LocalizeKey("skill_" + skill).English(englishName);
+		Name = new LocalizeKey("skill_" + skill);
 		Description = new LocalizeKey("skilldesc_" + sanitizedName);
 	}
 
