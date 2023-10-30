@@ -67,23 +67,31 @@ public static class Enchantment_VFX
             Player p = ZNetScene.instance ? Player.m_localPlayer : __instance as Player;
             bool zns = ZNetScene.instance;
             if (__instance != p || isRagdoll || !zns) return;
-            InsertColor(p, "VEX_leftitemColor", GetEnchantmentColor(p!.m_leftItem, out int variantli), variantli);
-            InsertColor(p, "VEX_rightitemColor", GetEnchantmentColor(p!.m_rightItem, out int variantri), variantri);
-            InsertColor(p, "VEX_leftbackitemColor", GetEnchantmentColor(p!.m_hiddenLeftItem, out int variantlib), variantlib); 
-            InsertColor(p, "VEX_rightbackitemColor", GetEnchantmentColor(p!.m_hiddenRightItem, out int variantrib), variantrib);
+            InsertColor(p, "VES_leftitemColor", GetEnchantmentColor(p!.m_leftItem, out int variantli), variantli);
+            InsertColor(p, "VES_rightitemColor", GetEnchantmentColor(p!.m_rightItem, out int variantri), variantri);
+            InsertColor(p, "VES_leftbackitemColor", GetEnchantmentColor(p!.m_hiddenLeftItem, out int variantlib), variantlib); 
+            InsertColor(p, "VES_rightbackitemColor", GetEnchantmentColor(p!.m_hiddenRightItem, out int variantrib), variantrib);
+            InsertColor(p, "VES_chestitemColor", GetEnchantmentColor(p!.m_chestItem, out int variantrch), variantrch);
+            InsertColor(p, "VES_legsitemColor", GetEnchantmentColor(p!.m_legItem, out int variantrle), variantrle);
+            InsertColor(p, "VES_helmetitemColor", GetEnchantmentColor(p!.m_helmetItem, out int variantrhe), variantrhe);
+            InsertColor(p, "VES_shoulderitemColor", GetEnchantmentColor(p!.m_shoulderItem, out int variantrsh), variantrsh);
         }
     }
     
-    private static void AttachMeshEffect(GameObject item, Color c, int variant)
+    private static void AttachMeshEffect(GameObject item, Color c, int variant, bool isArmor = false)
     {
-        Light l = item.AddComponent<Light>();
-        if (l)
+        if (!isArmor)
         {
-            l.type = LightType.Point;
-            l.color = c;
-            l.intensity *= 2.5f * c.a;
-            l.range = 9f;
+            Light l = item.AddComponent<Light>();
+            if (l)
+            {
+                l.type = LightType.Point;
+                l.color = c;
+                l.intensity *= 2.5f * c.a;
+                l.range = 9f;
+            }
         }
+     
         List<Renderer> renderers = item.GetComponentsInChildren<SkinnedMeshRenderer>(true).Cast<Renderer>().Concat(item.GetComponentsInChildren<MeshRenderer>(true)).ToList();
         foreach (var renderer in renderers)
         {
@@ -93,7 +101,7 @@ public static class Enchantment_VFX
         }
         foreach (var material in renderers.SelectMany(m => m.materials))
                 if (material.name.Contains("Enchantment_VFX_Mat"))
-                    material.SetColor(TintColor, c * INTENSITY[variant]);
+                    material.SetColor(TintColor, isArmor ? c : c * INTENSITY[variant]);
     }
 
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLeftHandEquipped))]
@@ -118,16 +126,12 @@ public static class Enchantment_VFX
             Transfer = false;
 
             if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
-            if (__instance.m_leftItemInstance)
-            {
-                string leftColor = __instance.m_nview.m_zdo.GetString("VEX_leftitemColor");
-                if (!string.IsNullOrEmpty(leftColor))
-                {
-                    Color c = leftColor.ToColorAlpha();
-                    int variant = __instance.m_nview.m_zdo.GetInt("VEX_leftitemColor_variant");
-                    AttachMeshEffect(__instance.m_leftItemInstance, c, variant);
-                }
-            }
+            if (!__instance.m_leftItemInstance) return;
+            string leftColor = __instance.m_nview.m_zdo.GetString("VES_leftitemColor");
+            if (string.IsNullOrEmpty(leftColor)) return;
+            Color c = leftColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_leftitemColor_variant");
+            AttachMeshEffect(__instance.m_leftItemInstance, c, variant);
         }
     }
 
@@ -153,16 +157,12 @@ public static class Enchantment_VFX
             Transfer = false;
 
             if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
-            if (__instance.m_rightItemInstance)
-            {
-                string rightColor = __instance.m_nview.m_zdo.GetString("VEX_rightitemColor");
-                if (!string.IsNullOrEmpty(rightColor))
-                {
-                    Color c = rightColor.ToColorAlpha();
-                    int variant = __instance.m_nview.m_zdo.GetInt("VEX_rightitemColor_variant");
-                    AttachMeshEffect(__instance.m_rightItemInstance, c, variant);
-                }
-            }
+            if (!__instance.m_rightItemInstance) return;
+            string rightColor = __instance.m_nview.m_zdo.GetString("VES_rightitemColor");
+            if (string.IsNullOrEmpty(rightColor)) return;
+            Color c = rightColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_rightitemColor_variant");
+            AttachMeshEffect(__instance.m_rightItemInstance, c, variant);
         }
     }
 
@@ -188,16 +188,12 @@ public static class Enchantment_VFX
             Transfer = false;
 
             if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
-            if (__instance.m_leftBackItemInstance)
-            {
-                string leftColor = __instance.m_nview.m_zdo.GetString("VEX_leftbackitemColor");
-                if (!string.IsNullOrEmpty(leftColor))
-                {
-                    Color c = leftColor.ToColorAlpha();
-                    int variant = __instance.m_nview.m_zdo.GetInt("VEX_leftbackitemColor_variant");
-                    AttachMeshEffect(__instance.m_leftBackItemInstance, c, variant);
-                }
-            }
+            if (!__instance.m_leftBackItemInstance) return;
+            string leftColor = __instance.m_nview.m_zdo.GetString("VES_leftbackitemColor");
+            if (string.IsNullOrEmpty(leftColor)) return;
+            Color c = leftColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_leftbackitemColor_variant");
+            AttachMeshEffect(__instance.m_leftBackItemInstance, c, variant);
         }
     }
 
@@ -222,16 +218,141 @@ public static class Enchantment_VFX
             if (!Transfer) return;
             Transfer = false;
             if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
-            if (__instance.m_rightBackItemInstance)
+            if (!__instance.m_rightBackItemInstance) return;
+            string leftColor = __instance.m_nview.m_zdo.GetString("VES_rightbackitemColor");
+            if (string.IsNullOrEmpty(leftColor)) return;
+            Color c = leftColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_rightbackitemColor_variant");
+            AttachMeshEffect(__instance.m_rightBackItemInstance, c, variant);
+        }
+    }
+    
+    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetChestEquipped))]
+    [ClientOnlyPatch]
+    private static class MockChest
+    {
+        private static bool Transfer;
+
+        [UsedImplicitly]
+        static void Prefix(VisEquipment __instance, int hash)
+        {
+            if (__instance.m_currentChestItemHash != hash && SyncedData.AllowVFXArmor.Value)
             {
-                string leftColor = __instance.m_nview.m_zdo.GetString("VEX_rightbackitemColor");
-                if (!string.IsNullOrEmpty(leftColor))
-                {
-                    Color c = leftColor.ToColorAlpha();
-                    int variant = __instance.m_nview.m_zdo.GetInt("VEX_rightbackitemColor_variant");
-                    AttachMeshEffect(__instance.m_rightBackItemInstance, c, variant);
-                }
+                Transfer = true;
             }
+        }
+
+        [UsedImplicitly]
+        private static void Postfix(VisEquipment __instance)
+        {
+            if (!Transfer) return;
+            Transfer = false;
+            if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
+            if (__instance.m_chestItemInstances == null) return;
+            string chestColor = __instance.m_nview.m_zdo.GetString("VES_chestitemColor");
+            if (string.IsNullOrEmpty(chestColor)) return;
+            Color c = chestColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_chestitemColor_variant");
+            foreach (var itemInstance in __instance.m_chestItemInstances)
+            {
+                AttachMeshEffect(itemInstance, c, variant, true);
+            }
+        }
+    }
+    
+    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLegEquipped))]
+    [ClientOnlyPatch]
+    private static class MockLegs
+    {
+        private static bool Transfer;
+
+        [UsedImplicitly]
+        static void Prefix(VisEquipment __instance, int hash)
+        {
+            if (__instance.m_currentLegItemHash != hash && SyncedData.AllowVFXArmor.Value)
+            {
+                Transfer = true;
+            }
+        }
+
+        [UsedImplicitly]
+        private static void Postfix(VisEquipment __instance)
+        {
+            if (!Transfer) return;
+            Transfer = false;
+            if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
+            if (__instance.m_legItemInstances == null) return;
+            string legsColor = __instance.m_nview.m_zdo.GetString("VES_legsitemColor");
+            if (string.IsNullOrEmpty(legsColor)) return;
+            Color c = legsColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_legsitemColor_variant");
+            foreach (var itemInstance in __instance.m_legItemInstances)
+            {
+                AttachMeshEffect(itemInstance, c, variant, true);
+            }
+        }
+    }
+    
+    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetShoulderEquipped))]
+    [ClientOnlyPatch]
+    private static class MockShoulder
+    {
+        private static bool Transfer;
+
+        [UsedImplicitly]
+        static void Prefix(VisEquipment __instance, int hash)
+        {
+            if (__instance.m_currentShoulderItemHash != hash && SyncedData.AllowVFXArmor.Value)
+            {
+                Transfer = true;
+            }
+        }
+
+        [UsedImplicitly]
+        private static void Postfix(VisEquipment __instance)
+        {
+            if (!Transfer) return;
+            Transfer = false;
+            if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
+            if (__instance.m_shoulderItemInstances == null) return;
+            string shoulderColor = __instance.m_nview.m_zdo.GetString("VES_shoulderitemColor");
+            if (string.IsNullOrEmpty(shoulderColor)) return;
+            Color c = shoulderColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_shoulderitemColor_variant");
+            foreach (var itemInstance in __instance.m_shoulderItemInstances)
+            {
+                AttachMeshEffect(itemInstance, c, variant, true);
+            }
+        }
+    }
+    
+    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetHelmetEquipped))]
+    [ClientOnlyPatch]
+    private static class MockHelmet
+    {
+        private static bool Transfer;
+
+        [UsedImplicitly]
+        static void Prefix(VisEquipment __instance, int hash)
+        {
+            if (__instance.m_currentHelmetItemHash != hash && SyncedData.AllowVFXArmor.Value)
+            {
+                Transfer = true;
+            }
+        }
+
+        [UsedImplicitly]
+        private static void Postfix(VisEquipment __instance)
+        {
+            if (!Transfer) return;
+            Transfer = false;
+            if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
+            if (__instance.m_helmetItemInstance == null) return;
+            string helmetColor = __instance.m_nview.m_zdo.GetString("VES_helmetitemColor");
+            if (string.IsNullOrEmpty(helmetColor)) return;
+            Color c = helmetColor.ToColorAlpha();
+            int variant = __instance.m_nview.m_zdo.GetInt("VES_helmetitemColor_variant");
+            AttachMeshEffect(__instance.m_helmetItemInstance, c, variant, true);
         }
     }
     
@@ -265,7 +386,6 @@ public static class Enchantment_VFX
                 __state = true;
             }
         }
-        
         
         [UsedImplicitly]
         private static void Postfix(ItemStand __instance, bool __state)

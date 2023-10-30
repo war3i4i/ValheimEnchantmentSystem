@@ -49,6 +49,7 @@ public static class SyncedData
             "Allow jewelcrafting to copy enchantment from one item to another using mirror.");
         AdditionalEnchantmentChancePerLevel = ValheimEnchantmentSystem.config("Enchantment", "AdditionalEnchantmentChancePerLevel", 0.06f,
             "Additional enchantment chance per level of Enchantment skill.");
+        AllowVFXArmor = ValheimEnchantmentSystem.config("Enchantment", "AllowVFXArmor", false, "Allow VFX on armor.");
 
         YAML_Stats_Weapons = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Weapons.yml");
         YAML_Stats_Armor = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Armor.yml");
@@ -165,7 +166,7 @@ public static class SyncedData
         if(YAML_Reqs.FromYAML<List<EnchantmentReqs>>() is { } yamlData)
             result.AddRange(yamlData);
         
-        foreach (var file in Directory.GetFiles(Directory_Reqs, "*.yml"))
+        foreach (var file in Directory.GetFiles(Directory_Reqs, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<EnchantmentReqs>>() is { } data)
                 result.AddRange(data);
         
@@ -178,7 +179,7 @@ public static class SyncedData
             foreach (var yml in yamlData)
                 result.Add(yml);
 
-        foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml"))
+        foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideChances>>() is {} data)
                 foreach (var yml in data)
                     result.Add(yml);
@@ -192,7 +193,7 @@ public static class SyncedData
             foreach (var yml in yamlData)
                 result.Add(yml);
 
-        foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml"))
+        foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideStats>>() is {} data)
                 foreach (var yml in data)
                     result.Add(yml);
@@ -206,7 +207,7 @@ public static class SyncedData
             foreach (var yml in yamlData)
                 result.Add(yml);
 
-        foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml"))
+        foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideColors>>() is {} data)
                 foreach (var yml in data)
                     result.Add(yml);
@@ -325,6 +326,7 @@ public static class SyncedData
     public static ConfigEntry<bool> ItemDestroyedOnFailure;
     public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;
     public static ConfigEntry<float> AdditionalEnchantmentChancePerLevel;
+    public static ConfigEntry<bool> AllowVFXArmor;
 
     private static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentGlobalChances",
