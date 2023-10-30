@@ -381,27 +381,27 @@ public static class SyncedData
         public int damage_poison;
         public int damage_spirit;
 
-        public HitData.DamageModifier resistance_blunt;
-        public HitData.DamageModifier resistance_slash;
-        public HitData.DamageModifier resistance_pierce;
-        public HitData.DamageModifier resistance_chop;
-        public HitData.DamageModifier resistance_pickaxe;
-        public HitData.DamageModifier resistance_fire;
-        public HitData.DamageModifier resistance_frost;
-        public HitData.DamageModifier resistance_lightning;
-        public HitData.DamageModifier resistance_poison;
-        public HitData.DamageModifier resistance_spirit;
+        public HitData.DamageModifier resistance_blunt = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_slash = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_pierce = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_chop = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_pickaxe = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_fire = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_frost = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_lightning = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_poison = (HitData.DamageModifier)(-1);
+        public HitData.DamageModifier resistance_spirit = (HitData.DamageModifier)(-1);
 
         private bool ShouldShow()
         {
             return damage_true != 0 || damage_blunt != 0 || damage_slash != 0 || damage_pierce != 0 ||
                    damage_chop != 0 || damage_pickaxe != 0 || damage_fire != 0 || damage_frost != 0 ||
                    damage_lightning != 0 || damage_poison != 0 || damage_spirit != 0 || armor != 0 ||
-                   durability != 0 || resistance_blunt != HitData.DamageModifier.Normal || resistance_slash != HitData.DamageModifier.Normal ||
-                   resistance_pierce != HitData.DamageModifier.Normal || resistance_chop != HitData.DamageModifier.Normal ||
-                   resistance_pickaxe != HitData.DamageModifier.Normal || resistance_fire != HitData.DamageModifier.Normal ||
-                   resistance_frost != HitData.DamageModifier.Normal || resistance_lightning != HitData.DamageModifier.Normal ||
-                   resistance_poison != HitData.DamageModifier.Normal || resistance_spirit != HitData.DamageModifier.Normal;
+                   durability != 0 || resistance_blunt != (HitData.DamageModifier)(-1) || resistance_slash != (HitData.DamageModifier)(-1) ||
+                   resistance_pierce != (HitData.DamageModifier)(-1) || resistance_chop != (HitData.DamageModifier)(-1) ||
+                   resistance_pickaxe != (HitData.DamageModifier)(-1) || resistance_fire != (HitData.DamageModifier)(-1) ||
+                   resistance_frost != (HitData.DamageModifier)(-1) || resistance_lightning != (HitData.DamageModifier)(-1) ||
+                   resistance_poison != (HitData.DamageModifier)(-1)|| resistance_spirit != (HitData.DamageModifier)(-1);
         }
         
         private List<HitData.DamageModPair> cached_resistance_pairs;
@@ -421,6 +421,7 @@ public static class SyncedData
                 new() { m_type = HitData.DamageType.Poison, m_modifier = resistance_poison },
                 new() { m_type = HitData.DamageType.Spirit, m_modifier = resistance_spirit },
             };
+            cached_resistance_pairs.RemoveAll(x => x.m_modifier == (HitData.DamageModifier)(-1));
             return cached_resistance_pairs;
         }
 

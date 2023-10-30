@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
+using fastJSON;
 using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
