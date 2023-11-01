@@ -135,7 +135,8 @@
         <Compile Include="Misc\External_AsmLoad.cs" />
         <Compile Include="Misc\SlashContoller.cs" />
         <Compile Include="StatsPanel.cs" />
-        <Compile Include="UI\UI.cs" />
+        <Compile Include="UI\InfoUI.cs" />
+        <Compile Include="UI\MainUI.cs" />
         <Compile Include="Utils\TerminalCommands.cs" />
         <Compile Include="Utils\Utils.cs" />
         <Compile Include="ValheimEnchantmentSystem.cs" />

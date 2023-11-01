@@ -13,10 +13,10 @@ using Random = UnityEngine.Random;
 
 namespace kg.ValheimEnchantmentSystem;
 
-[VES_Autoload(VES_Autoload.Priority.Normal)]
+[VES_Autoload]
 public static class Enchantment_Core
 {
-    public static GameObject SlashPrefab;
+    private static GameObject SlashPrefab;
     public static GameObject SlashPrefab_Explosion;
     
     [UsedImplicitly]
@@ -272,7 +272,7 @@ public static class Enchantment_Core
                         __result += $"\n<color={color}>•</color> $enchantment_bonusespercentarmor (<color={color}>+{armorPercent}%</color>)";
                     }
 
-                    __result += stats.BuildTooltip(color);
+                    __result += stats.BuildAdditionalStats(color);
                 }
                 
                 int chance = en.GetEnchantmentChance();
@@ -472,9 +472,9 @@ public static class Enchantment_Core
     private static double ModifyAttackSpeed(Character c, double speed)
     {
         if (c != Player.m_localPlayer || !c.InAttack()) return speed;
-
+    
         ItemDrop.ItemData weapon = Player.m_localPlayer.GetCurrentWeapon();
-        if(weapon == null) return speed;
+        if (weapon == null) return speed;
         
         if (weapon.Data().Get<Enchanted>() is { level: > 0 } data && SyncedData.GetStatIncrease(data) is { attack_speed: > 0} stats)
             return speed * (1 + stats.attack_speed / 100f);

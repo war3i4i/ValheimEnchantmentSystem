@@ -94,8 +94,12 @@ namespace kg.ValheimEnchantmentSystem
                 }).Do(type => Harmony.CreateClassProcessor(type).Patch());
         }
 
-        private void Update() => VES_UI.Update();
- 
+        private void Update()
+        {
+            VES_UI.Update();
+            Info_UI.Update();
+        }
+
         private static AssetBundle GetAssetBundle(string filename)
         {
             Assembly execAssembly = Assembly.GetExecutingAssembly();

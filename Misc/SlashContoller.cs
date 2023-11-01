@@ -7,9 +7,9 @@ public class SlashContoller : MonoBehaviour
 {
     private ZNetView _znv;
 
-    private readonly ParticleSystem[] _slashParticles = new ParticleSystem[4];
+    private readonly ParticleSystem[] _slashParticles = new ParticleSystem[3];
+    private readonly HashSet<Character> list = new();
     private Transform Rotation;
-    private readonly HashSet<IDestructible> list = new();
 
     private Color _color
     {
@@ -38,7 +38,6 @@ public class SlashContoller : MonoBehaviour
         _slashParticles[0] = transform.Find("effect/1").GetComponent<ParticleSystem>();
         _slashParticles[1] = transform.Find("effect/2").GetComponent<ParticleSystem>();
         _slashParticles[2] = transform.Find("effect/3").GetComponent<ParticleSystem>();
-        _slashParticles[3] = transform.Find("effect/4").GetComponent<ParticleSystem>();
         if (_znv.IsOwner()) return;
         
         var euler = Rotation.localRotation.eulerAngles;
@@ -67,19 +66,19 @@ public class SlashContoller : MonoBehaviour
         _randomRotation = rRot;
         var euler = Rotation.localRotation.eulerAngles;
         Rotation.localRotation = Quaternion.Euler(rRot, euler.y, euler.z);
+        speed = Random.Range(14.5f, 16f);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!_znv.IsOwner()) return;
         Character c = other.GetComponentInParent<Character>();
-        if (!c || !c.IsEnemy()) return;
+        if (!c || !c.IsEnemy() || list.Contains(c)) return;
         Vector3 point = other.ClosestPointOnBounds(transform.position);
         HitData hit = new()
         {
             m_attacker = Player.m_localPlayer.GetZDOID(),
             m_point = point,
-            m_skill = Skills.SkillType.ElementalMagic
         };
         hit.m_damage.m_slash = _damage;
         hit.m_ranged = true;
@@ -89,6 +88,7 @@ public class SlashContoller : MonoBehaviour
     }
 
     private float count;
+    private float speed = 15f;
     private void Update()
     {
         if (!_znv.IsOwner()) return;
@@ -98,16 +98,8 @@ public class SlashContoller : MonoBehaviour
             ZNetScene.instance.Destroy(this.gameObject);
             return;
         }
-        const float speed = 15f;
         count += Time.deltaTime;
         transform.position += _dir * speed * Time.deltaTime;
-        if (transform.position.y <= 30)
-        {
-            _znv.ClaimOwnership();
-            ZNetScene.instance.Destroy(this.gameObject);
-            return;
-        }
-
         if (count <= 2f) return;
 
         _znv.ClaimOwnership();

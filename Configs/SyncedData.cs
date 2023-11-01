@@ -327,35 +327,35 @@ public static class SyncedData
     public static ConfigEntry<float> AdditionalEnchantmentChancePerLevel;
     public static ConfigEntry<bool> AllowVFXArmor;
 
-    private static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
+    public static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentGlobalChances",
             new Dictionary<int, int>());
 
-    private static readonly CustomSyncedValue<Dictionary<int, VFX_Data>> Synced_EnchantmentColors =
+    public static readonly CustomSyncedValue<Dictionary<int, VFX_Data>> Synced_EnchantmentColors =
         new(ValheimEnchantmentSystem.ConfigSync, "OverridenEnchantmentColors",
             new Dictionary<int, VFX_Data>());
 
-    private static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Weapons =
+    public static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Weapons =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentStats_Weapons",
             new Dictionary<int, Stat_Data>());
     
-    private static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Armor =
+    public static readonly CustomSyncedValue<Dictionary<int, Stat_Data>> Synced_EnchantmentStats_Armor =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentStats_Armor",
             new Dictionary<int, Stat_Data>());
 
-    private static readonly CustomSyncedValue<List<Defaults.OverrideChances>> Overrides_EnchantmentChances =
+    public static readonly CustomSyncedValue<List<Defaults.OverrideChances>> Overrides_EnchantmentChances =
         new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentChances",
             new());
 
-    private static readonly CustomSyncedValue<List<Defaults.OverrideColors>> Overrides_EnchantmentColors =
+    public static readonly CustomSyncedValue<List<Defaults.OverrideColors>> Overrides_EnchantmentColors =
             new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentColors",
                 new());
 
-    private static readonly CustomSyncedValue<List<Defaults.OverrideStats>> Overrides_EnchantmentStats =
+    public static readonly CustomSyncedValue<List<Defaults.OverrideStats>> Overrides_EnchantmentStats =
             new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentStats",
                 new());
 
-    private static readonly CustomSyncedValue<List<EnchantmentReqs>> Synced_EnchantmentReqs =
+    public static readonly CustomSyncedValue<List<EnchantmentReqs>> Synced_EnchantmentReqs =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentReqs",
             new List<EnchantmentReqs>());
 
@@ -431,7 +431,7 @@ public static class SyncedData
         }
 
         private string cached_tooltip;
-        public string BuildTooltip(string color)
+        public string BuildAdditionalStats(string color)
         {
             if (cached_tooltip != null) return cached_tooltip;
             if (!ShouldShow())
@@ -440,7 +440,7 @@ public static class SyncedData
                 return cached_tooltip;
             }
             StringBuilder builder = new StringBuilder();
-            builder.Append($"\n<color={color}>•</color> $enchantment_additionalstats:");
+            //builder.Append($"\n<color={color}>•</color> $enchantment_additionalstats:");
             if (attack_speed > 0) builder.Append($"\n<color={color}>•</color> $enchantment_attackspeed: <color=#DF745D>{attack_speed}%</color>");
             if (slash_wave > 0) builder.Append($"\n<color={color}>•</color> $enchantment_slashwave: <color=#DF74FD>{slash_wave}</color>");
             if (damage_true > 0) builder.Append($"\n<color={color}>•</color> $enchantment_truedamage: {damage_true}");
@@ -462,6 +462,21 @@ public static class SyncedData
             builder.Append("\n");
             cached_tooltip = builder.ToString();
             return cached_tooltip;
+        }
+
+        public string Info_Description()
+        {
+            string result = "";
+            if (damage_percentage > 0)
+            {
+                result += $"\n• $enchantment_bonusespercentdamage (<color=#AF009F>+{damage_percentage}%</color>)";
+            }
+            if (armor_percentage > 0)
+            {
+                result += $"\n• $enchantment_bonusespercentarmor (<color=#009FAF>+{armor_percentage}%</color>)";
+            }
+            result += BuildAdditionalStats("#FFFFFF");
+            return result;
         }
 
         public static implicit operator bool(Stat_Data data) => data != null;
