@@ -99,33 +99,7 @@ public static class Defaults
             foreach (var stat in Stats)
             {
                 pkg.Write(stat.Key);
-                pkg.Write(stat.Value.durability);
-                pkg.Write(stat.Value.durability_percentage);
-                pkg.Write(stat.Value.armor_percentage);
-                pkg.Write(stat.Value.armor);
-                pkg.Write(stat.Value.damage_percentage);
-                pkg.Write(stat.Value.damage_true);
-                pkg.Write(stat.Value.damage_blunt);
-                pkg.Write(stat.Value.damage_slash);
-                pkg.Write(stat.Value.damage_pierce);
-                pkg.Write(stat.Value.damage_chop);
-                pkg.Write(stat.Value.damage_pickaxe);
-                pkg.Write(stat.Value.damage_fire);
-                pkg.Write(stat.Value.damage_frost);
-                pkg.Write(stat.Value.damage_lightning);
-                pkg.Write(stat.Value.damage_poison);
-                pkg.Write(stat.Value.damage_spirit);
-                
-                pkg.Write((int)stat.Value.resistance_blunt);
-                pkg.Write((int)stat.Value.resistance_slash);
-                pkg.Write((int)stat.Value.resistance_pierce);
-                pkg.Write((int)stat.Value.resistance_chop);
-                pkg.Write((int)stat.Value.resistance_pickaxe);
-                pkg.Write((int)stat.Value.resistance_fire);
-                pkg.Write((int)stat.Value.resistance_frost);
-                pkg.Write((int)stat.Value.resistance_lightning);
-                pkg.Write((int)stat.Value.resistance_poison);
-                pkg.Write((int)stat.Value.resistance_spirit);
+                stat.Value.Serialize(ref pkg);
             }
         }
 
@@ -142,35 +116,9 @@ public static class Defaults
             count = pkg.ReadInt();
             for (int i = 0; i < count; ++i)
             {
-                Stats.Add(pkg.ReadInt(), new()
-                {
-                    durability = pkg.ReadInt(),
-                    durability_percentage = pkg.ReadInt(),
-                    armor_percentage = pkg.ReadInt(),
-                    armor = pkg.ReadInt(),
-                    damage_percentage = pkg.ReadInt(),
-                    damage_true = pkg.ReadInt(),
-                    damage_blunt = pkg.ReadInt(),
-                    damage_slash = pkg.ReadInt(),
-                    damage_pierce = pkg.ReadInt(),
-                    damage_chop = pkg.ReadInt(),
-                    damage_pickaxe = pkg.ReadInt(),
-                    damage_fire = pkg.ReadInt(),
-                    damage_frost = pkg.ReadInt(),
-                    damage_lightning = pkg.ReadInt(),
-                    damage_poison = pkg.ReadInt(),
-                    damage_spirit = pkg.ReadInt(),
-                    resistance_blunt = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_slash = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_pierce = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_chop = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_pickaxe = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_fire = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_frost = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_lightning = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_poison = (HitData.DamageModifier)pkg.ReadInt(),
-                    resistance_spirit = (HitData.DamageModifier)pkg.ReadInt(),
-                });
+                var newStatData = new SyncedData.Stat_Data();
+                Stats.Add(pkg.ReadInt(), newStatData);
+                newStatData.Deserialize(ref pkg);
             }
         }
     }

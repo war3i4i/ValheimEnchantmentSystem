@@ -1,7 +1,7 @@
 {
     "name": "Valheim_Enchantment_System",
-    "version_number": "1.4.1",
-    "website_url": "https://kg-dev.xyz/ves/",
+    "version_number": "1.4.3",
+    "website_url": "https://kg.sayless.eu/ves/",
     "description": "Mod brings old MMORPG's equipment enchantment experience to Valheim",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2200"

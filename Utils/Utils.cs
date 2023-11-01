@@ -90,24 +90,28 @@ public static class Utils
             colorString = colorString.Substring(1);
         }
 
-        if (colorString.Length == 8 && uint.TryParse(colorString, System.Globalization.NumberStyles.HexNumber, null,
-                out uint colorValue))
+        if(!uint.TryParse(colorString, System.Globalization.NumberStyles.HexNumber, null, out uint colorValue)) return Color.white;
+        switch (colorString.Length)
         {
-            float r = ((colorValue >> 24) & 0xFF) / 255.0f;
-            float g = ((colorValue >> 16) & 0xFF) / 255.0f;
-            float b = ((colorValue >> 8) & 0xFF) / 255.0f;
-            float a = (colorValue & 0xFF) / 255.0f;
-            var color = new Color(r, g, b, a);
-            return color;
-        }
-        else
-        {
-            if (ColorUtility.TryParseHtmlString(colorString, out var color))
+            case 8:
             {
+                float r = ((colorValue >> 24) & 0xFF) / 255.0f;
+                float g = ((colorValue >> 16) & 0xFF) / 255.0f;
+                float b = ((colorValue >> 8) & 0xFF) / 255.0f;
+                float a = (colorValue & 0xFF) / 255.0f;
+                var color = new Color(r, g, b, a);
                 return color;
             }
-
-            return Color.white;
+            case 6:
+            {
+                float r = ((colorValue >> 16) & 0xFF) / 255.0f;
+                float g = ((colorValue >> 8) & 0xFF) / 255.0f;
+                float b = (colorValue & 0xFF) / 255.0f;
+                var color = new Color(r, g, b, 1f);
+                return color;
+            }
+            default:
+                return Color.white;
         }
     }
 
@@ -215,6 +219,17 @@ public static class Utils
                 }
             }
         }
+    }
+    
+    public static bool IsEnemy(this Character c)
+    {
+        if (c == Player.m_localPlayer) return false;
+        if (c.IsPlayer())
+        {
+            return Player.m_localPlayer.IsPVPEnabled() && c.IsPVPEnabled();
+        }
+
+        return !c.m_baseAI || c.m_baseAI.IsEnemy(Player.m_localPlayer);
     }
     
     /*public static float RoundOne(this float f)

@@ -11,7 +11,8 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
 
 | Version       | Changes                                                                                                                                                                                                      |
 |---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.4.1         | Fixed a bug with wrong player resistances                                                                                                                                                                   |
+| 1.4.2 - 1.4.3 | Added new config that allows you to enable VFX for armors                                                                                                                                                    |
+| 1.4.1         | Fixed a bug with wrong player resistances                                                                                                                                                                    |
 | 1.4.0         | Added new skill: Enchantment. Skill increases enchant success change<br/>Skill exp can be gained by consuming skill exp source orbs that are dropped from monsters with low chance (everything configurable) |
 | 1.3.5 - 1.3.6 | Fixed ItemStand items with enchantment bug                                                                                                                                                                   |
 | 1.3.4         | Fixed localization not working                                                                                                                                                                               |
@@ -24,7 +25,7 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
 | 1.0.0         | Mod released                                                                                                                                                                                                 |
 </details>
 
-## Guides and description here: https://kg-dev.xyz/ves/
+## Guides and description here: https://kg.sayless.eu/ves/
 
 ####  Questions or Comments, find KG in the Odin Plus Discord:
 [![https://i.imgur.com/XXP6HCU.png](https://i.imgur.com/XXP6HCU.png)](https://discord.gg/5gXNxNkUBt)

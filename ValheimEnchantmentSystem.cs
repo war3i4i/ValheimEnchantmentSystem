@@ -8,6 +8,7 @@ using BepInEx.Configuration;
 using fastJSON;
 using HarmonyLib;
 using kg.ValheimEnchantmentSystem.Misc;
+using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
 using ServerSync;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.4.2";
+        private const string PLUGIN_VERSION = "1.4.4";
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset;

@@ -8,7 +8,7 @@ using kg.ValheimEnchantmentSystem.Misc;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace kg.ValheimEnchantmentSystem;
+namespace kg.ValheimEnchantmentSystem.UI;
 
 [VES_Autoload(VES_Autoload.Priority.Normal)]
 public static class VES_UI
@@ -20,7 +20,6 @@ public static class VES_UI
 
     private static GameObject UI;
     private static GameObject VFX1;
-    private static GameObject VFX2;
     private static Sprite Default_QuestionMark;
 
     private static AudioClip Click;
@@ -63,7 +62,6 @@ public static class VES_UI
     {
         UI = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI"));
         VFX1 = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI_VFX1");
-        VFX2 = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI_VFX2");
         Default_QuestionMark = ValheimEnchantmentSystem._asset.LoadAsset<Sprite>("kg_EnchantmentQuestion");
         Click = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentClick");
         SuccessSound = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Success");
@@ -169,8 +167,7 @@ public static class VES_UI
 
             Item_Text.text = "";
             Scroll_Text.text = "";
-
-            UnityEngine.Object.Instantiate(VFX2, Start_Transform.transform);
+            
             AUsrc.Stop();
             if (!Input.GetKey(KeyCode.LeftShift))
                 AUsrc.Play();
@@ -224,7 +221,8 @@ public static class VES_UI
             Item_Text.text = msg;
             Item_Text.color = enchanted ? Color.green : Color.red;
             Item_Visual.color = enchanted ? Color.green : Color.red;
-            UnityEngine.Object.Instantiate(VFX1, Item_Visual.transform);
+            var uifx = UnityEngine.Object.Instantiate(VFX1, Item_Transform.transform);
+            uifx.GetComponent<ParticleSystem>().startColor = enchanted ? Color.green : Color.red;
             AUsrc.PlayOneShot(enchanted ? SuccessSound : FailSound);
 
             _shouldReselect = true;
@@ -425,6 +423,10 @@ public static class VES_UI
             AUsrc.bypassEffects = true;
             AUsrc.volume = 1f;
             AUsrc.outputAudioMixerGroup = SFXgroup;
+
+            foreach (var asset in ValheimEnchantmentSystem._asset.LoadAllAssets<GameObject>())
+                foreach (AudioSource audioSource in asset.GetComponentsInChildren<AudioSource>(true))
+                    audioSource.outputAudioMixerGroup = SFXgroup;
         }
     }
  

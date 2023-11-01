@@ -129,9 +129,11 @@
         <Compile Include="Fixing_JC_Item.cs" />
         <Compile Include="Items_Structures\ScrollItems.cs" />
         <Compile Include="Items_Structures\BuildPieces.cs" />
+        <Compile Include="Managers\AnimationSpeedManager.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Misc\Attributes.cs" />
         <Compile Include="Misc\External_AsmLoad.cs" />
+        <Compile Include="Misc\SlashContoller.cs" />
         <Compile Include="StatsPanel.cs" />
         <Compile Include="UI\UI.cs" />
         <Compile Include="Utils\TerminalCommands.cs" />

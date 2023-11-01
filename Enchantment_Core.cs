@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using fastJSON;
 using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
@@ -15,8 +13,32 @@ using Random = UnityEngine.Random;
 
 namespace kg.ValheimEnchantmentSystem;
 
+[VES_Autoload(VES_Autoload.Priority.Normal)]
 public static class Enchantment_Core
 {
+    public static GameObject SlashPrefab;
+    public static GameObject SlashPrefab_Explosion;
+    
+    [UsedImplicitly]
+    private static void OnInit()
+    {
+        SlashPrefab = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentSlash");
+        SlashPrefab_Explosion = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentSlash_Explosion");
+        SlashPrefab.AddComponent<SlashContoller>();
+        AnimationSpeedManager.Add(ModifyAttackSpeed);
+    }
+    
+    [HarmonyPatch(typeof(ZNetScene),nameof(ZNetScene.Awake))]
+    private static class ZNetScene_Awake_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(ZNetScene __instance)
+        {
+            __instance.m_namedPrefabs[SlashPrefab.name.GetStableHashCode()] = SlashPrefab;
+            __instance.m_namedPrefabs[SlashPrefab_Explosion.name.GetStableHashCode()] = SlashPrefab_Explosion;
+        }
+    }
+    
     public static IEnumerator FrameSkipEquip(ItemDrop.ItemData weapon)
     {
         if (!Player.m_localPlayer.IsItemEquiped(weapon) || !weapon.IsWeapon()) yield break;
@@ -444,6 +466,38 @@ public static class Enchantment_Core
                 __result *= 1 + stats.durability_percentage / 100f;
                 __result += stats.durability;
             }
+        }
+    }
+
+    private static double ModifyAttackSpeed(Character c, double speed)
+    {
+        if (c != Player.m_localPlayer || !c.InAttack()) return speed;
+
+        ItemDrop.ItemData weapon = Player.m_localPlayer.GetCurrentWeapon();
+        if(weapon == null) return speed;
+        
+        if (weapon.Data().Get<Enchanted>() is { level: > 0 } data && SyncedData.GetStatIncrease(data) is { attack_speed: > 0} stats)
+            return speed * (1 + stats.attack_speed / 100f);
+        
+        return speed;
+    }
+    
+    [HarmonyPatch(typeof(Attack),nameof(Attack.DoMeleeAttack))]
+    private static class Attack_DoMeleeAttack_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(Attack __instance)
+        {
+            if (__instance.m_character != Player.m_localPlayer) return;
+            if (__instance.m_weapon?.Data().Get<Enchanted>() is not { level: > 0 } data || SyncedData.GetStatIncrease(data) is not { slash_wave: > 0 } stats) return;
+            Color color = SyncedData.GetColor(data, out _, true).ToColorAlpha();
+            var pt = Player.m_localPlayer.transform;
+            SlashContoller.CreateNewSlash(
+                SlashPrefab, 
+                pt.position + Vector3.up * 1.2f, 
+                GameCamera.instance.transform.forward, 
+                color, 
+                stats.slash_wave);
         }
     }
 }

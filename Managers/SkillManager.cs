@@ -8,6 +8,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem;
 using UnityEngine;
 
 namespace SkillManager;
@@ -431,7 +432,7 @@ public class Skill
 
 	private static ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description)
 	{
-		ConfigEntry<T> configEntry = plugin.Config.Bind(group, name, value, description);
+		ConfigEntry<T> configEntry = ValheimEnchantmentSystem.Config.Bind(group, name, value, description);
 
 		configSync?.GetType().GetMethod("AddConfigEntry")!.MakeGenericMethod(typeof(T)).Invoke(configSync, new object[] { configEntry });
 
