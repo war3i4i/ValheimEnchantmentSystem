@@ -1,18 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+﻿using System.Globalization;
 using System.IO.Compression;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using BepInEx;
-using BepInEx.Configuration;
-using HarmonyLib;
 using JetBrains.Annotations;
-using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace ServerSync;

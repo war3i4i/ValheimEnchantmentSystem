@@ -1,10 +1,7 @@
-﻿using System.Linq;
-using HarmonyLib;
-using ItemDataManager;
+﻿using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
-using UnityEngine;
 
 namespace kg.ValheimEnchantmentSystem;
 

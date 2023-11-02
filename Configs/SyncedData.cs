@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using BepInEx;
-using BepInEx.Configuration;
+﻿using System.Text;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using ServerSync;
-using UnityEngine;
 
 namespace kg.ValheimEnchantmentSystem.Configs;
 

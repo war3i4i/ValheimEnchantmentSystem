@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using BepInEx;
-using BepInEx.Configuration;
-using HarmonyLib;
+﻿using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using YamlDotNet.Serialization;
 

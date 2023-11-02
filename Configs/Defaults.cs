@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 
 namespace kg.ValheimEnchantmentSystem.Configs;
 

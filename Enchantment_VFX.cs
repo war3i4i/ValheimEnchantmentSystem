@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using HarmonyLib;
-using ItemDataManager;
+﻿using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
 using TMPro;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace kg.ValheimEnchantmentSystem;
@@ -19,13 +13,7 @@ public static class Enchantment_VFX
     private static GameObject HOTBAR_PART;
     private static readonly int TintColor = Shader.PropertyToID("_TintColor");
 
-    private static readonly List<float> INTENSITY = new List<float>
-    {
-        220f,
-        220f,
-        1000f,
-        10f
-    };
+    private static readonly List<float> INTENSITY = new List<float> { 220f, 220f, 1000f, 10f };
 
     public static readonly List<Material> VFXs = new List<Material>();
 

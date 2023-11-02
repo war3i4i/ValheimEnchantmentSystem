@@ -1,14 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
+﻿using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using HarmonyLib;
 using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
-using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace kg.ValheimEnchantmentSystem;

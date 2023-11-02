@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace kg.ValheimEnchantmentSystem.Misc;
+﻿namespace kg.ValheimEnchantmentSystem.Misc;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public class VES_Autoload : Attribute

@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using BepInEx;
-using BepInEx.Configuration;
-using HarmonyLib;
+﻿using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem;
-using UnityEngine;
 
 namespace SkillManager;
 

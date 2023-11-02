@@ -1,12 +1,8 @@
-﻿using System;
-using BepInEx.Bootstrap;
-using HarmonyLib;
+﻿using BepInEx.Bootstrap;
 using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace kg.ValheimEnchantmentSystem.UI;
 

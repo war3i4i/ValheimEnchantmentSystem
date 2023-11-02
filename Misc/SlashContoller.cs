@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-
-namespace kg.ValheimEnchantmentSystem.Misc;
+﻿namespace kg.ValheimEnchantmentSystem.Misc;
 
 public class SlashContoller : MonoBehaviour
 {
@@ -62,11 +59,11 @@ public class SlashContoller : MonoBehaviour
         }
 
         _damage = damage;
-        int rRot = Random.Range(0, 360);
+        int rRot = UnityEngine.Random.Range(0, 360);
         _randomRotation = rRot;
         var euler = Rotation.localRotation.eulerAngles;
         Rotation.localRotation = Quaternion.Euler(rRot, euler.y, euler.z);
-        speed = Random.Range(14.5f, 16f);
+        speed = UnityEngine.Random.Range(14.5f, 16f);
     }
 
     private void OnTriggerEnter(Collider other)

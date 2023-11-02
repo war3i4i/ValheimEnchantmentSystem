@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace kg.ValheimEnchantmentSystem.Misc;
 
@@ -11,7 +8,7 @@ public static class External_AsmLoad
     [UsedImplicitly]
     private static void OnInit()
     {
-        LoadAsm("UI_VFX");
+        LoadAsm("VES_Scripts");
     }
     private static void LoadAsm(string name)
     {

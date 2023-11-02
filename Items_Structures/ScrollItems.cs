@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using BepInEx.Configuration;
-using HarmonyLib;
-using ItemManager;
+﻿using ItemManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
-using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 

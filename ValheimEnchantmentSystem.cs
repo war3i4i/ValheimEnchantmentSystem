@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using BepInEx;
-using BepInEx.Configuration;
-using fastJSON;
-using HarmonyLib;
-using kg.ValheimEnchantmentSystem.Misc;
+﻿using kg.ValheimEnchantmentSystem.Misc;
 using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
 using ServerSync;
-using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace kg.ValheimEnchantmentSystem

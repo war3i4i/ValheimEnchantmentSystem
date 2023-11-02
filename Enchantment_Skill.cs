@@ -1,7 +1,6 @@
 ﻿using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using SkillManager;
-using UnityEngine;
 
 namespace kg.ValheimEnchantmentSystem;
 

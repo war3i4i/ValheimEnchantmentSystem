@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx.Bootstrap;
-using HarmonyLib;
-using ItemDataManager;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace kg.ValheimEnchantmentSystem.UI;
 

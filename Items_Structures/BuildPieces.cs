@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx.Configuration;
-using HarmonyLib;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
-using UnityEngine; 
 
 namespace kg.ValheimEnchantmentSystem.Items_Structures;
 
