@@ -11,6 +11,7 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
 
 | Version       | Changes                                                                                                                                                                                                      |
 |---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.4.4 - 1.4.5 | Added new stats: attack_speed and slash_wave<br/>Added new Info UI that will show item enchant stats,  and chance                                                                                            |
 | 1.4.2 - 1.4.3 | Added new config that allows you to enable VFX for armors                                                                                                                                                    |
 | 1.4.1         | Fixed a bug with wrong player resistances                                                                                                                                                                    |
 | 1.4.0         | Added new skill: Enchantment. Skill increases enchant success change<br/>Skill exp can be gained by consuming skill exp source orbs that are dropped from monsters with low chance (everything configurable) |
