@@ -208,7 +208,7 @@ public static class SyncedData
         Overrides_EnchantmentColors.Value = result;
     }
     
-    private static void ResetInventory() => Player.m_localPlayer?.m_inventory?.Changed();
+    private static void ResetInventory() => Enchantment_VFX.UpdateGrid();
     
     private static void ConfigChanged(object sender, FileSystemEventArgs e)
     {

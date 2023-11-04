@@ -523,6 +523,12 @@ public static class Enchantment_VFX
         }
     }
 
+    public static void UpdateGrid()
+    {
+        HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
+        InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
+    }
+
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.Changed))]
     [ClientOnlyPatch]
     private static class EventsToUpdate
@@ -531,8 +537,7 @@ public static class Enchantment_VFX
         private static void Postfix(Inventory __instance)
         {
             if(__instance != Player.m_localPlayer?.m_inventory) return;
-            HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
-            InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
+            UpdateGrid();
         }
     }
     [HarmonyPatch]
@@ -549,8 +554,7 @@ public static class Enchantment_VFX
         private static void Postfix(Humanoid __instance)
         {
             if(__instance != Player.m_localPlayer) return;
-            HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
-            InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
+            UpdateGrid();
         }
     }
     [HarmonyPatch]
@@ -565,8 +569,7 @@ public static class Enchantment_VFX
         [UsedImplicitly]
         private static void Postfix()
         {
-            HotkeyBar_UpdateIcons_Patch._needUpdateFrame = Time.frameCount + 1;
-            InventoryGrid_UpdateGui_Patch._needUpdateFrame = Time.frameCount + 1;
+            UpdateGrid();
         }
     }
 }

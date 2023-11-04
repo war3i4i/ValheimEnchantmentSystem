@@ -55,7 +55,7 @@ public static class Enchantment_Core
         public override void Save()
         {
             Value = level.ToString();
-            Player.m_localPlayer?.m_inventory?.Changed();
+            Enchantment_VFX.UpdateGrid();
         }
 
         public override void Load()
@@ -71,7 +71,7 @@ public static class Enchantment_Core
                 ValheimEnchantmentSystem._thistype.DelayedInvoke(() =>
                 {
                     Item?.Data().Remove<Enchanted>();
-                    Player.m_localPlayer?.m_inventory.Changed();
+                    Enchantment_VFX.UpdateGrid();
                 }, 1);
             }
         }
