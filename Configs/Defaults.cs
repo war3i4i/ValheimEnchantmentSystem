@@ -60,8 +60,7 @@ public static class Defaults
             foreach (var color in Colors)
             {
                 pkg.Write(color.Key);
-                pkg.Write(color.Value.color ?? "#00000000");
-                pkg.Write(color.Value.variant);
+                color.Value.Serialize(ref pkg);
             }
         }
 
@@ -77,7 +76,9 @@ public static class Defaults
             count = pkg.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                Colors.Add(pkg.ReadInt(), new() { color = pkg.ReadString(), variant = pkg.ReadInt() });
+                SyncedData.VFX_Data newVFXData = new();
+                Colors.Add(pkg.ReadInt(), newVFXData);
+                newVFXData.Deserialize(ref pkg);
             }
         }
     }
@@ -200,7 +201,7 @@ public static class Defaults
             { 17, new() { color = "#B40A0EF0", variant = 0 } },
             { 18, new() { color = "#C8000EF7", variant = 0 } },
             { 19, new() { color = "#D2000EFE", variant = 0 } },
-            { 20, new() { color = "#FF000EFF", variant = 0 } }
+            { 20, new() { color = "#FF000EFF", variant = 0, additionaleffects = new(){ wingsmodel =  1, auramodel = 1, auracolor = "#FFFFFF"}} }
         };
 
     private static readonly List<SyncedData.EnchantmentReqs> DefaultReqs = new()

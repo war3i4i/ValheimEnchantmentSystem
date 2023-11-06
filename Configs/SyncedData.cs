@@ -262,15 +262,28 @@ public static class SyncedData
                 return result;
             }
         }
-        else if (Synced_EnchantmentColors.Value.TryGetValue(level, out var vfxData))
+        
+        if (Synced_EnchantmentColors.Value.TryGetValue(level, out var vfxData))
         {
             var result = vfxData.color;
             if (trimApha) result = result.Substring(0, result.Length - 2);
-            variant = Mathf.Clamp(vfxData.variant, 0, Enchantment_VFX.VFXs.Count - 1);
+            variant = Mathf.Clamp(vfxData.variant - 1, 0, Enchantment_VFX.VFXs.Count - 1);
             return result;
         }
 
         return trimApha ? "#000000" : "#00000000";
+    }
+
+    public static Enchantment_AdditionalEffects.AdditionalEffectsModule GetAdditionalEffects(Enchantment_Core.Enchanted en)
+    {
+        if (en.level == 0) return null;
+        string dropPrefab = en.Item.m_dropPrefab?.name;
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out var overriden))
+        {
+            return overriden.TryGetValue(en.level, out var overrideChance) ? overrideChance.additionaleffects : null;
+        }
+        
+        return Synced_EnchantmentColors.Value.TryGetValue(en.level, out var vfxData) ? vfxData.additionaleffects : null;
     }
 
     public static int GetEnchantmentChance(Enchantment_Core.Enchanted en)
@@ -282,10 +295,8 @@ public static class SyncedData
             if (overriden.TryGetValue(en.level, out var overrideChance))
                 return overrideChance;
         }
-        else if (Synced_EnchantmentChances.Value.TryGetValue(en.level, out var chance))
-            return chance;
-
-        return 0;
+        
+        return Synced_EnchantmentChances.Value.TryGetValue(en.level, out var chance) ? chance : 0;
     }
 
     public static Stat_Data GetStatIncrease(Enchantment_Core.Enchanted en)
@@ -601,16 +612,46 @@ public static class SyncedData
     {
         public string color;
         public int variant;
+        public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
+
         public void Serialize(ref ZPackage pkg)
         {
             pkg.Write(color ?? "#00000000");
             pkg.Write(variant);
+            pkg.Write(additionaleffects != null);
+            additionaleffects?.Serialize(ref pkg);
         }
 
         public void Deserialize(ref ZPackage pkg)
         {
             color = pkg.ReadString();
             variant = pkg.ReadInt();
+            if (pkg.ReadBool())
+            {
+                additionaleffects = new Enchantment_AdditionalEffects.AdditionalEffectsModule();
+                additionaleffects.Deserialize(ref pkg);
+            }
+        }
+
+        [Flags]
+        public enum SpecialEffect
+        {
+            FireStep = 1 << 1,
+            IceStep = 1 << 2,
+            LightningStep = 1 << 3,
+            PoisonStep = 1 << 4,
+            WingsFire = 1 << 5,
+            WingsIce = 1 << 6,
+            WingsLightning = 1 << 7,
+            WingsPoison = 1 << 8,
+            AuraFire = 1 << 9,
+            AuraIce = 1 << 10,
+            AuraLightning = 1 << 11,
+            AuraPoison = 1 << 12,
+            CrownFire = 1 << 13,
+            CrownIce = 1 << 14,
+            CrownLightning = 1 << 15,
+            CrownPoison = 1 << 16,
         }
     }
 

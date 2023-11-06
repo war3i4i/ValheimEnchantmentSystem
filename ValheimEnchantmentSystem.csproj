@@ -123,6 +123,7 @@
     <ItemGroup>
         <Compile Include="Configs\Defaults.cs" />
         <Compile Include="Configs\SyncedData.cs" />
+        <Compile Include="Enchantment_AdditionalEffects.cs" />
         <Compile Include="Enchantment_Core.cs" />
         <Compile Include="Enchantment_Skill.cs" />
         <Compile Include="Enchantment_VFX.cs" />

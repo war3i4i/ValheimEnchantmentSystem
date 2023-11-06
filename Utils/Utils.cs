@@ -68,7 +68,7 @@ public static class Utils
     {
         return string.IsNullOrEmpty(text) ? string.Empty : Localization.instance.Localize(text);
     }
-    
+
     public static string Localize(this string text, params string[] args)
     {
         return string.IsNullOrEmpty(text) ? string.Empty : Localization.instance.Localize(text, args);
@@ -79,12 +79,13 @@ public static class Utils
 
     public static Color ToColorAlpha(this string colorString)
     {
-        if (colorString.StartsWith("#"))
+        if (colorString[0] == '#')
         {
             colorString = colorString.Substring(1);
         }
 
-        if(!uint.TryParse(colorString, System.Globalization.NumberStyles.HexNumber, null, out uint colorValue)) return Color.white;
+        if (!uint.TryParse(colorString, System.Globalization.NumberStyles.HexNumber, null, out uint colorValue))
+            return Color.white;
         switch (colorString.Length)
         {
             case 8:
@@ -122,7 +123,7 @@ public static class Utils
 
         return num;
     }
-    
+
     public static void CustomRemoveItemsNoLevel(string prefab, int amount)
     {
         foreach (ItemDrop.ItemData itemData in Player.m_localPlayer.m_inventory.m_inventory)
@@ -140,7 +141,7 @@ public static class Utils
         Player.m_localPlayer.m_inventory.m_inventory.RemoveAll(x => x.m_stack <= 0);
         Player.m_localPlayer.m_inventory.Changed();
     }
-    
+
     public static string IncreaseColorLight(this string color)
     {
         if (!ColorUtility.TryParseHtmlString(color, out var c)) return color;
@@ -150,9 +151,18 @@ public static class Utils
         return "#" + ColorUtility.ToHtmlStringRGB(c);
     }
 
+    public static Color IncreaseColorLight(this Color c)
+    {
+        Color.RGBToHSV(c, out var h, out var s, out var v);
+        v = 1f;
+        c = Color.HSVToRGB(h, s, v);
+        return c;
+    }
+
     public static string GetPrefabNameByItemName(string itemname)
     {
-        var find = ObjectDB.instance.m_items.FirstOrDefault(x => x.GetComponent<ItemDrop>().m_itemData.m_shared.m_name == itemname);
+        var find = ObjectDB.instance.m_items.FirstOrDefault(x =>
+            x.GetComponent<ItemDrop>().m_itemData.m_shared.m_name == itemname);
         if (find == null) return null;
         return find.name;
     }
@@ -175,21 +185,21 @@ public static class Utils
     {
         for (int i = 0; i < skipFrames; i++)
             yield return null;
-        
+
         invoke();
     }
-    
+
     public static void DelayedInvoke(this MonoBehaviour mb, Action invoke, int skipFrames)
     {
         mb.StartCoroutine(DelayedAction(invoke, skipFrames));
     }
-    
+
     public static double RoundOne(this float f)
     {
         return Math.Round(f, 1);
     }
-    
-    
+
+
     public static void IncreaseSkillEXP(Skills.SkillType skillType, float expToAdd)
     {
         Skills.Skill skill = Player.m_localPlayer.m_skills.GetSkill(skillType);
@@ -214,7 +224,28 @@ public static class Utils
             }
         }
     }
-    
+
+    public static Transform FindChild(Transform aParent, string aName)
+    {
+        Stack<Transform> stack = new Stack<Transform>();
+        Transform transform = aParent;
+        do
+        {
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                stack.Push(transform.GetChild(i));
+            }
+
+            if (stack.Count <= 0)
+            {
+                return null;
+            }
+
+            transform = stack.Pop();
+        } while (transform.name != aName);
+        return transform;
+    }
+
     public static bool IsEnemy(this Character c)
     {
         if (c == Player.m_localPlayer) return false;
@@ -225,7 +256,7 @@ public static class Utils
 
         return !c.m_baseAI || c.m_baseAI.IsEnemy(Player.m_localPlayer);
     }
-    
+
     /*public static float RoundOne(this float f)
     {
         return f < 100 ? Mathf.Round(f * 10.0f) * 0.1f : Mathf.Round(f);

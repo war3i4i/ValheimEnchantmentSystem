@@ -13,7 +13,7 @@ public static class VES_UI
 
     private static Action<ItemDrop.ItemData> OnItemSelect;
     public static AudioSource AUsrc;
-
+    
     private static GameObject UI;
     private static GameObject VFX1;
     private static Sprite Default_QuestionMark;
@@ -26,11 +26,13 @@ public static class VES_UI
     private static Text Item_Text;
     private static Image Item_Icon;
     private static Image Item_Visual;
+    private static Image Item_Trail;
 
     private static Transform Scroll_Transform;
     private static Text Scroll_Text;
     private static Image Scroll_Icon;
     private static Image Scroll_Visual;
+    private static Image Scroll_Trail;
 
     private static Transform UseBless_Transform;
     private static Image UseBless_Icon;
@@ -50,6 +52,10 @@ public static class VES_UI
     private static bool _enchantProcessing;
     private static float _enchantTimer;
     private static bool _shouldReselect;
+
+    private static readonly Color VFX_Default_Bless = new Color32(161, 157, 0, 255);
+    private static readonly int Speed = Shader.PropertyToID("_Speed");
+
 
     private const float TIMER_MAX = 6f;
     
@@ -71,11 +77,14 @@ public static class VES_UI
         Item_Text = Item_Transform.Find("Text").GetComponent<Text>();
         Item_Icon = Item_Transform.Find("Icon").GetComponent<Image>();
         Item_Visual = Item_Transform.Find("Visual").GetComponent<Image>();
+        Item_Trail = Item_Transform.Find("Trail").GetComponent<Image>();
 
         Scroll_Transform = UI.transform.Find("Canvas/Background/Scroll");
         Scroll_Text = Scroll_Transform.Find("Text").GetComponent<Text>();
         Scroll_Icon = Scroll_Transform.Find("Icon").GetComponent<Image>();
         Scroll_Visual = Scroll_Transform.Find("Visual").GetComponent<Image>();
+        Scroll_Trail = Scroll_Transform.Find("Trail").GetComponent<Image>();
+        
 
         UseBless_Transform = UI.transform.Find("Canvas/Background/UseBless");
         UseBless_Icon = UseBless_Transform.Find("Icon").GetComponent<Image>();
@@ -160,9 +169,13 @@ public static class VES_UI
             Progress_Transform.gameObject.SetActive(true);
             Progress_Fill.fillAmount = 0f;
             Progress_VFX.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
-
-            Item_Visual.color = new Color(1f, 1f, 0f, 0f);
-            Scroll_Visual.color = new Color(1f, 1f, 0f, 0f);
+            Progress_VFX.GetComponent<ParticleSystem>().startColor = _useBless ? VFX_Default_Bless : Color.white;
+            Progress_Fill.transform.GetChild(0).GetComponent<Image>().color = _useBless ? Color.yellow : Color.white;
+            Item_Visual.color = Color.clear;
+            Scroll_Visual.color = Color.clear;
+            
+            Item_Trail.material.SetFloat(Speed, 4f);
+            Scroll_Trail.material.SetFloat(Speed, 4f);
 
             UseBless_Transform.gameObject.SetActive(false);
 
@@ -187,6 +200,13 @@ public static class VES_UI
         if (Input.GetKeyDown(KeyCode.Escape) && !Info_UI.IsVisible())
         {
             ValheimEnchantmentSystem._thistype.DelayedInvoke(Hide, 1);
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab) && !_enchantProcessing && !_shouldReselect)
+        {
+            PlayClick();
+            UseBless_ButtonClick();
             return;
         }
 
@@ -222,9 +242,13 @@ public static class VES_UI
             Item_Text.text = msg;
             Item_Text.color = enchanted ? Color.green : Color.red;
             Item_Visual.color = enchanted ? Color.green : Color.red;
+            Color c = SyncedData.GetColor(en, out _, true).IncreaseColorLight().ToColorAlpha();
+            Item_Trail.color = c;
             var uifx = UnityEngine.Object.Instantiate(VFX1, Item_Transform.transform);
             uifx.GetComponent<ParticleSystem>().startColor = enchanted ? Color.green : Color.red;
             AUsrc.PlayOneShot(enchanted ? SuccessSound : FailSound);
+            Item_Trail.material.SetFloat(Speed, 0.5f);
+            Scroll_Trail.material.SetFloat(Speed, 0.5f);
 
             _shouldReselect = true;
             Start_Transform.gameObject.SetActive(true);
@@ -236,8 +260,16 @@ public static class VES_UI
             Progress_VFX.GetComponent<RectTransform>().anchoredPosition =
                 new Vector2(_fillDistance * Progress_Fill.fillAmount, 0f);
 
-            Item_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
-            Scroll_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
+            if (_useBless)
+            {
+                Item_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
+                Scroll_Visual.color = new Color(1f, 1f, 0f, Progress_Fill.fillAmount);
+            }
+            else
+            {
+                Item_Visual.color = new Color(1f, 1f, 1f, Progress_Fill.fillAmount);
+                Scroll_Visual.color = new Color(1f, 1f, 1f, Progress_Fill.fillAmount);
+            }
 
             RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
             Item_Rect.anchoredPosition =
@@ -269,6 +301,9 @@ public static class VES_UI
         Item_Text.color = Color.white;
         Item_Icon.sprite = Default_QuestionMark;
         Item_Visual.color = Color.clear;
+        Item_Trail.gameObject.SetActive(false);
+        Item_Trail.color = new Color(1f, 1f, 1f, 0.8f);
+        Item_Trail.material.SetFloat(Speed, 0.5f);
 
         RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
         Scroll_Rect.anchoredPosition = new Vector2(_scrollStartX, _startY);
@@ -278,6 +313,9 @@ public static class VES_UI
         Scroll_Text.color = Color.red;
         Scroll_Icon.sprite = Default_QuestionMark;
         Scroll_Visual.color = Color.clear;
+        Scroll_Trail.gameObject.SetActive(false);
+        Scroll_Trail.color = new Color(1f, 1f, 1f, 0.8f);
+        Scroll_Trail.material.SetFloat(Speed, 0.5f);
 
         UseBless_Transform.gameObject.SetActive(false);
         UseBless_Icon.gameObject.SetActive(false);
@@ -288,6 +326,8 @@ public static class VES_UI
         Progress_Transform.gameObject.SetActive(false);
         Progress_VFX.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
         Progress_Fill.fillAmount = 0f;
+        Progress_Fill.transform.GetChild(0).GetComponent<Image>().color = Color.clear;
+        Progress_VFX.GetComponent<ParticleSystem>().startColor = Color.clear;
     }
 
     private static void UseBless_ButtonClick()
@@ -302,18 +342,19 @@ public static class VES_UI
         if (req.IsValid())
         {
             var enchant_item = ZNetScene.instance.GetPrefab(req.prefab);
-            Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() +
-                               " <color=yellow>x" + req.amount + "</color>";
-            
+            Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() + " <color=yellow>x" + req.amount + "</color>";
             Scroll_Text.color = Utils.CustomCountItemsNoLevel(req.prefab) >= req.amount ? Color.white : Color.red;
-            
             Scroll_Icon.sprite = enchant_item.GetComponent<ItemDrop>().m_itemData.GetIcon();
+            Scroll_Trail.gameObject.SetActive(true);
+            Scroll_Trail.color = _useBless ? new Color(1f,1f,0f,0.8f) : new Color(1f, 1f, 1f, 0.8f);
         }
         else
         {
             Scroll_Text.text = "$enchantment_noenchantitems".Localize();
             Scroll_Text.color = Color.red;
             Scroll_Icon.sprite = Default_QuestionMark;
+            Scroll_Trail.gameObject.SetActive(false);
+            Scroll_Trail.color = new Color(1f, 1f, 1f, 0.8f);
         }
     }
 
@@ -338,15 +379,17 @@ public static class VES_UI
         Item_Rect.anchoredPosition = new Vector2(_itemStartX, Item_Rect.anchoredPosition.y);
         Item_Transform.gameObject.SetActive(true);
         string itemName = item.m_shared.m_name.Localize();
-
+        Item_Trail.gameObject.SetActive(true);
         if (en)
         {
-            string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
-            itemName += $" (<color={color}>+{en.level}</color>)";
+            string c = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
+            itemName += $" (<color={c.IncreaseColorLight()}>+{en.level}</color>)";
+            Item_Trail.color = c.ToColorAlpha();
         }
         else
         {
             itemName += " (<color=#FFFFFF>+0</color>)";
+            Item_Trail.color = new Color(1f, 1f, 1f, 0.8f);
         }
 
         Item_Text.text = itemName;
@@ -358,7 +401,7 @@ public static class VES_UI
         RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
         Scroll_Rect.anchoredPosition = new Vector2(_scrollStartX, Scroll_Rect.anchoredPosition.y);
         Scroll_Transform.gameObject.SetActive(true);
-
+        Scroll_Trail.gameObject.SetActive(true);
         if (reqs.enchant_prefab.IsValid())
         {
             var enchant_item = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab);
@@ -367,12 +410,15 @@ public static class VES_UI
             Scroll_Text.color = Utils.CustomCountItemsNoLevel(reqs.enchant_prefab.prefab) >= reqs.enchant_prefab.amount ? Color.white : Color.red;
             Start_Transform.gameObject.SetActive(true);
             Start_Text.text = "$enchantment_enchant".Localize();
+            Scroll_Trail.color = new Color(1f, 1f, 1f, 0.8f);
         }
         else
         {
             Scroll_Text.text = "$enchantment_noenchantitems".Localize();
             Scroll_Text.color = Color.red;
             Scroll_Icon.sprite = Default_QuestionMark;
+            Scroll_Trail.gameObject.SetActive(false);
+            Scroll_Trail.color = new Color(1f, 1f, 1f, 0.8f);
         }
     }
 
@@ -488,8 +534,8 @@ public static class VES_UI
         [UsedImplicitly]
         private static void Postfix(InventoryGui __instance)
         {
-            CraftingStation currentCraftingStation = Player.m_localPlayer?.GetCurrentCraftingStation();
-            if (currentCraftingStation || __instance.m_currentContainer)
+            if (!Player.m_localPlayer) return;
+            if (Player.m_localPlayer.GetCurrentCraftingStation() || (__instance.m_currentContainer && __instance.m_currentContainer.m_nview != Player.m_localPlayer.m_nview))
             {
                 InventoryGui_Awake_Patch._enchantmentBackground.gameObject.SetActive(false);
                 InventoryGui_Awake_Patch._enchantmentButton.gameObject.SetActive(false);

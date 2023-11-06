@@ -8,12 +8,12 @@ using Object = UnityEngine.Object;
 namespace kg.ValheimEnchantmentSystem;
 
 [VES_Autoload(VES_Autoload.Priority.Normal)]
-public static class Enchantment_VFX
+public static class Enchantment_VFX 
 {
     private static GameObject HOTBAR_PART;
     private static readonly int TintColor = Shader.PropertyToID("_TintColor");
 
-    private static readonly List<float> INTENSITY = new List<float> { 220f, 220f, 1000f, 10f };
+    private static readonly List<float> INTENSITY = new List<float> { 220f, 80f, 1000f, 10f };
 
     public static readonly List<Material> VFXs = new List<Material>();
 
@@ -405,12 +405,10 @@ public static class Enchantment_VFX
         {
             if (done) return;
             done = true;
-            if (__instance.transform.Find("StartGame/Panel/JoinPanel/serverCount")
-                    ?.GetComponent<TextMeshProUGUI>() is not { } vanilla) return;
-            var tmp = HOTBAR_PART.GetComponent<TextMeshProUGUI>();
+            if (__instance.transform.Find("StartGame/Panel/JoinPanel/serverCount")?.GetComponent<TextMeshProUGUI>() is not { } vanilla) return;
+            var tmp = HOTBAR_PART.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
             tmp.font = vanilla.font;
-            AccessTools.Field(typeof(TextMeshProUGUI), "m_canvasRenderer")
-                .SetValue(tmp, tmp.GetComponent<CanvasRenderer>());
+            AccessTools.Field(typeof(TextMeshProUGUI), "m_canvasRenderer").SetValue(tmp, tmp.GetComponent<CanvasRenderer>());
             tmp.outlineWidth = 0.15f;
         }
     }
@@ -428,7 +426,7 @@ public static class Enchantment_VFX
             GameObject newIcon = Object.Instantiate(HOTBAR_PART);
             newIcon!.transform.SetParent(transform);
             newIcon.name = "VES_Level";
-            newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(-20, 0);
+            newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
             newIcon.gameObject.SetActive(false);
         }
     }
@@ -459,7 +457,8 @@ public static class Enchantment_VFX
                 GameObject newIcon = Object.Instantiate(HOTBAR_PART);
                 newIcon!.transform.SetParent(transform);
                 newIcon.name = "VES_Level";
-                newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(-20, 0);
+                newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+                newIcon.transform.GetChild(1).gameObject.SetActive(false);
                 newIcon.gameObject.SetActive(false);
             }
             if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
@@ -477,8 +476,10 @@ public static class Enchantment_VFX
                 if (en && en!.level > 0)
                 {
                     ves.gameObject.SetActive(true);
-                    string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
-                    ves.GetComponent<TMP_Text>().text = $"<color={color}>+" + en!.level + "</color>";
+                    Color c = SyncedData.GetColor(en, out _, true).ToColorAlpha().IncreaseColorLight();
+                    ves.transform.GetChild(0).GetComponent<TMP_Text>().text = "+" + en!.level;
+                    ves.transform.GetChild(0).GetComponent<TMP_Text>().color = c;
+                    //ves.transform.GetChild(1).GetComponent<Image>().color = c;
                 }
                 else
                 {
@@ -512,8 +513,10 @@ public static class Enchantment_VFX
                 if (en && en.level > 0)
                 {
                     ves.gameObject.SetActive(true);
-                    string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
-                    ves.GetComponent<TMP_Text>().text = $"<color={color}>+" + en!.level + "</color>";
+                    Color c = SyncedData.GetColor(en, out _, true).ToColorAlpha().IncreaseColorLight();
+                    ves.transform.GetChild(0).GetComponent<TMP_Text>().text = "+" + en!.level;
+                    ves.transform.GetChild(0).GetComponent<TMP_Text>().color = c;
+                    ves.transform.GetChild(1).GetComponent<Image>().color = c;
                 }
                 else
                 {
