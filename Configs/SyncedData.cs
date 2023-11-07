@@ -31,8 +31,6 @@ public static class SyncedData
     {
         SafetyLevel = ValheimEnchantmentSystem.config("Enchantment", "SafetyLevel", 3,
             "The level until which enchantments won't destroy the item. Set to 0 to disable.");
-        ShowEnchantmentChance = ValheimEnchantmentSystem.config("Enchantment", "ShowEnchantmentChance", true,
-            "Show the chance of enchantment in the item tooltip.");
         DropEnchantmentOnUpgrade = ValheimEnchantmentSystem.config("Enchantment", "DropEnchantmentOnUpgrade", false,
             "Drop enchantment on item upgrade.");
         ItemDestroyedOnFailure = ValheimEnchantmentSystem.config("Enchantment", "ItemDestroyedOnFailure", false,
@@ -117,7 +115,7 @@ public static class SyncedData
         FSW_Mapper.Add(YAML_Ovverides_Chances, ReadOverrideChances);
         FSW_Mapper.Add(YAML_Ovverides_Stats, ReadOverrideStats);
         FSW_Mapper.Add(YAML_Ovverides_Colors, ReadOverrideColors);
-        FSW_Mapper.Add(ValheimEnchantmentSystem.Config.ConfigFilePath, () => ValheimEnchantmentSystem.Config.Reload());
+        FSW_Mapper.Add(ValheimEnchantmentSystem.SyncedConfig.ConfigFilePath, () => ValheimEnchantmentSystem.SyncedConfig.Reload());
         FSW_Mapper.Add(ValheimEnchantmentSystem.ItemConfig.ConfigFilePath, () => ValheimEnchantmentSystem.ItemConfig.Reload());
         FSW_Mapper.Add(Directory_Reqs, ReadReqs);
         FSW_Mapper.Add(Directory_Overrides_Chances, ReadOverrideChances);
@@ -325,7 +323,6 @@ public static class SyncedData
     }
 
     public static ConfigEntry<int> SafetyLevel;
-    public static ConfigEntry<bool> ShowEnchantmentChance;
     public static ConfigEntry<bool> DropEnchantmentOnUpgrade;
     public static ConfigEntry<bool> ItemDestroyedOnFailure;
     public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;

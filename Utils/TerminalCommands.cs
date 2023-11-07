@@ -40,6 +40,40 @@ public static class TerminalCommands
                     en.Save();
                 }
             });
+
+            new Terminal.ConsoleCommand("enchantment_hotbar", "", (args) =>
+            {
+                Enchantment_VFX._enableHotbarVisual.Value = !Enchantment_VFX._enableHotbarVisual.Value;
+                Enchantment_VFX.UpdateGrid();
+                Enchantment_VFX._enableHotbarVisual.ConfigFile.Save();
+                Chat.instance.m_hideTimer = 0f;
+                Chat.instance.AddString("Enchantment hotbar visual " + (Enchantment_VFX._enableHotbarVisual.Value ? "<color=green>enabled</color>" : "<color=red>disabled</color>"));
+            });
+            
+            new Terminal.ConsoleCommand("enchantment_mainvfx", "", (args) =>
+            {
+                Enchantment_VFX._enableMainVFX.Value = !Enchantment_VFX._enableMainVFX.Value;
+                Enchantment_VFX._enableMainVFX.ConfigFile.Save();
+                Chat.instance.m_hideTimer = 0f;
+                Chat.instance.AddString("Enchantment Main VFX " + (Enchantment_VFX._enableMainVFX.Value ? "<color=green>enabled</color>" : "<color=red>disabled</color>"));
+            });
+            
+            new Terminal.ConsoleCommand("enchantment_wingsvfx", "", (args) =>
+            {
+                Enchantment_AdditionalEffects._enableWingsEffects.Value = ! Enchantment_AdditionalEffects._enableWingsEffects.Value;
+                Enchantment_AdditionalEffects._enableWingsEffects.ConfigFile.Save();
+                Chat.instance.m_hideTimer = 0f;
+                Chat.instance.AddString("Enchantment Wings VFX " + (Enchantment_AdditionalEffects._enableWingsEffects.Value ? "<color=green>enabled</color>" : "<color=red>disabled</color>"));
+            });
+            
+            new Terminal.ConsoleCommand("enchantment_auravfx", "", (args) =>
+            {
+                Enchantment_AdditionalEffects._enableAuraEffects.Value = ! Enchantment_AdditionalEffects._enableAuraEffects.Value;
+                Enchantment_AdditionalEffects._enableAuraEffects.ConfigFile.Save();
+                Chat.instance.m_hideTimer = 0f;
+                Chat.instance.AddString("Enchantment Aura VFX " + (Enchantment_AdditionalEffects._enableAuraEffects.Value ? "<color=green>enabled</color>" : "<color=red>disabled</color>"));
+            });
+            
         }
     }
 }

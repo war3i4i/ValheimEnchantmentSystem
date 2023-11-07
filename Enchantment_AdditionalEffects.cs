@@ -8,19 +8,13 @@ namespace kg.ValheimEnchantmentSystem;
 [VES_Autoload]
 public static class Enchantment_AdditionalEffects
 {
-    private static Dictionary<string, Material> _wingsMaterial = new();
-
+    private static readonly Dictionary<string, Material> _wingsMaterials = new();
     private static readonly List<GameObject> _wingsModels = new();
     private static readonly List<GameObject> _auraModels = new();
 
     private static readonly List<string> _wingsMaterialNames = new()
     {
-        "Blood", "Electric", "Flame", "Forest", "Glow", "Lava", "Magic", "Mist", "Ocean", "Organic", "Sharp", "Smoke", "Sun", "Unholy", "Wind"
-    };
-
-    private static readonly List<string> _auraNames = new()
-    {
-        "Dark", "Fire", "Water"
+        "Blood", "Electric", "Flame", "Forest", "Glow", "Lava", "Magic", "Mist", "Ocean", "Organic", "Sharp", "Smoke", "Sun", "Unholy", "Wind", "Lagoshi"
     };
 
     private class CurrentVFX
@@ -34,11 +28,17 @@ public static class Enchantment_AdditionalEffects
 
     private static CurrentVFX _current = new();
     private static readonly int AlphaIntensity = Shader.PropertyToID("_AlphaIntensity");
+    
+    public static ConfigEntry<bool> _enableWingsEffects;
+    public static ConfigEntry<bool> _enableAuraEffects;
 
 
     [UsedImplicitly]
     private static void OnInit()
     {
+        _enableWingsEffects = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableWingsVFX", true, "Enable Wings VFX");
+        _enableAuraEffects = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableAuraVFX", true, "Enable Aura VFX");
+        
         for (int i = 1; i <= 10; ++i)
         {
             GameObject wing = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantment_Wing" + i);
@@ -46,15 +46,14 @@ public static class Enchantment_AdditionalEffects
             wing.AddComponent<WingsAlphaSmooth>();
         }
 
-        for (int i = 0; i < 3; ++i)
+        for (int i = 1; i <= 3; ++i)
         {
-            GameObject aura =
-                ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantment_Aura_" + _auraNames[i]);
+            GameObject aura = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantment_Aura" + i);
             _auraModels.Add(aura);
         }
 
         foreach (string materialName in _wingsMaterialNames)
-            _wingsMaterial.Add(materialName.ToLower(),
+            _wingsMaterials.Add(materialName.ToLower(),
                 ValheimEnchantmentSystem._asset.LoadAsset<Material>("kg_Enchantment_Wings_Mat_" + materialName));
     }
 
@@ -165,6 +164,7 @@ public static class Enchantment_AdditionalEffects
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+    [ClientOnlyPatch]
     private static class Player_Awake_Patch
     {
         private static void ApplyWings(Player p, int i, string mat, float scale)
@@ -173,13 +173,13 @@ public static class Enchantment_AdditionalEffects
             if (spine2 is null) return;
             Transform wings = spine2.Find("kg_Enchantment_Wings");
             if (wings) UnityEngine.Object.Destroy(wings.gameObject);
-            if (i == 0 || i > _wingsModels.Count) return;
+            if (!_enableWingsEffects.Value || i == 0 || i > _wingsModels.Count) return;
             GameObject gameObject = UnityEngine.Object.Instantiate(_wingsModels[i - 1], spine2);
             gameObject.transform.localScale *= scale;
             gameObject.name = "kg_Enchantment_Wings";
-            Material useMat = _wingsMaterial.TryGetValue(mat.ToLower(), out Material material)
+            Material useMat = _wingsMaterials.TryGetValue(mat.ToLower(), out Material material)
                 ? material
-                : _wingsMaterial.ElementAt(UnityEngine.Random.Range(0, _wingsMaterial.Count)).Value;
+                : _wingsMaterials.ElementAt(UnityEngine.Random.Range(0, _wingsMaterials.Count)).Value;
             gameObject.GetComponent<MeshRenderer>().material = useMat;
         }
 
@@ -187,9 +187,8 @@ public static class Enchantment_AdditionalEffects
         {
             Transform aura = p.transform.Find("kg_Enchantment_Aura");
             if (aura) UnityEngine.Object.Destroy(aura.gameObject);
-            if (i == 0 || i > _auraModels.Count) return;
-            Color c = Color.white;
-            ColorUtility.TryParseHtmlString(color, out c);
+            if (!_enableAuraEffects.Value || i == 0 || i > _auraModels.Count) return;
+            ColorUtility.TryParseHtmlString(color, out var c);
             foreach (var mr in _auraModels[i - 1].GetComponentsInChildren<ParticleSystem>())
             {
                 var main = mr.main;
@@ -202,6 +201,8 @@ public static class Enchantment_AdditionalEffects
         [UsedImplicitly]
         private static void Postfix(Player __instance)
         {
+            if(!__instance.m_nview || !__instance.m_nview.IsValid()) return; 
+            
             __instance.m_nview.Register<int, string, float>("kg_Enchantment_ApplyWings", (_, i, mat, scale) =>
             {
                 ApplyWings(__instance, i, mat, scale);
@@ -239,8 +240,7 @@ public static class Enchantment_AdditionalEffects
             }
         }
     }
-
-
+    
     public class WingsAlphaSmooth : MonoBehaviour
     {
         public Material mat;

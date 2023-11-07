@@ -16,7 +16,7 @@ namespace kg.ValheimEnchantmentSystem
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset;
-        public new static ConfigFile Config;
+        public static ConfigFile SyncedConfig;
         public static ConfigFile ItemConfig;
         public static string ConfigFolder;
         private static readonly Harmony Harmony = new(GUID);
@@ -49,7 +49,7 @@ namespace kg.ValheimEnchantmentSystem
             ConfigFolder = Path.Combine(Paths.ConfigPath, "ValheimEnchantmentSystem");
             if (!Directory.Exists(ConfigFolder))
                 Directory.CreateDirectory(ConfigFolder);
-            Config = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}.cfg"), false);
+            SyncedConfig = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}.cfg"), false);
             ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, "ScrollRecipes.cfg"), false);
             _asset = GetAssetBundle("kg_enchantment");
             
@@ -101,7 +101,7 @@ namespace kg.ValheimEnchantmentSystem
         private static ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)
         {
-            ConfigEntry<T> configEntry = Config.Bind(group, name, value, description);
+            ConfigEntry<T> configEntry = SyncedConfig.Bind(group, name, value, description);
             SyncedConfigEntry<T> syncedConfigEntry = ConfigSync.AddConfigEntry(configEntry);
             syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
             return configEntry;

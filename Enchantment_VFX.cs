@@ -17,6 +17,9 @@ public static class Enchantment_VFX
 
     public static readonly List<Material> VFXs = new List<Material>();
 
+    public static ConfigEntry<bool> _enableHotbarVisual;
+    public static ConfigEntry<bool> _enableMainVFX;
+    
     [UsedImplicitly]
     private static void OnInit()
     {
@@ -25,6 +28,8 @@ public static class Enchantment_VFX
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat3")); 
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat4"));
         HOTBAR_PART = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_HotbarPart");
+        _enableHotbarVisual = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableHotbarVisual", true, "Enable hotbar visual");
+        _enableMainVFX = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableMainVFX", true, "Enable main VFX");
     }
 
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.SetupVisEquipment))]
@@ -68,6 +73,7 @@ public static class Enchantment_VFX
     
     private static void AttachMeshEffect(GameObject item, Color c, int variant, bool isArmor = false)
     {
+        if (!_enableMainVFX.Value) return;
         if (!isArmor)
         {
             Light l = item.AddComponent<Light>();
@@ -458,7 +464,6 @@ public static class Enchantment_VFX
                 newIcon!.transform.SetParent(transform);
                 newIcon.name = "VES_Level";
                 newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-                newIcon.transform.GetChild(1).gameObject.SetActive(false);
                 newIcon.gameObject.SetActive(false);
             }
             if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
@@ -479,7 +484,8 @@ public static class Enchantment_VFX
                     Color c = SyncedData.GetColor(en, out _, true).ToColorAlpha().IncreaseColorLight();
                     ves.transform.GetChild(0).GetComponent<TMP_Text>().text = "+" + en!.level;
                     ves.transform.GetChild(0).GetComponent<TMP_Text>().color = c;
-                    //ves.transform.GetChild(1).GetComponent<Image>().color = c;
+                    ves.transform.GetChild(1).GetComponent<Image>().color = c;
+                    ves.transform.GetChild(1).gameObject.SetActive(_enableHotbarVisual.Value);
                 }
                 else
                 {

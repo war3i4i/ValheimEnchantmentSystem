@@ -174,8 +174,8 @@ public static class VES_UI
             Item_Visual.color = Color.clear;
             Scroll_Visual.color = Color.clear;
             
-            Item_Trail.material.SetFloat(Speed, 4f);
-            Scroll_Trail.material.SetFloat(Speed, 4f);
+            Item_Trail.material.SetFloat(Speed, 1f);
+            Scroll_Trail.material.SetFloat(Speed, 1f);
 
             UseBless_Transform.gameObject.SetActive(false);
 
@@ -294,9 +294,9 @@ public static class VES_UI
         _shouldReselect = false;
 
         RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
-        Item_Rect.anchoredPosition = new Vector2(0, _startY);
+        Item_Rect.anchoredPosition = new Vector2(0, 0);
         Item_Transform.gameObject.SetActive(true);
-        Item_Transform.localScale = Vector3.one;
+        Item_Transform.localScale = new Vector3(1.4f,1.4f,1f);
         Item_Text.text = "$enchantment_selectanitem".Localize();
         Item_Text.color = Color.white;
         Item_Icon.sprite = Default_QuestionMark;
@@ -376,8 +376,9 @@ public static class VES_UI
         _currentItem = item;
 
         RectTransform Item_Rect = Item_Transform.GetComponent<RectTransform>();
-        Item_Rect.anchoredPosition = new Vector2(_itemStartX, Item_Rect.anchoredPosition.y);
+        Item_Rect.anchoredPosition = new Vector2(_itemStartX, _startY);
         Item_Transform.gameObject.SetActive(true);
+        Item_Transform.localScale = Vector3.one;
         string itemName = item.m_shared.m_name.Localize();
         Item_Trail.gameObject.SetActive(true);
         if (en)
@@ -399,7 +400,7 @@ public static class VES_UI
         UseBless_Icon.gameObject.SetActive(false);
 
         RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
-        Scroll_Rect.anchoredPosition = new Vector2(_scrollStartX, Scroll_Rect.anchoredPosition.y);
+        Scroll_Rect.anchoredPosition = new Vector2(_scrollStartX, _startY);
         Scroll_Transform.gameObject.SetActive(true);
         Scroll_Trail.gameObject.SetActive(true);
         if (reqs.enchant_prefab.IsValid())

@@ -271,7 +271,7 @@ public static class Enchantment_Core
                 }
                 
                 int chance = en.GetEnchantmentChance();
-                if (SyncedData.ShowEnchantmentChance.Value && chance > 0)
+                if (chance > 0)
                 {
                     __result += $"\n<color={color}>•</color> $enchantment_chance (<color={color}>{chance}%</color>)";
                     float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
