@@ -208,6 +208,7 @@ public static class SyncedData
     
     private static void ResetInventory() => Enchantment_VFX.UpdateGrid();
     
+    private static DateTime LastConfigChange = DateTime.Now;
     private static void ConfigChanged(object sender, FileSystemEventArgs e)
     {
         if (!Game.instance || !ZNet.instance || !ZNet.instance.IsServer()) return;
@@ -216,6 +217,8 @@ public static class SyncedData
         if (extention != ".yml" && extention != ".cfg") return;
         if (FSW_Mapper.TryGetValue(e.FullPath, out var action))
         {
+            if (DateTime.Now - LastConfigChange < TimeSpan.FromSeconds(3)) return;
+            LastConfigChange = DateTime.Now;
             try
             {
                 Utils.print($"Reloading config {e.FullPath}");
@@ -231,6 +234,8 @@ public static class SyncedData
         if (folder == null) return;
         if (FSW_Mapper.TryGetValue(folder, out action))
         {
+            if (DateTime.Now - LastConfigChange < TimeSpan.FromSeconds(3)) return;
+            LastConfigChange = DateTime.Now;
             try
             {
                 Utils.print($"Reloading config {e.FullPath}");

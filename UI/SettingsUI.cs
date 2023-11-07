@@ -61,6 +61,7 @@ public static class SettingsUI
             Transform mainVFX = bools.Find("MainVFX");
             Transform wingsVFX = bools.Find("WingsVFX");
             Transform auraVFX = bools.Find("AuraVFX");
+            Transform inventoryVFX = bools.Find("InventoryVFX");
             
             hotbarVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
             {
@@ -68,6 +69,14 @@ public static class SettingsUI
                 Enchantment_VFX._enableHotbarVisual.Value = !Enchantment_VFX._enableHotbarVisual.Value;
                 Enchantment_VFX.UpdateGrid();
                 Enchantment_VFX._enableHotbarVisual.ConfigFile.Save();
+                InitValues();
+            });
+            inventoryVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
+            {
+                VES_UI.PlayClick();
+                Enchantment_VFX._enableInventoryVisual.Value = !Enchantment_VFX._enableInventoryVisual.Value;
+                Enchantment_VFX.UpdateGrid();
+                Enchantment_VFX._enableInventoryVisual.ConfigFile.Save();
                 InitValues();
             });
             mainVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
@@ -84,7 +93,7 @@ public static class SettingsUI
                 Enchantment_AdditionalEffects._enableWingsEffects.ConfigFile.Save();
                 InitValues();
             });
-            auraVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
+            auraVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() => 
             {
                 VES_UI.PlayClick();
                 Enchantment_AdditionalEffects._enableAuraEffects.Value = !Enchantment_AdditionalEffects._enableAuraEffects.Value;
@@ -117,9 +126,11 @@ public static class SettingsUI
         Transform mainVFX = bools.Find("MainVFX");
         Transform wingsVFX = bools.Find("WingsVFX");
         Transform auraVFX = bools.Find("AuraVFX");
+        Transform inventoryVFX = bools.Find("InventoryVFX");
         hotbarVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableHotbarVisual.Value);
         mainVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableMainVFX.Value);
         wingsVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableWingsEffects.Value);
         auraVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableAuraEffects.Value);
+        inventoryVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableInventoryVisual.Value);
     }
 }

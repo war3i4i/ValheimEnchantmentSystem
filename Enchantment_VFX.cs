@@ -18,6 +18,7 @@ public static class Enchantment_VFX
     public static readonly List<Material> VFXs = new List<Material>();
 
     public static ConfigEntry<bool> _enableHotbarVisual;
+    public static ConfigEntry<bool> _enableInventoryVisual;
     public static ConfigEntry<bool> _enableMainVFX;
     
     [UsedImplicitly]
@@ -29,6 +30,7 @@ public static class Enchantment_VFX
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat4"));
         HOTBAR_PART = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_HotbarPart");
         _enableHotbarVisual = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableHotbarVisual", true, "Enable hotbar visual");
+        _enableInventoryVisual = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableInventoryVisual", true, "Enable inventory visual");
         _enableMainVFX = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableMainVFX", true, "Enable main VFX");
     }
 
@@ -149,7 +151,6 @@ public static class Enchantment_VFX
         {
             if (!Transfer) return;
             Transfer = false;
-
             if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
             if (!__instance.m_rightItemInstance) return;
             string rightColor = __instance.m_nview.m_zdo.GetString("VES_rightitemColor");
@@ -160,16 +161,16 @@ public static class Enchantment_VFX
         }
     }
 
-    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetLeftBackItem))]
+    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetBackEquipped))]
     [ClientOnlyPatch]
     private static class MockLeftBack
     {
         private static bool Transfer;
 
         [UsedImplicitly]
-        static void Prefix(VisEquipment __instance, string name)
+        private static void Prefix(VisEquipment __instance, int leftItem, int rightItem, int leftVariant)
         {
-            if (__instance.m_leftBackItem != name)
+            if (__instance.m_currentLeftBackItemHash != leftItem || __instance.m_currentRightBackItemHash != rightItem)
             {
                 Transfer = true;
             }
@@ -182,44 +183,30 @@ public static class Enchantment_VFX
             Transfer = false;
 
             if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
-            if (!__instance.m_leftBackItemInstance) return;
-            string leftColor = __instance.m_nview.m_zdo.GetString("VES_leftbackitemColor");
-            if (string.IsNullOrEmpty(leftColor)) return;
-            Color c = leftColor.ToColorAlpha();
-            int variant = __instance.m_nview.m_zdo.GetInt("VES_leftbackitemColor_variant");
-            AttachMeshEffect(__instance.m_leftBackItemInstance, c, variant);
-        }
-    }
-
-    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetRightBackItem))]
-    [ClientOnlyPatch]
-    private static class MockRightBack
-    {
-        private static bool Transfer;
-
-        [UsedImplicitly]
-        static void Prefix(VisEquipment __instance, string name)
-        {
-            if (__instance.m_rightBackItem != name)
+            if (__instance.m_leftBackItemInstance)
             {
-                Transfer = true;
+                string leftColor = __instance.m_nview.m_zdo.GetString("VES_leftbackitemColor");
+                if (!string.IsNullOrEmpty(leftColor))
+                {
+                    Color c = leftColor.ToColorAlpha();
+                    int variant = __instance.m_nview.m_zdo.GetInt("VES_leftbackitemColor_variant");
+                    AttachMeshEffect(__instance.m_leftBackItemInstance, c, variant);
+                }
+            }
+
+            if (__instance.m_rightBackItemInstance)
+            {
+                string rightColor = __instance.m_nview.m_zdo.GetString("VES_rightbackitemColor");
+                if (!string.IsNullOrEmpty(rightColor))
+                {
+                    Color c = rightColor.ToColorAlpha();
+                    int variant = __instance.m_nview.m_zdo.GetInt("VES_rightbackitemColor_variant");
+                    AttachMeshEffect(__instance.m_rightBackItemInstance, c, variant);
+                }
             }
         }
-
-        [UsedImplicitly]
-        private static void Postfix(VisEquipment __instance)
-        {
-            if (!Transfer) return;
-            Transfer = false;
-            if (!__instance.m_nview || __instance.m_nview.m_zdo == null) return;
-            if (!__instance.m_rightBackItemInstance) return;
-            string leftColor = __instance.m_nview.m_zdo.GetString("VES_rightbackitemColor");
-            if (string.IsNullOrEmpty(leftColor)) return;
-            Color c = leftColor.ToColorAlpha();
-            int variant = __instance.m_nview.m_zdo.GetInt("VES_rightbackitemColor_variant");
-            AttachMeshEffect(__instance.m_rightBackItemInstance, c, variant);
-        }
     }
+
     
     [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.SetChestEquipped))]
     [ClientOnlyPatch]
@@ -523,6 +510,7 @@ public static class Enchantment_VFX
                     ves.transform.GetChild(0).GetComponent<TMP_Text>().text = "+" + en!.level;
                     ves.transform.GetChild(0).GetComponent<TMP_Text>().color = c;
                     ves.transform.GetChild(1).GetComponent<Image>().color = c;
+                    ves.transform.GetChild(1).gameObject.SetActive(_enableInventoryVisual.Value);
                 }
                 else
                 {
