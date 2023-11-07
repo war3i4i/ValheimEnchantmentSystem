@@ -8,6 +8,7 @@ namespace kg.ValheimEnchantmentSystem
 {
     [BepInPlugin(GUID, PLUGIN_NAME, PLUGIN_VERSION)]
     [BepInDependency("org.bepinex.plugins.jewelcrafting", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.bepis.bepinex.configurationmanager", BepInDependency.DependencyFlags.SoftDependency)]
     public class ValheimEnchantmentSystem : BaseUnityPlugin
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
@@ -19,7 +20,7 @@ namespace kg.ValheimEnchantmentSystem
         public static ConfigFile SyncedConfig;
         public static ConfigFile ItemConfig;
         public static string ConfigFolder;
-        private static readonly Harmony Harmony = new(GUID);
+        public static readonly Harmony Harmony = new(GUID);
         public static readonly ConfigSync ConfigSync = new(GUID)
         { 
             DisplayName = GUID, ModRequired = true, 
@@ -50,7 +51,7 @@ namespace kg.ValheimEnchantmentSystem
             if (!Directory.Exists(ConfigFolder))
                 Directory.CreateDirectory(ConfigFolder);
             SyncedConfig = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}.cfg"), false);
-            ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, "ScrollRecipes.cfg"), false);
+            ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}_ScrollRecipes.cfg"), false);
             _asset = GetAssetBundle("kg_enchantment");
             
             IEnumerable<KeyValuePair<VES_Autoload, Type>> toAutoload = Assembly.GetExecutingAssembly().GetTypes()

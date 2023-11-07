@@ -14,9 +14,6 @@ public static class SyncedData
     private static string YAML_Stats_Armor;
     private static string YAML_Colors;
     private static string YAML_Reqs;
-    private static string YAML_Ovverides_Chances;
-    private static string YAML_Ovverides_Stats;
-    private static string YAML_Ovverides_Colors;
 
     private static string Directory_Overrides_Chances;
     private static string Directory_Overrides_Stats;
@@ -47,9 +44,6 @@ public static class SyncedData
         YAML_Colors = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentColors.yml");
         YAML_Reqs = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentReqs.yml");
         YAML_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentChances.yml");
-        YAML_Ovverides_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentChances.yml");
-        YAML_Ovverides_Stats = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentStats.yml");
-        YAML_Ovverides_Colors = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "Overrides_EnchantmentColors.yml");
         Directory_Reqs = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalEnchantmentReqs");
         Directory_Overrides_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentChances");
         Directory_Overrides_Stats = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentStats");
@@ -75,12 +69,6 @@ public static class SyncedData
             YAML_Colors.WriteFile(Defaults.YAML_Colors);
         if (!File.Exists(YAML_Reqs))
             YAML_Reqs.WriteFile(Defaults.YAML_Reqs);
-        if (!File.Exists(YAML_Ovverides_Chances))
-            YAML_Ovverides_Chances.WriteFile(Defaults.YAML_Overrides_Chances);
-        if (!File.Exists(YAML_Ovverides_Stats))
-            YAML_Ovverides_Stats.WriteFile(Defaults.YAML_Overrides_Stats);
-        if (!File.Exists(YAML_Ovverides_Colors))
-            YAML_Ovverides_Colors.WriteFile(Defaults.YAML_Overrides_Colors);
 
         Synced_EnchantmentChances.ValueChanged += ResetInventory;
         Synced_EnchantmentStats_Weapons.ValueChanged += ResetInventory;
@@ -112,9 +100,6 @@ public static class SyncedData
         FSW_Mapper.Add(YAML_Stats_Armor, () => Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>());
         FSW_Mapper.Add(YAML_Colors, () => Synced_EnchantmentColors.Value = YAML_Colors.FromYAML<Dictionary<int, VFX_Data>>());
         FSW_Mapper.Add(YAML_Reqs, ReadReqs);
-        FSW_Mapper.Add(YAML_Ovverides_Chances, ReadOverrideChances);
-        FSW_Mapper.Add(YAML_Ovverides_Stats, ReadOverrideStats);
-        FSW_Mapper.Add(YAML_Ovverides_Colors, ReadOverrideColors);
         FSW_Mapper.Add(ValheimEnchantmentSystem.SyncedConfig.ConfigFilePath, () => ValheimEnchantmentSystem.SyncedConfig.Reload());
         FSW_Mapper.Add(ValheimEnchantmentSystem.ItemConfig.ConfigFilePath, () => ValheimEnchantmentSystem.ItemConfig.Reload());
         FSW_Mapper.Add(Directory_Reqs, ReadReqs);
@@ -166,9 +151,6 @@ public static class SyncedData
     private static void ReadOverrideChances()
     {
         List<Defaults.OverrideChances> result = new();
-        if (YAML_Ovverides_Chances.FromYAML<List<Defaults.OverrideChances>>() is { } yamlData)
-            foreach (var yml in yamlData)
-                result.Add(yml);
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideChances>>() is {} data)
@@ -180,9 +162,6 @@ public static class SyncedData
     private static void ReadOverrideStats()
     {
         List<Defaults.OverrideStats> result = new();
-        if (YAML_Ovverides_Stats.FromYAML<List<Defaults.OverrideStats>>() is { } yamlData)
-            foreach (var yml in yamlData)
-                result.Add(yml);
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideStats>>() is {} data)
@@ -194,9 +173,6 @@ public static class SyncedData
     private static void ReadOverrideColors()
     {
         List<Defaults.OverrideColors> result = new();
-        if (YAML_Ovverides_Colors.FromYAML<List<Defaults.OverrideColors>>() is { } yamlData)
-            foreach (var yml in yamlData)
-                result.Add(yml);
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideColors>>() is {} data)

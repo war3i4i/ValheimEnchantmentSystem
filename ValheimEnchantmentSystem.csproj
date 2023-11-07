@@ -121,6 +121,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Configs\BepInEx_ConfigurationManager.cs" />
         <Compile Include="Configs\Defaults.cs" />
         <Compile Include="Configs\SyncedData.cs" />
         <Compile Include="Enchantment_AdditionalEffects.cs" />
