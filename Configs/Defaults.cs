@@ -201,7 +201,7 @@ public static class Defaults
             { 17, new() { color = "#B40A0EF0", variant = 0 } },
             { 18, new() { color = "#C8000EF7", variant = 0 } },
             { 19, new() { color = "#D2000EFE", variant = 0 } },
-            { 20, new() { color = "#FF000EFF", variant = 0, additionaleffects = new(){ wingsmodel =  1, auramodel = 1, auracolor = "#FFFFFF"}} }
+            { 20, new() { color = "#FF000EFF", variant = 0 } }
         };
 
     private static readonly List<SyncedData.EnchantmentReqs> DefaultReqs = new()

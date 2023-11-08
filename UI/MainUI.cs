@@ -12,7 +12,9 @@ public static class VES_UI
     private static bool IsVisible() => UI && UI.activeSelf;
 
     private static Action<ItemDrop.ItemData> OnItemSelect;
-    public static AudioSource AUsrc;
+    private static AudioSource AUsrc;
+    private static AudioClip _3sec;
+    private static AudioClip _6sec;
     
     private static GameObject UI;
     private static GameObject VFX1;
@@ -56,12 +58,22 @@ public static class VES_UI
     private static readonly Color VFX_Default_Bless = new Color32(161, 157, 0, 255);
     private static readonly int Speed = Shader.PropertyToID("_Speed");
 
+    private static float TIMER_MAX;
+    
 
-    private const float TIMER_MAX = 6f;
+    public static ConfigEntry<Duration> EnchantmentAnimationDuration;
+    public enum Duration
+    {
+        _3 = 1,
+        _6 = 2
+    }
     
     [UsedImplicitly]
     private static void OnInit()
     {
+        EnchantmentAnimationDuration = ValheimEnchantmentSystem._thistype.Config.Bind("Visuals", "EnchantmentAnimationDuration", Duration._3, "Duration of the enchantment animation.");
+        _3sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_3");
+        _6sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_6");
         UI = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI"));
         VFX1 = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI_VFX1");
         Default_QuestionMark = ValheimEnchantmentSystem._asset.LoadAsset<Sprite>("kg_EnchantmentQuestion");
@@ -163,6 +175,7 @@ public static class VES_UI
 
 
             _enchantProcessing = true;
+            TIMER_MAX = (int)EnchantmentAnimationDuration.Value * 3f;
             _enchantTimer = Input.GetKey(KeyCode.LeftShift) ? 0 : TIMER_MAX;
             Start_Text.text = "$enchantment_cancel".Localize();
 
@@ -183,6 +196,7 @@ public static class VES_UI
             Scroll_Text.text = "";
             
             AUsrc.Stop();
+            AUsrc.clip = EnchantmentAnimationDuration.Value == Duration._3 ? _3sec : _6sec;
             if (!Input.GetKey(KeyCode.LeftShift))
                 AUsrc.Play();
         }
@@ -464,7 +478,6 @@ public static class VES_UI
         {
             var SFXgroup = __instance.m_masterMixer.FindMatchingGroups("SFX")[0];
             AUsrc = Chainloader.ManagerObject.AddComponent<AudioSource>();
-            AUsrc.clip = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main");
             AUsrc.reverbZoneMix = 0;
             AUsrc.spatialBlend = 0;
             AUsrc.bypassListenerEffects = true;

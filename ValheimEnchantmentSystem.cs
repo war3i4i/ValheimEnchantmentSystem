@@ -13,7 +13,7 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.4.6";
+        private const string PLUGIN_VERSION = "1.5.0";
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset;
@@ -25,7 +25,7 @@ namespace kg.ValheimEnchantmentSystem
         { 
             DisplayName = GUID, ModRequired = true, 
             MinimumRequiredVersion = PLUGIN_VERSION, CurrentVersion = PLUGIN_VERSION
-        };
+        }; 
         private enum WorkingAs
         {
             Client,
@@ -46,12 +46,12 @@ namespace kg.ValheimEnchantmentSystem
                 UseOptimizedDatasetSchema = true,
                 UseValuesOfEnums = true, 
             };
-            Localizer.Load();
+            Localizer.Load(); 
             ConfigFolder = Path.Combine(Paths.ConfigPath, "ValheimEnchantmentSystem");
             if (!Directory.Exists(ConfigFolder))
                 Directory.CreateDirectory(ConfigFolder);
             SyncedConfig = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}.cfg"), false);
-            ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, $"{GUID}_ScrollRecipes.cfg"), false);
+            ItemConfig = new ConfigFile(Path.Combine(ConfigFolder, $"ScrollRecipes.cfg"), false);
             _asset = GetAssetBundle("kg_enchantment");
             
             IEnumerable<KeyValuePair<VES_Autoload, Type>> toAutoload = Assembly.GetExecutingAssembly().GetTypes()

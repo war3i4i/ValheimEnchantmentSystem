@@ -21,7 +21,6 @@ public static class Enchantment_AdditionalEffects
     {
         public int wingsModel;
         public string wingsMaterial;
-        public float wingsScale = 1f;
         public int auraModel;
         public string auraColor;
     }
@@ -46,7 +45,7 @@ public static class Enchantment_AdditionalEffects
             wing.AddComponent<WingsAlphaSmooth>();
         }
 
-        for (int i = 1; i <= 3; ++i)
+        for (int i = 1; i <= 5; ++i)
         {
             GameObject aura = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantment_Aura" + i);
             _auraModels.Add(aura);
@@ -79,18 +78,16 @@ public static class Enchantment_AdditionalEffects
             if (vfxModule is null) continue;
 
             wingsmodel = vfxModule.wingsmodel;
-            wingsmaterial = vfxModule.wingsmaterial;
+            wingsmaterial ??= vfxModule.wingsmaterial;
             wingsScale = vfxModule.wingsscale;
             auramodel = vfxModule.auramodel;
-            auracolor = vfxModule.auracolor;
+            auracolor ??= vfxModule.auracolor;
         }
 
-        if (_current.wingsModel != wingsmodel || _current.wingsMaterial != wingsmaterial ||
-            Math.Abs(_current.wingsScale - wingsScale) > 0.1f)
+        if (_current.wingsModel != wingsmodel || _current.wingsMaterial != wingsmaterial)
         {
             _current.wingsModel = wingsmodel;
             _current.wingsMaterial = wingsmaterial;
-            _current.wingsScale = wingsScale;
             Player.m_localPlayer.m_nview.InvokeRPC(ZNetView.Everybody, "kg_Enchantment_ApplyWings", wingsmodel, wingsmaterial ?? "none", wingsScale);
         }
 
