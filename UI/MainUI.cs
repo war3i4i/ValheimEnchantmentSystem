@@ -13,6 +13,7 @@ public static class VES_UI
 
     private static Action<ItemDrop.ItemData> OnItemSelect;
     private static AudioSource AUsrc;
+    private static AudioClip _1sec;
     private static AudioClip _3sec;
     private static AudioClip _6sec;
     
@@ -64,14 +65,16 @@ public static class VES_UI
     public static ConfigEntry<Duration> EnchantmentAnimationDuration;
     public enum Duration
     {
-        _3 = 1,
-        _6 = 2
+        _1 = 1,
+        _3 = 3,
+        _6 = 6
     }
     
     [UsedImplicitly]
     private static void OnInit()
     {
         EnchantmentAnimationDuration = ValheimEnchantmentSystem._thistype.Config.Bind("Visuals", "EnchantmentAnimationDuration", Duration._3, "Duration of the enchantment animation.");
+        _1sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_1");
         _3sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_3");
         _6sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_6");
         UI = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI"));
@@ -175,7 +178,7 @@ public static class VES_UI
 
 
             _enchantProcessing = true;
-            TIMER_MAX = (int)EnchantmentAnimationDuration.Value * 3f;
+            TIMER_MAX = (int)EnchantmentAnimationDuration.Value;
             _enchantTimer = Input.GetKey(KeyCode.LeftShift) ? 0 : TIMER_MAX;
             Start_Text.text = "$enchantment_cancel".Localize();
 
@@ -196,7 +199,13 @@ public static class VES_UI
             Scroll_Text.text = "";
             
             AUsrc.Stop();
-            AUsrc.clip = EnchantmentAnimationDuration.Value == Duration._3 ? _3sec : _6sec;
+            AUsrc.clip = EnchantmentAnimationDuration.Value switch
+            {
+                Duration._1 => _1sec,
+                Duration._3 => _3sec,
+                Duration._6 => _6sec,
+                _ => _3sec
+            };
             if (!Input.GetKey(KeyCode.LeftShift))
                 AUsrc.Play();
         }

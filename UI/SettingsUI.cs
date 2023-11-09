@@ -25,14 +25,12 @@ public static class SettingsUI
             newButton.SetParent(controls.parent, false);
             newButton.name = "kg_Enchantment";
             newButton.SetAsLastSibling();
-            newButton.GetComponent<RectTransform>().anchoredPosition +=
-                new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
             newButton.transform.Find("Text").GetComponent<TMP_Text>().text = "$enchantment_enchantment".Localize();
             var tabHandler = settingsPrefab.transform.Find("panel/TabButtons").GetComponent<TabHandler>();
             var page = settingsPrefab.transform.Find("panel/Tabs");
             GameObject newPage = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantments_Settings"));
             Localization.instance.Localize(newPage.transform);
-            newPage.transform.SetParent(page);
+            newPage.transform.SetParent(page); 
             newPage.name = "kg_Enchantment";
             newPage.SetActive(false);
             TabHandler.Tab newTab = new TabHandler.Tab
@@ -102,6 +100,14 @@ public static class SettingsUI
                 InitValues();
             });
             
+            enchantSpeed.Find("Button_1").GetComponent<Button>().onClick.AddListener(() =>
+            {
+                VES_UI.PlayClick();
+                VES_UI.EnchantmentAnimationDuration.Value = VES_UI.Duration._1;
+                VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
+                InitValues();
+            });
+            
             enchantSpeed.Find("Button_3").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -138,6 +144,7 @@ public static class SettingsUI
         wingsVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableWingsEffects.Value);
         auraVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableAuraEffects.Value);
         inventoryVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableInventoryVisual.Value);
+        enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._1);
         enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._3);
         enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._6);
     }
