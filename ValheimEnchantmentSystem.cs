@@ -25,18 +25,13 @@ namespace kg.ValheimEnchantmentSystem
         { 
             DisplayName = GUID, ModRequired = true, 
             MinimumRequiredVersion = PLUGIN_VERSION, CurrentVersion = PLUGIN_VERSION
-        }; 
-        private enum WorkingAs
-        {
-            Client,
-            Server
-        }
-        private static WorkingAs WorkingAsType;
+        };
+        private enum WorkingAs { Client, Server }
          
         private void Awake()
         {
             _thistype = this;
-            WorkingAsType = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null ? WorkingAs.Server : WorkingAs.Client;
+            WorkingAs WorkingAsType = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null ? WorkingAs.Server : WorkingAs.Client;
             JSON.Parameters = new JSONParameters
             {
                 UseExtensions = false,

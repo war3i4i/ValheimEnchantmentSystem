@@ -111,13 +111,14 @@ public static class Notifications_UI
 
     private static void ShowNotification(Notification not)
     {
-        switch (not.Success)
+        switch (not.Success) 
         {
             case true when !FilterConfig.Value.HasFlagFast(Filter.Success):
             case false when !FilterConfig.Value.HasFlagFast(Filter.Fail):
+                _dequeueTimer = 0f;
                 return;
         }
-
+        
         GameObject item = ZNetScene.instance.GetPrefab(not.ItemPrefab);
         if (!item || item.GetComponent<ItemDrop>() is not { } itemDrop) return;
 
@@ -171,6 +172,13 @@ public static class Notifications_UI
             ZRoutedRpc.instance.Register("kg_Enchantment_GlobalNotification",
                 (long _, string playerName, string itemPrefab, bool success, int prevLevel, int level) =>
                 {
+                    switch (success)
+                    {
+                        case true when !FilterConfig.Value.HasFlagFast(Filter.Success):
+                        case false when !FilterConfig.Value.HasFlagFast(Filter.Fail):
+                            return;
+                    }
+                    
                     _notifications.Enqueue(new Notification
                     {
                         PlayerName = playerName,
