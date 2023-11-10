@@ -7,6 +7,10 @@ namespace kg.ValheimEnchantmentSystem.UI;
 [VES_Autoload]
 public static class Notifications_UI
 {
+    private const float Duration = 5f;
+    private const float FadeDuration = 0.25f;
+    
+    
     private class Notification
     {
         public string PlayerName;
@@ -21,7 +25,7 @@ public static class Notifications_UI
     private static bool IsVisible() => UI && UI.activeSelf;
 
     private static GameObject UI;
-    private static readonly List<Image> _colorChange = new();
+    private static readonly List<Image> _colorGroup = new();
 
     private static readonly Color SuccessColor = Color.green;
     private static readonly Color FailColor = Color.red;
@@ -54,21 +58,15 @@ public static class Notifications_UI
         ResultText = UI.transform.Find("Canvas/Scaler/NotificationText/Result").GetComponent<Text>();
         ItemNameText = UI.transform.Find("Canvas/Scaler/NotificationText/Text").GetComponent<Text>();
 
-        _colorChange.Add(UI.transform.Find("Canvas/Scaler/NotificationItem/wings").GetComponent<Image>());
-        _colorChange.Add(UI.transform.Find("Canvas/Scaler/NotificationItem/left").GetComponent<Image>());
-        _colorChange.Add(UI.transform.Find("Canvas/Scaler/NotificationItem/right").GetComponent<Image>());
-        _colorChange.Add(UI.transform.Find("Canvas/Scaler/NotificationItem/frame").GetComponent<Image>());
-        _colorChange.Add(UI.transform.Find("Canvas/Scaler/NotificationText/left").GetComponent<Image>());
-        _colorChange.Add(UI.transform.Find("Canvas/Scaler/NotificationText/right").GetComponent<Image>());
+        _colorGroup.AddRange(UI.GetComponentsInChildren<Image>(true).Where(t => t.name == "colorcontrol").Select(x => x.GetComponent<Image>()));
         
         FilterConfig = ValheimEnchantmentSystem._thistype.Config.Bind("Notifications", "Filter", Filter.Success, "Filter notifications by type");
     }
-
-    private static float _timer;
-    private const float Duration = 5f;
-    private const float FadeDuration = 0.25f;
-    private static float _dequeueTimer = 1f;
+    
+    
     private static readonly Vector3 OriginalScale = new Vector3(1.25f,1.25f,1f);
+    private static float _timer;
+    private static float _dequeueTimer = 1f;
 
     public static void Update()
     {
@@ -133,26 +131,17 @@ public static class Notifications_UI
             : "$enchantment_notification_fail_topic".Localize();
         ResultText.color = not.Success ? SuccessColor : FailColor;
         ItemIcon.sprite = itemDrop.m_itemData.GetIcon();
-        foreach (var image in _colorChange)
-        {
+        
+        foreach (var image in _colorGroup)
             image.color = not.Success ? SuccessColor : FailColor;
-        }
 
-        string text;
-
-        if (not.Success)
-        {
-            text = "$enchantment_notification_success".Localize(not.PlayerName, localizedItemName,
-                not.PrevLevel.ToString(), not.Level.ToString());
-        }
-        else
-        {
-            text = SyncedData.ItemDestroyedOnFailure.Value
+        string text = not.Success
+            ? "$enchantment_notification_success".Localize(not.PlayerName, localizedItemName,
+                not.PrevLevel.ToString(), not.Level.ToString())
+            : SyncedData.ItemDestroyedOnFailure.Value
                 ? "$enchantment_notification_fail_destroyed".Localize(not.PlayerName, localizedItemName)
                 : "$enchantment_notification_fail".Localize(not.PlayerName, localizedItemName, not.PrevLevel.ToString(),
                     not.Level.ToString());
-        }
-
         ItemNameText.text = text;
         ItemNameText.color = not.Success ? SuccessColor : FailColor;
         UI.SetActive(true);

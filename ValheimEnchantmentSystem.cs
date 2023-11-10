@@ -96,11 +96,11 @@ namespace kg.ValheimEnchantmentSystem
         }
 
         private static ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
-            bool synchronizedSetting = true)
+            bool synchronizedSetting = true) 
         {
             ConfigEntry<T> configEntry = SyncedConfig.Bind(group, name, value, description);
             SyncedConfigEntry<T> syncedConfigEntry = ConfigSync.AddConfigEntry(configEntry);
-            syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
+            syncedConfigEntry.SynchronizedConfig = synchronizedSetting; 
             return configEntry;
         }
 
