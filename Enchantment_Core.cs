@@ -4,6 +4,7 @@ using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
+using kg.ValheimEnchantmentSystem.UI;
 using Random = UnityEngine.Random;
 
 namespace kg.ValheimEnchantmentSystem;
@@ -128,14 +129,16 @@ public static class Enchantment_Core
                 msg = "$enchantment_nomaterials".Localize();
                 return false;
             }
-
+            
+            int prevLevel = level;
             if (CheckRandom())
             {
-                int prevLevel = level;
                 level++;
                 Save();
                 ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
                 msg = "$enchantment_success".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
+                if (SyncedData.EnchantmentEnableNotifications.Value && SyncedData.EnchantmentNotificationMinLevel.Value <= level)
+                    Notifications_UI.AddNotification(Player.m_localPlayer.GetPlayerName(), Item.m_dropPrefab.name, true, prevLevel, level);
                 return true;
             }
 
@@ -149,7 +152,6 @@ public static class Enchantment_Core
                 }
                 else
                 {
-                    int prevLevel = level;
                     level = Mathf.Max(0, level - 1);
                     Save();
                     ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
@@ -163,6 +165,9 @@ public static class Enchantment_Core
                 Save();
             }
 
+            if (SyncedData.EnchantmentEnableNotifications.Value && SyncedData.EnchantmentNotificationMinLevel.Value <= level)
+                Notifications_UI.AddNotification(Player.m_localPlayer.GetPlayerName(), Item.m_dropPrefab.name, false, prevLevel, level);
+            
             return false;
         }
 

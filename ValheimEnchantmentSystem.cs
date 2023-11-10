@@ -46,7 +46,7 @@ namespace kg.ValheimEnchantmentSystem
                 UseOptimizedDatasetSchema = true,
                 UseValuesOfEnums = true, 
             };
-            Localizer.Load(); 
+            Localizer.Load();
             ConfigFolder = Path.Combine(Paths.ConfigPath, "ValheimEnchantmentSystem");
             if (!Directory.Exists(ConfigFolder))
                 Directory.CreateDirectory(ConfigFolder);
@@ -89,6 +89,7 @@ namespace kg.ValheimEnchantmentSystem
         {
             VES_UI.Update();
             Info_UI.Update();
+            Notifications_UI.Update();
         }
 
         private static AssetBundle GetAssetBundle(string filename)

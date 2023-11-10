@@ -28,16 +28,13 @@ public static class SyncedData
     {
         SafetyLevel = ValheimEnchantmentSystem.config("Enchantment", "SafetyLevel", 3,
             "The level until which enchantments won't destroy the item. Set to 0 to disable.");
-        DropEnchantmentOnUpgrade = ValheimEnchantmentSystem.config("Enchantment", "DropEnchantmentOnUpgrade", false,
-            "Drop enchantment on item upgrade.");
-        ItemDestroyedOnFailure = ValheimEnchantmentSystem.config("Enchantment", "ItemDestroyedOnFailure", false,
-            "Destroy item on enchantment failure. Otherwise decrease enchantment level by 1.");
-        AllowJewelcraftingMirrorCopyEnchant = ValheimEnchantmentSystem.config("Enchantment",
-            "AllowJewelcraftingMirrorCopyEnchant", false,
-            "Allow jewelcrafting to copy enchantment from one item to another using mirror.");
-        AdditionalEnchantmentChancePerLevel = ValheimEnchantmentSystem.config("Enchantment", "AdditionalEnchantmentChancePerLevel", 0.06f,
-            "Additional enchantment chance per level of Enchantment skill.");
+        DropEnchantmentOnUpgrade = ValheimEnchantmentSystem.config("Enchantment", "DropEnchantmentOnUpgrade", false, "Drop enchantment on item upgrade.");
+        ItemDestroyedOnFailure = ValheimEnchantmentSystem.config("Enchantment", "ItemDestroyedOnFailure", false, "Destroy item on enchantment failure. Otherwise decrease enchantment level by 1.");
+        AllowJewelcraftingMirrorCopyEnchant = ValheimEnchantmentSystem.config("Enchantment", "AllowJewelcraftingMirrorCopyEnchant", false, "Allow jewelcrafting to copy enchantment from one item to another using mirror.");
+        AdditionalEnchantmentChancePerLevel = ValheimEnchantmentSystem.config("Enchantment", "AdditionalEnchantmentChancePerLevel", 0.06f, "Additional enchantment chance per level of Enchantment skill.");
         AllowVFXArmor = ValheimEnchantmentSystem.config("Enchantment", "AllowVFXArmor", false, "Allow VFX on armor.");
+        EnchantmentEnableNotifications = ValheimEnchantmentSystem.config("Notifications", "EnchantmentEnableNotifications", true, "Enable enchantment notifications.");
+        EnchantmentNotificationMinLevel = ValheimEnchantmentSystem.config("Notifications", "EnchantmentNotificationMinLevel", 6, "The minimum level of enchantment to show notification.");
 
         YAML_Stats_Weapons = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Weapons.yml");
         YAML_Stats_Armor = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Armor.yml");
@@ -154,9 +151,8 @@ public static class SyncedData
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideChances>>() is {} data)
-                foreach (var yml in data)
-                    result.Add(yml);
-        
+                result.AddRange(data);
+
         Overrides_EnchantmentChances.Value = result;
     }
     private static void ReadOverrideStats()
@@ -165,9 +161,8 @@ public static class SyncedData
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideStats>>() is {} data)
-                foreach (var yml in data)
-                    result.Add(yml);
-        
+                result.AddRange(data);
+
         Overrides_EnchantmentStats.Value = result;
     }
     private static void ReadOverrideColors()
@@ -176,9 +171,8 @@ public static class SyncedData
 
         foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideColors>>() is {} data)
-                foreach (var yml in data)
-                    result.Add(yml);
-        
+                result.AddRange(data);
+
         Overrides_EnchantmentColors.Value = result;
     }
     
@@ -308,6 +302,8 @@ public static class SyncedData
     public static ConfigEntry<bool> ItemDestroyedOnFailure;
     public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;
     public static ConfigEntry<float> AdditionalEnchantmentChancePerLevel;
+    public static ConfigEntry<int> EnchantmentNotificationMinLevel;
+    public static ConfigEntry<bool> EnchantmentEnableNotifications;
     public static ConfigEntry<bool> AllowVFXArmor;
 
     public static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
@@ -563,10 +559,8 @@ public static class SyncedData
         {
             pkg.Write(enchant_prefab.prefab ?? "");
             pkg.Write(enchant_prefab.amount);
-
             pkg.Write(blessed_enchant_prefab.prefab ?? "");
             pkg.Write(blessed_enchant_prefab.amount);
-
             pkg.Write(Items.Count);
             foreach (var item in Items)
             {

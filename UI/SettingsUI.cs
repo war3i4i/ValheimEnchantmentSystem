@@ -61,6 +61,7 @@ public static class SettingsUI
             Transform auraVFX = bools.Find("AuraVFX");
             Transform inventoryVFX = bools.Find("InventoryVFX");
             Transform enchantSpeed = bools.Find("EnchantSpeed");
+            Transform notifyFilter = bools.Find("NotificationsFilter");
             
             hotbarVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
             {
@@ -124,6 +125,22 @@ public static class SettingsUI
                 InitValues();
             });
             
+            notifyFilter.Find("Success").GetComponent<Button>().onClick.AddListener(() =>
+            {
+                VES_UI.PlayClick();
+                Notifications_UI.FilterConfig.Value ^= Notifications_UI.Filter.Success;
+                Notifications_UI.FilterConfig.ConfigFile.Save();
+                InitValues();
+            });
+            
+            notifyFilter.Find("Fail").GetComponent<Button>().onClick.AddListener(() =>
+            {
+                VES_UI.PlayClick();
+                Notifications_UI.FilterConfig.Value ^= Notifications_UI.Filter.Fail;
+                Notifications_UI.FilterConfig.ConfigFile.Save();
+                InitValues();
+            });
+            
             InitValues();
         }
     }
@@ -139,6 +156,7 @@ public static class SettingsUI
         Transform auraVFX = bools.Find("AuraVFX");
         Transform inventoryVFX = bools.Find("InventoryVFX"); 
         Transform enchantSpeed = bools.Find("EnchantSpeed");
+        Transform notifyFilter = bools.Find("NotificationsFilter");
         hotbarVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableHotbarVisual.Value);
         mainVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableMainVFX.Value);
         wingsVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableWingsEffects.Value);
@@ -147,5 +165,7 @@ public static class SettingsUI
         enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._1);
         enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._3);
         enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._6);
+        notifyFilter.Find("Success/Checkmark").gameObject.SetActive(Notifications_UI.FilterConfig.Value.HasFlagFast(Notifications_UI.Filter.Success));
+        notifyFilter.Find("Fail/Checkmark").gameObject.SetActive(Notifications_UI.FilterConfig.Value.HasFlagFast(Notifications_UI.Filter.Fail));
     }
 }
