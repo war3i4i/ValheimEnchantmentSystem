@@ -179,7 +179,7 @@ public static class VES_UI
 
             _enchantProcessing = true;
             TIMER_MAX = (int)EnchantmentAnimationDuration.Value;
-            _enchantTimer = Input.GetKey(KeyCode.LeftShift) ? 0 : TIMER_MAX;
+            _enchantTimer = TIMER_MAX;
             Start_Text.text = "$enchantment_cancel".Localize();
 
             Progress_Transform.gameObject.SetActive(true);
@@ -206,8 +206,7 @@ public static class VES_UI
                 Duration._6 => _6sec,
                 _ => _3sec
             };
-            if (!Input.GetKey(KeyCode.LeftShift))
-                AUsrc.Play();
+            AUsrc.Play();
         }
     }
 

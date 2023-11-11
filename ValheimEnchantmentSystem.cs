@@ -13,7 +13,7 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.5.1";
+        private const string PLUGIN_VERSION = "1.5.2";
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset;

@@ -221,16 +221,16 @@ public static class SyncedData
     public static string GetColor(Enchantment_Core.Enchanted en, out int variant, bool trimApha) =>
         GetColor(en.Item.m_dropPrefab?.name, en.level, out variant, trimApha);
 
-    public static string GetColor(string dropPrefab, int level, out int variant, bool trimApha)
+    public static string GetColor(string dropPrefab, int level, out int variant, bool trimApha, string defaultValue = "#00000000")
     {
         variant = 0;
-        if (level == 0) return trimApha ? "#000000" : "#00000000";
+        if (level == 0) return trimApha ? defaultValue.Substring(0,7) : defaultValue;
         if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out var overriden))
         {
             if (overriden.TryGetValue(level, out var overrideVfxData))
             {
                 var result = overrideVfxData.color;
-                if (trimApha) result = result.Substring(0, result.Length - 2);
+                if (trimApha) result = result.Substring(0, 7);
                 variant = Mathf.Clamp(overrideVfxData.variant, 0, Enchantment_VFX.VFXs.Count - 1);
                 return result;
             }
@@ -239,12 +239,12 @@ public static class SyncedData
         if (Synced_EnchantmentColors.Value.TryGetValue(level, out var vfxData))
         {
             var result = vfxData.color;
-            if (trimApha) result = result.Substring(0, result.Length - 2);
+            if (trimApha) result = result.Substring(0, 7);
             variant = Mathf.Clamp(vfxData.variant - 1, 0, Enchantment_VFX.VFXs.Count - 1);
             return result;
         }
 
-        return trimApha ? "#000000" : "#00000000";
+        return trimApha ? defaultValue.Substring(0,7) : defaultValue;
     }
 
     public static Enchantment_AdditionalEffects.AdditionalEffectsModule GetAdditionalEffects(Enchantment_Core.Enchanted en)

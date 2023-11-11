@@ -54,14 +54,15 @@ public static class SettingsUI
             if (!enTab) return;
             CurrentUI = enTab.gameObject;
 
-            Transform bools = CurrentUI.transform.Find("Background/Bools");
-            Transform hotbarVFX = bools.Find("HotbarVFX");
-            Transform mainVFX = bools.Find("MainVFX");
-            Transform wingsVFX = bools.Find("WingsVFX");
-            Transform auraVFX = bools.Find("AuraVFX");
-            Transform inventoryVFX = bools.Find("InventoryVFX");
-            Transform enchantSpeed = bools.Find("EnchantSpeed");
-            Transform notifyFilter = bools.Find("NotificationsFilter");
+            Transform options = CurrentUI.transform.Find("Background/options");
+            Transform hotbarVFX = options.Find("HotbarVFX");
+            Transform mainVFX = options.Find("MainVFX");
+            Transform wingsVFX = options.Find("WingsVFX");
+            Transform auraVFX = options.Find("AuraVFX");
+            Transform inventoryVFX = options.Find("InventoryVFX");
+            Transform enchantSpeed = options.Find("EnchantSpeed");
+            Transform notifyFilter = options.Find("NotificationsFilter");
+            Transform notifyDuration = options.Find("NotificationsDuration");
             
             hotbarVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
             {
@@ -100,7 +101,6 @@ public static class SettingsUI
                 Enchantment_AdditionalEffects._enableAuraEffects.ConfigFile.Save();
                 InitValues();
             });
-            
             enchantSpeed.Find("Button_1").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -108,7 +108,6 @@ public static class SettingsUI
                 VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
                 InitValues();
             });
-            
             enchantSpeed.Find("Button_3").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -116,7 +115,6 @@ public static class SettingsUI
                 VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
                 InitValues();
             });
-            
             enchantSpeed.Find("Button_6").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -124,7 +122,6 @@ public static class SettingsUI
                 VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
                 InitValues();
             });
-            
             notifyFilter.Find("Success").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -132,7 +129,6 @@ public static class SettingsUI
                 Notifications_UI.FilterConfig.ConfigFile.Save();
                 InitValues();
             });
-            
             notifyFilter.Find("Fail").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -140,6 +136,14 @@ public static class SettingsUI
                 Notifications_UI.FilterConfig.ConfigFile.Save();
                 InitValues();
             });
+            notifyDuration.Find("Slider").GetComponent<Slider>().onValueChanged.AddListener((val) =>
+            {
+                int currentVal = (int)val;
+                Notifications_UI.Duration.Value = currentVal;
+                Notifications_UI.Duration.ConfigFile.Save();
+                notifyDuration.Find("text").GetComponent<Text>().text = currentVal + "s";
+            });
+            notifyDuration.Find("Slider").GetComponent<Slider>().value = Notifications_UI.Duration.Value;
             
             InitValues();
         }
@@ -149,14 +153,14 @@ public static class SettingsUI
     {
         if (!CurrentUI) return;
         
-        Transform bools = CurrentUI.transform.Find("Background/Bools");
-        Transform hotbarVFX = bools.Find("HotbarVFX");
-        Transform mainVFX = bools.Find("MainVFX");
-        Transform wingsVFX = bools.Find("WingsVFX"); 
-        Transform auraVFX = bools.Find("AuraVFX");
-        Transform inventoryVFX = bools.Find("InventoryVFX"); 
-        Transform enchantSpeed = bools.Find("EnchantSpeed");
-        Transform notifyFilter = bools.Find("NotificationsFilter");
+        Transform options = CurrentUI.transform.Find("Background/options");
+        Transform hotbarVFX = options.Find("HotbarVFX");
+        Transform mainVFX = options.Find("MainVFX");
+        Transform wingsVFX = options.Find("WingsVFX"); 
+        Transform auraVFX = options.Find("AuraVFX");
+        Transform inventoryVFX = options.Find("InventoryVFX"); 
+        Transform enchantSpeed = options.Find("EnchantSpeed");
+        Transform notifyFilter = options.Find("NotificationsFilter");
         hotbarVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableHotbarVisual.Value);
         mainVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableMainVFX.Value);
         wingsVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableWingsEffects.Value);

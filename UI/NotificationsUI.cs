@@ -7,7 +7,7 @@ namespace kg.ValheimEnchantmentSystem.UI;
 [VES_Autoload]
 public static class Notifications_UI
 {
-    private const float Duration = 5f;
+    public static ConfigEntry<int> Duration;
     private const float FadeDuration = 0.25f;
     
     
@@ -34,6 +34,7 @@ public static class Notifications_UI
     private static Text ResultText;
     private static Text ItemNameText;
     private static Transform Scaler;
+    private static Image Outline;
 
     [Flags]
     public enum Filter
@@ -47,6 +48,8 @@ public static class Notifications_UI
     [UsedImplicitly]
     private static void OnInit()
     {
+        Duration = ValheimEnchantmentSystem._thistype.Config.Bind("Notifications", "Duration", 5, "Duration of notification");
+        
         UI = UnityEngine.Object.Instantiate(
             ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentUI_Notification"));
         UI.name = "kg_EnchantmentUI_Notification";
@@ -57,7 +60,7 @@ public static class Notifications_UI
         ItemIcon = UI.transform.Find("Canvas/Scaler/NotificationItem/bg/Icon").GetComponent<Image>();
         ResultText = UI.transform.Find("Canvas/Scaler/NotificationText/Result").GetComponent<Text>();
         ItemNameText = UI.transform.Find("Canvas/Scaler/NotificationText/Text").GetComponent<Text>();
-
+        Outline = UI.transform.Find("Canvas/Scaler/NotificationItem/outline").GetComponent<Image>();
         _colorGroup.AddRange(UI.GetComponentsInChildren<Image>(true).Where(t => t.name == "colorcontrol").Select(x => x.GetComponent<Image>()));
         
         FilterConfig = ValheimEnchantmentSystem._thistype.Config.Bind("Notifications", "Filter", Filter.Success, "Filter notifications by type");
@@ -79,25 +82,21 @@ public static class Notifications_UI
                 var notification = _notifications.Dequeue();
                 ShowNotification(notification);
             }
-        }
+        } 
 
         if (!IsVisible()) return;
         _timer += Time.deltaTime;
-        switch (_timer)
-        {
-            case >= Duration:
-                Hide();
-                return;
-            case <= FadeDuration:
-                Scaler.localScale = OriginalScale * (_timer / FadeDuration);
-                break;
-            case >= Duration - FadeDuration:
-                Scaler.localScale = OriginalScale * ((Duration - _timer) / FadeDuration);
-                break;
-            default:
-                Scaler.localScale = OriginalScale;
-                break;
-        }
+        
+        int duration = Duration.Value;
+
+        if (_timer >= duration)
+            Hide();
+        else if (_timer <= FadeDuration)
+            Scaler.localScale = OriginalScale * (_timer / FadeDuration);
+        else if (_timer >= duration - FadeDuration)
+            Scaler.localScale = OriginalScale * ((duration - _timer) / FadeDuration);
+        else
+            Scaler.localScale = OriginalScale;
     }
  
     private static void Hide()
@@ -133,7 +132,7 @@ public static class Notifications_UI
         ItemIcon.sprite = itemDrop.m_itemData.GetIcon();
         
         foreach (var image in _colorGroup)
-            image.color = not.Success ? SuccessColor : FailColor;
+            image.color = not.Success ? SuccessColor : FailColor; 
 
         string text = not.Success
             ? "$enchantment_notification_success".Localize(not.PlayerName, localizedItemName,
@@ -144,6 +143,7 @@ public static class Notifications_UI
                     not.Level.ToString());
         ItemNameText.text = text;
         ItemNameText.color = not.Success ? SuccessColor : FailColor;
+        Outline.color = SyncedData.GetColor(not.ItemPrefab, not.Level, out _, true, not.Success ? "#00FF00" : "#FF0000").IncreaseColorLight().ToColorAlpha();
         UI.SetActive(true);
     }
 
