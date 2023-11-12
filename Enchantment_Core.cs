@@ -109,9 +109,9 @@ public static class Enchantment_Core
 
         private bool CheckRandom()
         {
-            int random = Random.Range(1, 101);
+            float random = Random.Range(0f, 100f);
             int chance = GetEnchantmentChance();
-            int additionalChance = Mathf.RoundToInt(SyncedData.GetAdditionalEnchantmentChance());
+            float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
             return random <= chance + additionalChance;
         }
 

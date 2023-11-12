@@ -144,6 +144,7 @@ public static class SettingsUI
                 notifyDuration.Find("text").GetComponent<Text>().text = currentVal + "s";
             });
             notifyDuration.Find("Slider").GetComponent<Slider>().value = Notifications_UI.Duration.Value;
+            notifyDuration.Find("text").GetComponent<Text>().text = Notifications_UI.Duration.Value + "s";
             
             InitValues();
         }

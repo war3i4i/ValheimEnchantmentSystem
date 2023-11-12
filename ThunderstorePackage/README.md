@@ -11,6 +11,7 @@ Like my mods? Support me: `war3spells@gmail.com` (Paypal)
 
 | Version       | Changes                                                                                                                                                                                                              |
 |---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.2         | Small UI fixes                                                                                                                                                                                                       |
 | 1.5.1         | Added world notifications when someone encnahts / fails an item. Can be disabled on serverside globally of locally in client settings tab                                                                            |
 | 1.5.0         | Changed UI visuals<br/>Added inventory / hotbar UI vfx<br/>Added Enchantment Settings tab where you can disable VFX's<br/>Added additional effects section to enchantment colors, wings + auras for now<br/>Bugfixes |
 | 1.4.5         | Fixed FPS lag issues while playing on server with ServerCharacters<br/>Info UI fixes                                                                                                                                 |

@@ -46,6 +46,9 @@ public static class VES_UI
     private static Transform Progress_Transform;
     private static Transform Progress_VFX;
     private static Image Progress_Fill;
+    
+    private static Transform Chance_Transform;
+    private static Text Chance_Text;
 
     private static float _itemStartX, _scrollStartX;
     private static float _startY;
@@ -113,9 +116,12 @@ public static class VES_UI
         Progress_VFX = Progress_Transform.Find("VFX");
         Progress_Fill = Progress_Transform.Find("Fill").GetComponent<Image>();
 
+        Chance_Transform = UI.transform.Find("Canvas/Background/Chance");
+        Chance_Text = Chance_Transform.Find("Text").GetComponent<Text>();
+        
         _itemStartX = Item_Transform.GetComponent<RectTransform>().anchoredPosition.x;
         _scrollStartX = Scroll_Transform.GetComponent<RectTransform>().anchoredPosition.x;
-        _startY = Start_Transform.GetComponent<RectTransform>().anchoredPosition.y;
+        _startY = Scroll_Transform.GetComponent<RectTransform>().anchoredPosition.y;
         _fillDistance = 300f;
         OnItemSelect += SelectItem;
         UseBless_Transform.GetComponent<Button>().onClick.AddListener(() =>
@@ -189,6 +195,7 @@ public static class VES_UI
             Progress_Fill.transform.GetChild(0).GetComponent<Image>().color = _useBless ? Color.yellow : Color.white;
             Item_Visual.color = Color.clear;
             Scroll_Visual.color = Color.clear;
+            Chance_Transform.gameObject.SetActive(false);
             
             Item_Trail.material.SetFloat(Speed, 1f);
             Scroll_Trail.material.SetFloat(Speed, 1f);
@@ -342,7 +349,7 @@ public static class VES_UI
         UseBless_Transform.gameObject.SetActive(false);
         UseBless_Icon.gameObject.SetActive(false);
         _useBless = false;
-
+        
         Start_Transform.gameObject.SetActive(false);
 
         Progress_Transform.gameObject.SetActive(false);
@@ -350,11 +357,13 @@ public static class VES_UI
         Progress_Fill.fillAmount = 0f;
         Progress_Fill.transform.GetChild(0).GetComponent<Image>().color = Color.clear;
         Progress_VFX.GetComponent<ParticleSystem>().startColor = Color.clear;
+        
+        Chance_Transform.gameObject.SetActive(false);
     }
 
     private static void UseBless_ButtonClick()
     {
-        if (_currentItem == null) return;
+        if (_currentItem == null) return; 
         _useBless = !_useBless;
         UseBless_Icon.gameObject.SetActive(_useBless);
 
@@ -378,6 +387,7 @@ public static class VES_UI
             Scroll_Trail.gameObject.SetActive(false);
             Scroll_Trail.color = new Color(1f, 1f, 1f, 0.8f);
         }
+        
     }
 
     private static void SelectItem(ItemDrop.ItemData item)
@@ -403,23 +413,32 @@ public static class VES_UI
         Item_Transform.localScale = Vector3.one;
         string itemName = item.m_shared.m_name.Localize();
         Item_Trail.gameObject.SetActive(true);
+        Chance_Transform.gameObject.SetActive(true);
         if (en)
         {
             string c = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
+            Color cColor = c.ToColorAlpha();
             itemName += $" (<color={c.IncreaseColorLight()}>+{en.level}</color>)";
-            Item_Trail.color = c.ToColorAlpha();
+            Item_Trail.color = cColor;
+            int mainChance = en.GetEnchantmentChance();
+            float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
+            Chance_Text.text = $"{(mainChance + additionalChance).RoundOne()}%";
         }
         else
         {
             itemName += " (<color=#FFFFFF>+0</color>)";
             Item_Trail.color = new Color(1f, 1f, 1f, 0.8f);
+            Chance_Text.text = "100%";
         }
+        
+        
 
         Item_Text.text = itemName;
         Item_Icon.sprite = item.GetIcon();
 
         UseBless_Transform.gameObject.SetActive(true);
         UseBless_Icon.gameObject.SetActive(false);
+        
 
         RectTransform Scroll_Rect = Scroll_Transform.GetComponent<RectTransform>();
         Scroll_Rect.anchoredPosition = new Vector2(_scrollStartX, _startY);

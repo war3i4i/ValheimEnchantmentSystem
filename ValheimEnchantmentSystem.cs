@@ -3,7 +3,7 @@ using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
 using ServerSync;
 using UnityEngine.Rendering;
-
+ 
 namespace kg.ValheimEnchantmentSystem
 {
     [BepInPlugin(GUID, PLUGIN_NAME, PLUGIN_VERSION)]
@@ -13,13 +13,13 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.5.2";
+        private const string PLUGIN_VERSION = "1.5.3";
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset;
         public static ConfigFile SyncedConfig;
         public static ConfigFile ItemConfig;
-        public static string ConfigFolder;
+        public static string ConfigFolder; 
         public static readonly Harmony Harmony = new(GUID);
         public static readonly ConfigSync ConfigSync = new(GUID)
         { 
