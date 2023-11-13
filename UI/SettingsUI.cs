@@ -21,11 +21,16 @@ public static class SettingsUI
             firstInit = false;
             var settingsPrefab = __instance.m_settingsPrefab;
             var controls = settingsPrefab.transform.Find("panel/TabButtons/Controlls");
+            if (!controls) controls = settingsPrefab.transform.Find("panel/TabButtons/Tabs/Controls");
+            if (!controls) return;
             var newButton = UnityEngine.Object.Instantiate(controls);
             newButton.SetParent(controls.parent, false);
             newButton.name = "kg_Enchantment";
             newButton.SetAsLastSibling();
-            newButton.transform.Find("Text").GetComponent<TMP_Text>().text = "$enchantment_enchantment".Localize();
+            Transform textTransform = newButton.transform.Find("Text");
+            if(!textTransform) textTransform = newButton.transform.Find("Selected/Text");
+            if(!textTransform) return;
+            textTransform.GetComponent<TMP_Text>().text = "$enchantment_enchantment".Localize();
             var tabHandler = settingsPrefab.transform.Find("panel/TabButtons").GetComponent<TabHandler>();
             var page = settingsPrefab.transform.Find("panel/Tabs");
             GameObject newPage = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantments_Settings"));
@@ -40,6 +45,11 @@ public static class SettingsUI
                 m_page = newPage.GetComponent<RectTransform>()
             };
             tabHandler.m_tabs.Add(newTab);
+            
+            Type auga = Type.GetType("Auga.Auga, Auga");
+            if (auga != null)
+                newPage.transform.localScale *= 0.7f;
+            
         }
     }
 

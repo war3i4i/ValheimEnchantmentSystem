@@ -27,28 +27,29 @@ public static class ScrollItems
 
     private static readonly Dictionary<char, int> SkillExpScroll_DefaultValues = new()
     {
-        { 'D', 25 }, { 'C', 50 }, { 'B', 75 }, { 'A', 100 }, { 'S', 125 }
+        {'F', 15}, { 'D', 25 }, { 'C', 50 }, { 'B', 75 }, { 'A', 100 }, { 'S', 140 }
     };
 
     private static readonly HashSet<string> ExludedDroPrefabs = new();
 
     private static readonly Dictionary<char, string[]> DefaultRecipes = new()
     {
-        { 'D', new[]{"DeerHide,10", "Flint,5", "Wood,5", "TrophyDeer,2"}},
-        { 'C', new[]{"GreydwarfEye,10", "BoneFragments,5", "FineWood,5", "TrophySkeleton,2"}},
-        { 'B', new[]{"Entrails,10", "Bloodbag,5", "ElderBark,5", "TrophyLeech,2"}},
-        { 'A', new[]{"WolfPelt,10", "FreezeGland,5", "FineWood,5", "TrophyHatchling,2"}},
+        { 'F', new[]{"DeerHide,10", "Flint,5", "Wood,5", "TrophyDeer,2"}},
+        { 'D', new[]{"GreydwarfEye,10", "BoneFragments,5", "FineWood,5", "TrophySkeleton,2"}},
+        { 'C', new[]{"Entrails,10", "Bloodbag,5", "ElderBark,5", "TrophyLeech,2"}},
+        { 'B', new[]{"WolfPelt,10", "FreezeGland,5", "FineWood,5", "TrophyHatchling,2"}},
+        { 'A', new[]{"LoxPelt,10", "Needle,5", "FineWood,5", "TrophyGoblin,2"}},
         { 'S', new[]{"Eitr,10", "Softtissue,5", "YggdrasilWood,5", "TrophyDvergr,2"}},
     };
     private static readonly Dictionary<char, string[]> DefaultRecipes_Blessed = new()
     {
-        { 'D', new[]{"HardAntler,1","SurtlingCore,1", "GreydwarfEye,20"}},
-        { 'C', new[]{"TrophyTheElder,1", "AncientSeed,2", "SilverNecklace,1"}},
-        { 'B', new[]{"TrophyBonemass,1", "Chitin,5", "BoneFragments,10"}},
+        { 'F', new[]{"HardAntler,1","SurtlingCore,1", "GreydwarfEye,20"}},
+        { 'D', new[]{"TrophyTheElder,1", "AncientSeed,2", "SilverNecklace,1"}},
+        { 'C', new[]{"TrophyBonemass,1", "Chitin,5", "BoneFragments,10"}},
+        { 'B', new[]{"TrophySGolem,1", "WolfFang,2", "Crystal,20", "WolfHairBundle,3"}},
         { 'A', new[]{"TrophyGoblinShaman,1", "GoblinTotem,2", "Needle,20", "LoxPelt,3"}},
         { 'S', new[]{"TrophySeekerBrute,1", "Eitr,5", "RoyalJelly,25", "Carapace,40"}},
     };
-    
     
     private static void FillRecipe(Item item, char tier, bool bless)
     {
@@ -79,18 +80,18 @@ public static class ScrollItems
         ExcludePrefabsFromDrop.SettingChanged += FillExclude;
         FillExclude();
         
-        BiomeMapper.Add(Heightmap.Biome.Meadows,ValheimEnchantmentSystem.config("Scrolls", "Meadows Tier", "D", "Tier of scrolls Meadows (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.BlackForest,ValheimEnchantmentSystem.config("Scrolls", "BlackForest Tier", "C", "Tier of scrolls BlackForest (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.Swamp,ValheimEnchantmentSystem.config("Scrolls", "Swamp Tier", "B", "Tier of scrolls Swamp (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.Ocean,ValheimEnchantmentSystem.config("Scrolls", "Ocean Tier", "B", "Tier of scrolls Ocean (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.Mountain,ValheimEnchantmentSystem.config("Scrolls", "Mountain Tier", "A", "Tier of scrolls Mountain (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.Plains,ValheimEnchantmentSystem.config("Scrolls", "Plains Tier", "A", "Tier of scrolls Plains (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.Mistlands,ValheimEnchantmentSystem.config("Scrolls", "Mistlands Tier", "S", "Tier of scrolls Mistlands (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.AshLands,ValheimEnchantmentSystem.config("Scrolls", "Ashlands Tier", "S", "Tier of scrolls Ashlands (D C B A S)"));
-        BiomeMapper.Add(Heightmap.Biome.DeepNorth,ValheimEnchantmentSystem.config("Scrolls", "Deepnorth Tier", "S", "Tier of scrolls Deepnorth (D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Meadows,ValheimEnchantmentSystem.config("Scrolls", "Meadows Tier", "F", "Tier of scrolls Meadows (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.BlackForest,ValheimEnchantmentSystem.config("Scrolls", "BlackForest Tier", "D", "Tier of scrolls BlackForest (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Swamp,ValheimEnchantmentSystem.config("Scrolls", "Swamp Tier", "C", "Tier of scrolls Swamp (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Ocean,ValheimEnchantmentSystem.config("Scrolls", "Ocean Tier", "C", "Tier of scrolls Ocean (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Mountain,ValheimEnchantmentSystem.config("Scrolls", "Mountain Tier", "B", "Tier of scrolls Mountain (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Plains,ValheimEnchantmentSystem.config("Scrolls", "Plains Tier", "A", "Tier of scrolls Plains (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.Mistlands,ValheimEnchantmentSystem.config("Scrolls", "Mistlands Tier", "S", "Tier of scrolls Mistlands (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.AshLands,ValheimEnchantmentSystem.config("Scrolls", "Ashlands Tier", "S", "Tier of scrolls Ashlands (F D C B A S)"));
+        BiomeMapper.Add(Heightmap.Biome.DeepNorth,ValheimEnchantmentSystem.config("Scrolls", "Deepnorth Tier", "S", "Tier of scrolls Deepnorth (F D C B A S)"));
         
         
-        char[] DCBAS = {'D', 'C', 'B', 'A', 'S'};
+        char[] DCBAS = {'F', 'D', 'C', 'B', 'A', 'S'};
         foreach (var c in DCBAS)
         {
             Item weaponScroll = new Item(ValheimEnchantmentSystem._asset, $"kg_EnchantScroll_Weapon_{c}")

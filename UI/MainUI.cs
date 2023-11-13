@@ -420,9 +420,9 @@ public static class VES_UI
             Color cColor = c.ToColorAlpha();
             itemName += $" (<color={c.IncreaseColorLight()}>+{en.level}</color>)";
             Item_Trail.color = cColor;
-            int mainChance = en.GetEnchantmentChance();
-            float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
-            Chance_Text.text = $"{(mainChance + additionalChance).RoundOne()}%";
+            double chance = (en.GetEnchantmentChance() + SyncedData.GetAdditionalEnchantmentChance()).RoundOne();
+            if(chance > 100) chance = 100;
+            Chance_Text.text = $"{chance}%";
         }
         else
         {
@@ -542,14 +542,19 @@ public static class VES_UI
         [UsedImplicitly]
         private static void Postfix(InventoryGui __instance)
         {
-            _enchantmentBackground = UnityEngine.Object.Instantiate(__instance.m_repairPanel.gameObject,
-                __instance.m_repairPanel.transform.parent);
-            RectTransform rectTransform = _enchantmentBackground.GetComponent<RectTransform>();
-            rectTransform.anchoredPosition += new Vector2(0, 74);
-            _enchantmentBackground.transform.SetAsFirstSibling();
-            _enchantmentButton = UnityEngine.Object
-                .Instantiate(__instance.m_repairButton.gameObject, __instance.m_repairButton.transform.parent)
-                .GetComponent<Button>();
+            if (__instance.m_repairPanel.gameObject != __instance.m_repairButton.gameObject)
+            {
+                _enchantmentBackground = UnityEngine.Object.Instantiate(__instance.m_repairPanel.gameObject, __instance.m_repairPanel.transform.parent);
+                RectTransform rectTransform = _enchantmentBackground.GetComponent<RectTransform>();
+                rectTransform.anchoredPosition += new Vector2(0, 74);
+                _enchantmentBackground.transform.SetAsFirstSibling();
+            }
+            else
+            {
+                _enchantmentBackground = new();
+            }
+            
+            _enchantmentButton = UnityEngine.Object.Instantiate(__instance.m_repairButton.gameObject, __instance.m_repairButton.transform.parent).GetComponent<Button>();
             _enchantmentButton.name = "enchantment_menu";
             _enchantmentButton.onClick.RemoveAllListeners();
             _enchantmentButton.onClick.AddListener(() =>
@@ -561,7 +566,7 @@ public static class VES_UI
             _enchantmentButton.GetComponent<UITooltip>().m_text = "$enchantment_menu".Localize();
             RectTransform rect = _enchantmentButton.GetComponent<RectTransform>();
             rect.anchoredPosition += new Vector2(0, 74);
-            _enchantmentButton.transform.Find("Glow").gameObject.SetActive(false);
+            _enchantmentButton.transform.Find("Glow")?.gameObject.SetActive(false);
             _enchantmentButton.gameObject.SetActive(true);
             _enchantmentButton.transform.Find("Image").GetComponent<Image>().sprite =
                 ValheimEnchantmentSystem._asset.LoadAsset<Sprite>("kg_Enchantment_Icon");
@@ -576,7 +581,7 @@ public static class VES_UI
         private static void Postfix(InventoryGui __instance)
         {
             if (!Player.m_localPlayer) return;
-            if (Player.m_localPlayer.GetCurrentCraftingStation() || (__instance.m_currentContainer && __instance.m_currentContainer.m_nview != Player.m_localPlayer.m_nview))
+            if (Player.m_localPlayer.GetCurrentCraftingStation())
             {
                 InventoryGui_Awake_Patch._enchantmentBackground.gameObject.SetActive(false);
                 InventoryGui_Awake_Patch._enchantmentButton.gameObject.SetActive(false);

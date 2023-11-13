@@ -170,8 +170,6 @@ public static class Enchantment_Core
             
             return false;
         }
-
-        public static implicit operator bool(Enchanted item) => item != null;
     }
 
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]

@@ -260,16 +260,18 @@ public static class SyncedData
     }
 
     public static int GetEnchantmentChance(Enchantment_Core.Enchanted en)
+        => GetEnchantmentChance(en.Item.m_dropPrefab?.name, en.level);
+
+    public static int GetEnchantmentChance(string dropPrefab, int level)
     {
-        if (en.level == 0) return 100;
-        string dropPrefab = en.Item.m_dropPrefab?.name;
+        if (level == 0) return 100;
         if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentChances.TryGetValue(dropPrefab, out var overriden))
         {
-            if (overriden.TryGetValue(en.level, out var overrideChance))
+            if (overriden.TryGetValue(level, out var overrideChance))
                 return overrideChance;
         }
         
-        return Synced_EnchantmentChances.Value.TryGetValue(en.level, out var chance) ? chance : 0;
+        return Synced_EnchantmentChances.Value.TryGetValue(level, out var chance) ? chance : 0;
     }
 
     public static Stat_Data GetStatIncrease(Enchantment_Core.Enchanted en)

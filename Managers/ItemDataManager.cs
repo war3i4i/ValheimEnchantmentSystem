@@ -116,6 +116,8 @@ public abstract class ItemData
 
 		return serializedFields[t] = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.GetCustomAttributes(typeof(SerializeField), true).Length > 0).ToDictionary(f => f.Name, f => f);
 	}
+	
+	public static implicit operator bool(ItemData item) => item != null;
 }
 
 public sealed class StringItemData : ItemData;
