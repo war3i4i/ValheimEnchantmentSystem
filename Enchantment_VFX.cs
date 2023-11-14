@@ -411,10 +411,14 @@ public static class Enchantment_VFX
     [ClientOnlyPatch]
     public static class InventoryGrid_Awake_Patch
     {
+        private static bool firsttime;
+        
         [UsedImplicitly]
         public static void Postfix(InventoryGrid __instance)
         {
+            if (firsttime) return;
             if (!__instance.m_elementPrefab) return;
+            firsttime = true;
             Transform transform = __instance.m_elementPrefab.transform;
             GameObject newIcon = Object.Instantiate(HOTBAR_PART);
             newIcon!.transform.SetParent(transform);
@@ -423,36 +427,40 @@ public static class Enchantment_VFX
             newIcon.gameObject.SetActive(false);
         }
     }
-
-    [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.Awake))]
+    
+    [HarmonyPatch(typeof(Hud),nameof(Hud.Awake))]
     [ClientOnlyPatch]
-    private static class Game_Awake_Patch_Transmog
+    private static class Hud_Awake_Patch
     {
-        [UsedImplicitly] private static void Postfix() => HotkeyBar_UpdateIcons_Patch.FirstInit = false;
+        private static bool firsttime;
+        public static HotkeyBar barRef;
+        
+        [UsedImplicitly]
+        private static void Postfix(Hud __instance)
+        {
+            HotkeyBar bar = __instance.m_rootObject.transform.Find("HotKeyBar")?.GetComponent<HotkeyBar>();
+            barRef = bar;
+            if (!bar || firsttime) return;
+            firsttime = true;
+            Transform transform = bar.m_elementPrefab.transform;
+            GameObject newIcon = Object.Instantiate(HOTBAR_PART);
+            newIcon!.transform.SetParent(transform);
+            newIcon.name = "VES_Level";
+            newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            newIcon.gameObject.SetActive(false);
+        }
     }
-
-
+    
     [HarmonyPatch(typeof(HotkeyBar), nameof(HotkeyBar.UpdateIcons))]
     [ClientOnlyPatch]
     private static class HotkeyBar_UpdateIcons_Patch
     {
-        public static bool FirstInit;
         public static int _needUpdateFrame = -1;
 
-        [UsedImplicitly]
+        [UsedImplicitly] 
         public static void Postfix(HotkeyBar __instance)
         {
-            if (__instance.gameObject.name != "HotKeyBar") return;
-            if (!FirstInit)
-            {
-                FirstInit = true;
-                Transform transform = __instance.m_elementPrefab.transform;
-                GameObject newIcon = Object.Instantiate(HOTBAR_PART);
-                newIcon!.transform.SetParent(transform);
-                newIcon.name = "VES_Level";
-                newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-                newIcon.gameObject.SetActive(false);
-            }
+            if (__instance != Hud_Awake_Patch.barRef) return;
             if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
             if (_needUpdateFrame != Time.frameCount) return;
             foreach (HotkeyBar.ElementData element in __instance.m_elements.Where(element => !element.m_used))

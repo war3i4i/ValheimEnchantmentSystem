@@ -1,6 +1,7 @@
 ﻿using ItemManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
+using kg.ValheimEnchantmentSystem.UI;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
@@ -9,6 +10,8 @@ namespace kg.ValheimEnchantmentSystem.Items_Structures;
 [VES_Autoload]
 public static class ScrollItems
 {
+    private static GameObject CombineOutline;
+    
     private static ConfigEntry<float> DropChance;
     private static ConfigEntry<float> DropChance_Bosses;
     private static ConfigEntry<float> DropChance_Blessed;
@@ -24,11 +27,18 @@ public static class ScrollItems
     private static readonly Dictionary<Heightmap.Biome, ConfigEntry<string>> BiomeMapper = new();
     private static readonly Dictionary<char, ConfigEntry<int>> BookXPMapper = new();
     private static readonly List<GameObject> SkillScrolls = new(5);
+    
+    private enum RequiredLine { Three, Five}
+    
+    private static ConfigEntry<bool> AllowScrollCombine;
+    private static ConfigEntry<RequiredLine> RequiredLine_Config;
 
     private static readonly Dictionary<char, int> SkillExpScroll_DefaultValues = new()
     {
         {'F', 15}, { 'D', 25 }, { 'C', 50 }, { 'B', 75 }, { 'A', 100 }, { 'S', 140 }
     };
+    
+    private static readonly HashSet<string> UpgradeScrollHashset = new();
 
     private static readonly HashSet<string> ExludedDroPrefabs = new();
 
@@ -68,6 +78,8 @@ public static class ScrollItems
     [UsedImplicitly]
     private static void OnInit()
     {
+        AllowScrollCombine = ValheimEnchantmentSystem.config("Scrolls", "Allow Combine", true, "Allow combining scrolls.");
+        CombineOutline = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_CombinePart");
         MonsterDroppingScrolls = ValheimEnchantmentSystem.config("Scrolls", "Drop From Monsters", true, "Allow monsters to drop scrolls.");
         MonsterDroppingSkilllScrolls = ValheimEnchantmentSystem.config("Skill Scrolls", "Drop From Monsters (Skill exp)", true, "Allow monsters to drop enchant skill exp scrolls.");
         DropChance = ValheimEnchantmentSystem.config("Scrolls", "Drop Chance", 3f, "Chance to drop from enemies.");
@@ -77,6 +89,7 @@ public static class ScrollItems
         DropChance_Skill = ValheimEnchantmentSystem.config("Skill Scrolls", "Drop Chance (Skill exp)", 0.10f, "Chance to drop from enemies.");
         DropChance_Skill_Bosses = ValheimEnchantmentSystem.config("Skill Scrolls", "Drop Chance (Skill exp)", 25f, "Chance to drop from bosses.");
         ExcludePrefabsFromDrop = ValheimEnchantmentSystem.config("Scrolls", "Exclude Prefabs From Drop", "TentaRoot", "Comma separated list of prefabs to exclude from dropping scrolls.");
+        RequiredLine_Config = ValheimEnchantmentSystem.config("Scrolls", "Required Line", RequiredLine.Five, "How many lines of the same item are required to combine.");
         ExcludePrefabsFromDrop.SettingChanged += FillExclude;
         FillExclude();
         
@@ -125,6 +138,14 @@ public static class ScrollItems
           
             BookXPMapper.Add(c, ValheimEnchantmentSystem.config("Skill Scrolls", $"Skill EXP Scroll {c}", SkillExpScroll_DefaultValues[c], $"Skill EXP Scroll {c}"));
             SkillScrolls.Add(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>($"kg_EnchantSkillScroll_{c}"));
+
+            if (c != 'S')
+            {
+                UpgradeScrollHashset.Add(weaponScroll.Prefab.name);
+                UpgradeScrollHashset.Add(weaponScroll_Bless.Prefab.name);
+                UpgradeScrollHashset.Add(armorScroll.Prefab.name);
+                UpgradeScrollHashset.Add(armorScroll_Bless.Prefab.name);
+            } 
         }
         
         SkillScrolls.ForEach(x => x.AddComponent<ExpScroll>());
@@ -302,4 +323,191 @@ public static class ScrollItems
             return "";
         }
     }
+    
+    
+    [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.Awake))]
+    [ClientOnlyPatch]
+    public static class InventoryGrid_Awake_Patch
+    {
+        private static bool firsttime;
+        
+        [UsedImplicitly]
+        public static void Postfix(InventoryGrid __instance)
+        {
+            if (firsttime) return;
+            if (!__instance.m_elementPrefab) return;
+            firsttime = true;
+            Transform transform = __instance.m_elementPrefab.transform;
+            GameObject newIcon = Object.Instantiate(CombineOutline);
+            newIcon!.transform.SetParent(transform);
+            newIcon.name = "VES_Combine";
+            newIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            newIcon.gameObject.SetActive(false);
+        }
+    }
+
+
+    private static bool HaveSurrounds_3(ItemDrop.ItemData item, Inventory grid, out int toInstantiate, bool removeIfTrue = false)
+    {
+        toInstantiate = 0;
+        var pos = item.m_gridPos;
+        var gridX = grid.m_width;
+        
+        var left = pos.x - 1;
+        var right = pos.x + 1;
+        var leftLeft = pos.x - 2;
+        var rightRight = pos.x + 2; 
+        
+        if(left < 0 || right >= gridX) return false;
+        
+        var leftItem = grid.GetItemAt(left, pos.y);
+        var rightItem = grid.GetItemAt(right, pos.y);
+        if (leftItem == null || rightItem == null) return false;
+        if (leftItem.m_dropPrefab.name != item.m_dropPrefab.name || rightItem.m_dropPrefab.name != item.m_dropPrefab.name) return false;
+        
+        if (leftLeft >= 0 && grid.GetItemAt(leftLeft, pos.y) is {} leftLeftItem && leftLeftItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
+        if (rightRight < gridX && grid.GetItemAt(rightRight, pos.y) is {} rightRightItem && rightRightItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
+        
+        toInstantiate = Mathf.Min(item.m_stack, leftItem.m_stack, rightItem.m_stack);
+        if (removeIfTrue)
+        {
+            grid.RemoveItem(item, toInstantiate);
+            grid.RemoveItem(leftItem, toInstantiate);
+            grid.RemoveItem(rightItem, toInstantiate);
+        }
+        
+        return true;
+    }
+
+    private static bool HaveSurrounds_5(ItemDrop.ItemData item, Inventory grid, out int toInstantiate, bool removeIfTrue = false)
+    {
+        toInstantiate = 0;
+        var pos = item.m_gridPos;
+        var gridX = grid.m_width;
+
+        var left = pos.x - 1;
+        var right = pos.x + 1;
+        var leftLeft = pos.x - 2;
+        var rightRight = pos.x + 2;
+
+        if (left < 0 || right >= gridX) return false;
+
+        var leftItem = grid.GetItemAt(left, pos.y);
+        var rightItem = grid.GetItemAt(right, pos.y);
+        if (leftItem == null || rightItem == null) return false;
+        if (leftItem.m_dropPrefab.name != item.m_dropPrefab.name ||
+            rightItem.m_dropPrefab.name != item.m_dropPrefab.name) return false;
+
+        if (leftLeft >= 0 && grid.GetItemAt(leftLeft, pos.y) is { } leftLeftItem &&
+            leftLeftItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
+        if (rightRight < gridX && grid.GetItemAt(rightRight, pos.y) is { } rightRightItem &&
+            rightRightItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
+
+        var up = pos.y - 1;
+        var down = pos.y + 1;
+        var upUp = pos.y - 2;
+        var downDown = pos.y + 2;
+
+        if (up < 0 || down >= grid.m_height) return false;
+
+        var upItem = grid.GetItemAt(pos.x, up);
+        var downItem = grid.GetItemAt(pos.x, down);
+        if (upItem == null || downItem == null) return false;
+        if (upItem.m_dropPrefab.name != item.m_dropPrefab.name ||
+            downItem.m_dropPrefab.name != item.m_dropPrefab.name) return false;
+
+        if (upUp >= 0 && grid.GetItemAt(pos.x, upUp) is { } upUpItem &&
+            upUpItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
+        if (downDown < grid.m_height && grid.GetItemAt(pos.x, downDown) is { } downDownItem &&
+            downDownItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
+        
+        toInstantiate = Mathf.Min(item.m_stack, leftItem.m_stack, rightItem.m_stack, upItem.m_stack, downItem.m_stack);
+        if (removeIfTrue)
+        {
+            grid.RemoveItem(item, toInstantiate);
+            grid.RemoveItem(leftItem, toInstantiate);
+            grid.RemoveItem(rightItem, toInstantiate);
+            grid.RemoveItem(upItem, toInstantiate);
+            grid.RemoveItem(downItem, toInstantiate);
+        }
+        return true;
+    }
+
+
+
+    [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.UpdateGui))]
+    [ClientOnlyPatch]
+    private static class InventoryGrid_UpdateGui_Patch
+    {
+        [UsedImplicitly]
+        public static void Postfix(InventoryGrid __instance)
+        {
+            foreach (InventoryGrid.Element element in __instance.m_elements)
+            {
+                element.m_go.transform.Find("VES_Combine").gameObject.SetActive(false);
+            }
+            if (!AllowScrollCombine.Value) return;
+            foreach (ItemDrop.ItemData item in __instance.m_inventory.GetAllItems().Where(i => UpgradeScrollHashset.Contains(i.m_dropPrefab.name)))
+            {
+                switch (RequiredLine_Config.Value)
+                {
+                    case RequiredLine.Three:
+                        if (!HaveSurrounds_3(item, __instance.m_inventory, out _)) continue;
+                        break;
+                    case RequiredLine.Five:
+                        if (!HaveSurrounds_5(item, __instance.m_inventory, out _)) continue;
+                        break;
+                    default: continue;
+                }
+                var element = __instance.m_elements[item.m_gridPos.y * __instance.m_inventory.m_width + item.m_gridPos.x];
+                var combine = element.m_go.transform.Find("VES_Combine");
+                combine.gameObject.SetActive(true);
+                combine.transform.GetChild(1).gameObject.SetActive(RequiredLine_Config.Value == RequiredLine.Three);
+                combine.transform.GetChild(2).gameObject.SetActive(RequiredLine_Config.Value == RequiredLine.Five);
+            }
+        }
+    }
+    
+    
+    private static readonly Dictionary<char, char> UpgradeMapper = new()
+    {
+        {'F', 'D'}, {'D', 'C'}, {'C', 'B'}, {'B', 'A'}, {'A', 'S'}
+    };
+    
+    
+    [HarmonyPatch(typeof(InventoryGrid),nameof(InventoryGrid.OnRightClick))]
+    [ClientOnlyPatch]
+    private static class InventoryGrid_OnRightClick_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(InventoryGrid __instance, UIInputHandler element)
+        {
+            if (!AllowScrollCombine.Value) return;
+            GameObject gameObject = element.gameObject;
+            Vector2i buttonPos = __instance.GetButtonPos(gameObject);
+            ItemDrop.ItemData itemAt = __instance.m_inventory.GetItemAt(buttonPos.x, buttonPos.y);
+            if (itemAt == null) return;
+            string dropPrefab = itemAt.m_dropPrefab.name;
+            if (!UpgradeScrollHashset.Contains(dropPrefab)) return;
+            int toInstantiate;
+            switch (RequiredLine_Config.Value)
+            {
+                case RequiredLine.Three:
+                    if (!HaveSurrounds_3(itemAt, __instance.m_inventory, out toInstantiate, true)) return;
+                    break;
+                case RequiredLine.Five:
+                    if (!HaveSurrounds_5(itemAt, __instance.m_inventory, out toInstantiate,  true)) return;
+                    break;
+                default: return;
+            }
+            char tier = dropPrefab[dropPrefab.Length - 1];
+            char newTier = UpgradeMapper[tier];
+            string newDropPrefab = dropPrefab.Substring(0, dropPrefab.Length - 1) + newTier;
+            Utils.InstantiateItem(ZNetScene.instance.GetPrefab(newDropPrefab), toInstantiate, 1, __instance.m_inventory);
+            VES_UI.PlayClick();
+        }
+    }
+    
+    
+    
 }

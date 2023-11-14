@@ -214,7 +214,7 @@ public static class Defaults
                 "AtgeirHimminAfl", "AxeJotunBane", "BowSpineSnap", "PickaxeBlackMetal", "ShieldCarapace",
                 "ShieldCarapaceBuckler", "SledgeDemolisher", "SpearCarapace", 
                 "StaffFireball", "StaffIceShards", "StaffShield", "StaffSkeleton", "SwordMistwalker", "THSwordKrom",
-                "CrossbowArbalest", "SwordCheat", "KnifeSkollAndHat"
+                "CrossbowArbalest", "SwordCheat", "KnifeSkollAndHati"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -231,9 +231,8 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Weapon_A", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Weapon_Blessed_A", 1), Items = new()
             {
-                "AtgeirBlackmetal", "AxeBlackMetal", "BattleaxeCrystal", "BowDraugrFang", "Demister", "FistFenrirClaw",
-                "KnifeBlackMetal", "KnifeSilver", "MaceSilver", "ShieldBlackmetal", "ShieldBlackmetalTower", "ShieldSilver",
-                "SpearWolfFang", "SwordBlackmetal", "SwordSilver", "MaceNeedle"
+                "AtgeirBlackmetal", "AxeBlackMetal", "KnifeBlackMetal", "ShieldBlackmetal",
+                "ShieldBlackmetalTower", "SwordBlackmetal", "MaceNeedle"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -241,8 +240,7 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Armor_A", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Armor_Blessed_A", 1), Items = new()
             {
-                "ArmorWolfChest", "ArmorWolfLegs", "CapeLinen", "CapeLox", "CapeWolf", "HelmetDrake",
-                "ArmorFenringChest", "ArmorFenringLegs", "HelmetFenring", "ArmorPaddedGreaves", "ArmorRootChest", "HelmetPadded"
+                "CapeLinen", "CapeLox", "ArmorPaddedGreaves", "HelmetPadded",  "ArmorPaddedCuirass"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -250,10 +248,8 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Weapon_B", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Weapon_Blessed_B", 1), Items = new()
             {
-                "AtgeirIron", "AxeIron", "Battleaxe", "BowHuntsman", "Lantern", "MaceIron", "PickaxeIron",
-                "ShieldBanded", "ShieldIronBuckler", "ShieldIronSquare", "ShieldIronTower", "ShieldSerpentscale",
-                "SledgeIron", "SpearElderbark", "SwordIron", "TankardAnniversary", "TorchMist", "KnifeChitin",
-                "SpearChitin"
+                "BattleaxeCrystal", "BowDraugrFang", "FistFenrirClaw","KnifeSilver", "MaceSilver", "ShieldSilver",
+                "SpearWolfFang", "SwordSilver"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -261,7 +257,8 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Armor_B", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Armor_Blessed_B", 1), Items = new()
             {
-                "ArmorIronChest", "ArmorIronLegs", "ArmorPaddedCuirass", "ArmorRootLegs", "HelmetIron", "HelmetRoot"
+                "ArmorWolfChest", "ArmorWolfLegs", "CapeWolf", "HelmetDrake",
+                "ArmorFenringChest", "ArmorFenringLegs", "HelmetFenring"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -269,8 +266,10 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Weapon_C", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Weapon_Blessed_C", 1), Items = new()
             {
-                "AtgeirBronze", "AxeBronze", "Cultivator", "MaceBronze", "PickaxeBronze", "ShieldBronzeBuckler",
-                "SpearBronze", "SwordBronze", "BowFineWood"
+                "AtgeirIron", "AxeIron", "Battleaxe", "BowHuntsman", "Lantern", "MaceIron", "PickaxeIron",
+                "ShieldBanded", "ShieldIronBuckler", "ShieldIronSquare", "ShieldIronTower", "ShieldSerpentscale",
+                "SledgeIron", "SpearElderbark", "SwordIron", "TankardAnniversary", "TorchMist", "KnifeChitin",
+                "SpearChitin",  "ArmorRootChest"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -278,8 +277,7 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Armor_C", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Armor_Blessed_C", 1), Items = new()
             {
-                "ArmorBronzeChest", "ArmorBronzeLegs", "ArmorTrollLeatherChest", "ArmorTrollLeatherLegs",
-                "CapeTrollHide", "HelmetBronze", "HelmetTrollLeather"
+                "ArmorIronChest", "ArmorIronLegs","ArmorRootLegs", "HelmetIron", "HelmetRoot"
             }
         },
         new SyncedData.EnchantmentReqs()
@@ -287,14 +285,32 @@ public static class Defaults
             enchant_prefab = new("kg_EnchantScroll_Weapon_D", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Weapon_Blessed_D", 1), Items = new()
             {
-                "AxeFlint", "Bow","Hoe", "KnifeButcher", "KnifeCopper", "KnifeFlint", "PickaxeAntler", "PickaxeStone",
-                "ShieldBoneTower", "ShieldWood", "ShieldWoodTower", "SpearFlint", "SledgeStagbreaker"
+                "AtgeirBronze", "AxeBronze", "Cultivator", "MaceBronze", "PickaxeBronze", "ShieldBronzeBuckler",
+                "SpearBronze", "SwordBronze", "BowFineWood"
             }
         },
         new SyncedData.EnchantmentReqs()
         {
             enchant_prefab = new("kg_EnchantScroll_Armor_D", 1),
             blessed_enchant_prefab = new("kg_EnchantScroll_Armor_Blessed_D", 1), Items = new()
+            {
+                "ArmorBronzeChest", "ArmorBronzeLegs", "ArmorTrollLeatherChest", "ArmorTrollLeatherLegs",
+                "CapeTrollHide", "HelmetBronze", "HelmetTrollLeather"
+            }
+        },
+        new SyncedData.EnchantmentReqs()
+        {
+            enchant_prefab = new("kg_EnchantScroll_Weapon_F", 1),
+            blessed_enchant_prefab = new("kg_EnchantScroll_Weapon_Blessed_F", 1), Items = new()
+            {
+                "AxeFlint", "Bow","Hoe", "KnifeButcher", "KnifeCopper", "KnifeFlint", "PickaxeAntler", "PickaxeStone",
+                "ShieldBoneTower", "ShieldWood", "ShieldWoodTower", "SpearFlint", "SledgeStagbreaker"
+            }
+        },
+        new SyncedData.EnchantmentReqs()
+        {
+            enchant_prefab = new("kg_EnchantScroll_Armor_F", 1),
+            blessed_enchant_prefab = new("kg_EnchantScroll_Armor_Blessed_F", 1), Items = new()
             {
                 "ArmorLeatherChest", "ArmorLeatherLegs", "CapeDeerHide", "HelmetLeather", "ArmorRagsChest",
                 "ArmorRagsLegs"

@@ -176,7 +176,7 @@ public static class Enchantment_AdditionalEffects
             gameObject.name = "kg_Enchantment_Wings";
             Material useMat = _wingsMaterials.TryGetValue(mat.ToLower(), out Material material)
                 ? material
-                : _wingsMaterials.ElementAt(UnityEngine.Random.Range(0, _wingsMaterials.Count)).Value;
+                : _wingsMaterials["flame"];
             gameObject.GetComponent<MeshRenderer>().material = useMat;
         }
 
@@ -187,8 +187,8 @@ public static class Enchantment_AdditionalEffects
             if (!_enableAuraEffects.Value || i == 0 || i > _auraModels.Count) return;
             ColorUtility.TryParseHtmlString(color, out var c);
             foreach (var mr in _auraModels[i - 1].GetComponentsInChildren<ParticleSystem>())
-            {
-                var main = mr.main;
+            {  
+                var main = mr.main;  
                 main.startColor = new Color(c.r, c.g, c.b, main.startColor.color.a);
             }
             GameObject gameObject = UnityEngine.Object.Instantiate(_auraModels[i - 1], p.transform);

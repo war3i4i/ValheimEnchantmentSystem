@@ -257,6 +257,49 @@ public static class Utils
         return !c.m_baseAI || c.m_baseAI.IsEnemy(Player.m_localPlayer);
     }
 
+    public static void InstantiateItem(GameObject prefab, int count, int level, Inventory overrideInventory = null)
+    {
+        Player p = Player.m_localPlayer;
+        if (!p || !prefab || count == 0) return;
+
+        var inventory = overrideInventory ?? p.m_inventory;
+
+        if (prefab.GetComponent<ItemDrop>() is not { } item) return;
+        
+        if (item.m_itemData.m_shared.m_maxStackSize > 1)
+        {
+            GameObject go = UnityEngine.Object.Instantiate(prefab,
+                p.transform.position + p.transform.forward * 1.5f + Vector3.up * 1.5f, Quaternion.identity);
+            ItemDrop itemDrop = go.GetComponent<ItemDrop>();
+            itemDrop.m_itemData.m_quality = level;
+            itemDrop.m_itemData.m_stack = count;
+            itemDrop.m_itemData.m_durability = itemDrop.m_itemData.GetMaxDurability();
+            itemDrop.Save();
+            if (inventory.CanAddItem(go))
+            {
+                inventory.AddItem(itemDrop.m_itemData);
+                ZNetScene.instance.Destroy(go);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                GameObject go = UnityEngine.Object.Instantiate(prefab,
+                    p.transform.position + p.transform.forward * 1.5f + Vector3.up * 1.5f, Quaternion.identity);
+                ItemDrop itemDrop = go.GetComponent<ItemDrop>();
+                itemDrop.m_itemData.m_quality = level;
+                itemDrop.m_itemData.m_durability = itemDrop.m_itemData.GetMaxDurability();
+                itemDrop.Save();
+                if (inventory.CanAddItem(go))
+                {
+                    inventory.AddItem(itemDrop.m_itemData);
+                    ZNetScene.instance.Destroy(go);
+                }
+            }
+        }
+    }
+
     /*public static float RoundOne(this float f)
     {
         return f < 100 ? Mathf.Round(f * 10.0f) * 0.1f : Mathf.Round(f);
