@@ -16,7 +16,7 @@ namespace kg.ValheimEnchantmentSystem
         private const string PLUGIN_VERSION = "1.5.3";
         
         public static ValheimEnchantmentSystem _thistype; 
-        public static AssetBundle _asset;
+        public static AssetBundle _asset; 
         public static ConfigFile SyncedConfig;
         public static ConfigFile ItemConfig;
         public static string ConfigFolder; 

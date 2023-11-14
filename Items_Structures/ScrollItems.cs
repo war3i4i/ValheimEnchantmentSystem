@@ -82,7 +82,7 @@ public static class ScrollItems
         CombineOutline = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_CombinePart");
         MonsterDroppingScrolls = ValheimEnchantmentSystem.config("Scrolls", "Drop From Monsters", true, "Allow monsters to drop scrolls.");
         MonsterDroppingSkilllScrolls = ValheimEnchantmentSystem.config("Skill Scrolls", "Drop From Monsters (Skill exp)", true, "Allow monsters to drop enchant skill exp scrolls.");
-        DropChance = ValheimEnchantmentSystem.config("Scrolls", "Drop Chance", 3f, "Chance to drop from enemies.");
+        DropChance = ValheimEnchantmentSystem.config("Scrolls", "Drop Chance", 8f, "Chance to drop from enemies.");
         DropChance_Bosses = ValheimEnchantmentSystem.config("Scrolls", "Drop Chance (Bosses)", 100f, "Chance to drop from bosses.");
         DropChance_Blessed = ValheimEnchantmentSystem.config("Scrolls", "Blessed Drop Chance", 0.25f, "Chance to drop from enemies.");
         DropChance_Blessed_Bosses = ValheimEnchantmentSystem.config("Scrolls", "Blessed Drop Chance (Bosses)", 40f, "Chance to drop from bosses.");
@@ -507,7 +507,21 @@ public static class ScrollItems
             VES_UI.PlayClick();
         }
     }
-    
-    
-    
+
+    [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetTooltip), typeof(ItemDrop.ItemData), typeof(int), typeof(bool), typeof(float))]
+    [ClientOnlyPatch]
+    public class TooltipPatch
+    {
+        [UsedImplicitly]
+        public static void Postfix(ItemDrop.ItemData item, bool crafting, ref string __result)
+        {
+            if (crafting || !AllowScrollCombine.Value) return;
+            if (!item.m_dropPrefab) return;
+            string dropPrefab = item.m_dropPrefab.name;
+            if (!UpgradeScrollHashset.Contains(dropPrefab)) return;
+            string shape = RequiredLine_Config.Value == RequiredLine.Three ? "<color=yellow><b>-</b></color>" : "<color=yellow><b>+</b></color>";
+            __result += "\n\n$enchantment_putinlinetocombine".Localize(shape);
+        }
+    }
+
 }
