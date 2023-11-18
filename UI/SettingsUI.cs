@@ -46,8 +46,7 @@ public static class SettingsUI
             };
             tabHandler.m_tabs.Add(newTab);
             
-            Type auga = Type.GetType("Auga.Auga, Auga");
-            if (auga != null)
+            if (ValheimEnchantmentSystem.AUGA)
                 newPage.transform.localScale *= 0.7f;
             
         }

@@ -259,8 +259,6 @@ public static class Enchantment_Core
                         __result = new Regex("(\\$inventory_spirit.*)").Replace(__result,
                             $"$1 (<color={color}>+{(damage.m_spirit * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_spirit * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result += $"\n<color={color}>•</color> $enchantment_bonusespercentdamage (<color={color}>+{damagePercent}%</color>)";
-                        
-                        
                     }
                     int armorPercent = stats.armor_percentage;
                     if (armorPercent > 0)
@@ -449,6 +447,39 @@ public static class Enchantment_Core
             
             if (__instance.m_shoulderItem?.Data().Get<Enchanted>() is { level: > 0 } en_shoulder && SyncedData.GetStatIncrease(en_shoulder) is {} stats_shoulder)
                 mods.Apply(stats_shoulder.GetResistancePairs());
+        }
+    }
+    
+    [HarmonyPatch(typeof(Player),nameof(Player.UpdateMovementModifier))]
+    [ClientOnlyPatch] 
+    private static class Player_UpdateMovementModifier_Patch
+    {
+        [UsedImplicitly]
+        private static void Postfix(Player __instance)
+        {
+            if (__instance.m_chestItem?.Data().Get<Enchanted>() is { level: > 0 } en_chest && SyncedData.GetStatIncrease(en_chest) is {} stats_chest)
+                __instance.m_equipmentMovementModifier += stats_chest.movement_speed / 100f;
+            
+            if (__instance.m_legItem?.Data().Get<Enchanted>() is { level: > 0 } en_legs && SyncedData.GetStatIncrease(en_legs) is {} stats_legs)
+                __instance.m_equipmentMovementModifier += stats_legs.movement_speed / 100f;
+            
+            if (__instance.m_helmetItem?.Data().Get<Enchanted>() is { level: > 0 } en_helmet && SyncedData.GetStatIncrease(en_helmet) is {} stats_helmet)
+                __instance.m_equipmentMovementModifier += stats_helmet.movement_speed / 100f;
+            
+            if (__instance.m_shoulderItem?.Data().Get<Enchanted>() is { level: > 0 } en_shoulder && SyncedData.GetStatIncrease(en_shoulder) is {} stats_shoulder)
+                __instance.m_equipmentMovementModifier += stats_shoulder.movement_speed / 100f;
+            
+            if (__instance.m_leftItem?.Data().Get<Enchanted>() is { level: > 0 } en_left && SyncedData.GetStatIncrease(en_left) is {} stats_left)
+                __instance.m_equipmentMovementModifier += stats_left.movement_speed / 100f;
+            else
+                if (__instance.m_hiddenLeftItem?.Data().Get<Enchanted>() is { level: > 0 } en_hiddenleft && SyncedData.GetStatIncrease(en_hiddenleft) is {} stats_hiddenleft)
+                __instance.m_equipmentMovementModifier += stats_hiddenleft.movement_speed / 100f;
+            
+            if (__instance.m_rightItem?.Data().Get<Enchanted>() is { level: > 0 } en_right && SyncedData.GetStatIncrease(en_right) is {} stats_right)
+                __instance.m_equipmentMovementModifier += stats_right.movement_speed / 100f;
+            else
+                if (__instance.m_hiddenRightItem?.Data().Get<Enchanted>() is { level: > 0 } en_hiddenright && SyncedData.GetStatIncrease(en_hiddenright) is {} stats_hiddenright)
+                __instance.m_equipmentMovementModifier += stats_hiddenright.movement_speed / 100f;
         }
     }
 

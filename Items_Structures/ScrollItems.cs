@@ -329,14 +329,14 @@ public static class ScrollItems
     [ClientOnlyPatch]
     public static class InventoryGrid_Awake_Patch
     {
-        private static bool firsttime;
+        private static HashSet<GameObject> firsttime = new();
         
         [UsedImplicitly]
         public static void Postfix(InventoryGrid __instance)
         {
-            if (firsttime) return;
             if (!__instance.m_elementPrefab) return;
-            firsttime = true;
+            if (firsttime.Contains(__instance.m_elementPrefab)) return;
+            firsttime.Add(__instance.m_elementPrefab);
             Transform transform = __instance.m_elementPrefab.transform;
             GameObject newIcon = Object.Instantiate(CombineOutline);
             newIcon!.transform.SetParent(transform);
@@ -375,7 +375,7 @@ public static class ScrollItems
             grid.RemoveItem(leftItem, toInstantiate);
             grid.RemoveItem(rightItem, toInstantiate);
         }
-        
+         
         return true;
     }
 
@@ -383,6 +383,7 @@ public static class ScrollItems
     {
         toInstantiate = 0;
         var pos = item.m_gridPos;
+        if (ValheimEnchantmentSystem.AUGA && pos.y <= 1) return false;
         var gridX = grid.m_width;
 
         var left = pos.x - 1;

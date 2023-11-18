@@ -13,7 +13,7 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.5.3";
+        private const string PLUGIN_VERSION = "1.5.4";
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset; 
@@ -27,9 +27,11 @@ namespace kg.ValheimEnchantmentSystem
             MinimumRequiredVersion = PLUGIN_VERSION, CurrentVersion = PLUGIN_VERSION
         };
         private enum WorkingAs { Client, Server }
+        public static bool AUGA = false;
          
         private void Awake()
         {
+            AUGA = Type.GetType("Auga.Auga, Auga") != null;
             _thistype = this;
             WorkingAs WorkingAsType = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null ? WorkingAs.Server : WorkingAs.Client;
             JSON.Parameters = new JSONParameters

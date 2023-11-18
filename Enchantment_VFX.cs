@@ -411,14 +411,14 @@ public static class Enchantment_VFX
     [ClientOnlyPatch]
     public static class InventoryGrid_Awake_Patch
     {
-        private static bool firsttime;
+        private static HashSet<GameObject> firsttime = new();
         
         [UsedImplicitly]
         public static void Postfix(InventoryGrid __instance)
         {
-            if (firsttime) return;
             if (!__instance.m_elementPrefab) return;
-            firsttime = true;
+            if (firsttime.Contains(__instance.m_elementPrefab)) return;
+            firsttime.Add(__instance.m_elementPrefab);
             Transform transform = __instance.m_elementPrefab.transform;
             GameObject newIcon = Object.Instantiate(HOTBAR_PART);
             newIcon!.transform.SetParent(transform);

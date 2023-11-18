@@ -376,6 +376,7 @@ public static class SyncedData
 
         public int attack_speed;
         public int slash_wave;
+        public int movement_speed;
 
         private bool ShouldShow()
         {
@@ -387,7 +388,7 @@ public static class SyncedData
                    resistance_pickaxe != HitData.DamageModifier.Normal || resistance_fire != HitData.DamageModifier.Normal ||
                    resistance_frost != HitData.DamageModifier.Normal || resistance_lightning != HitData.DamageModifier.Normal ||
                    resistance_poison != HitData.DamageModifier.Normal|| resistance_spirit != HitData.DamageModifier.Normal || 
-                   attack_speed != 0 || slash_wave != 0;
+                   attack_speed != 0 || slash_wave != 0 || movement_speed != 0;
         }
         
         private List<HitData.DamageModPair> cached_resistance_pairs;
@@ -421,8 +422,8 @@ public static class SyncedData
                 return cached_tooltip;
             }
             StringBuilder builder = new StringBuilder();
-            //builder.Append($"\n<color={color}>•</color> $enchantment_additionalstats:");
             if (attack_speed > 0) builder.Append($"\n<color={color}>•</color> $enchantment_attackspeed: <color=#DF745D>{attack_speed}%</color>");
+            if (movement_speed > 0) builder.Append($"\n<color={color}>•</color> $enchantment_movementspeed: <color=#DF745D>{movement_speed}%</color>");
             if (slash_wave > 0) builder.Append($"\n<color={color}>•</color> $enchantment_slashwave: <color=#DF74FD>{slash_wave}</color>");
             if (damage_true > 0) builder.Append($"\n<color={color}>•</color> $enchantment_truedamage: {damage_true}");
             if (damage_fire > 0) builder.Append($"\n<color={color}>•</color> $inventory_fire: <color=#FFA500>{damage_fire}</color>");
@@ -494,6 +495,7 @@ public static class SyncedData
             
             pkg.Write(attack_speed);
             pkg.Write(slash_wave);
+            pkg.Write(movement_speed);
         }
 
         public void Deserialize(ref ZPackage pkg)
@@ -528,6 +530,7 @@ public static class SyncedData
             
             attack_speed = pkg.ReadInt();
             slash_wave = pkg.ReadInt();
+            movement_speed = pkg.ReadInt();
         }
     }
 
