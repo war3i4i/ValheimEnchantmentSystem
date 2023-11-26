@@ -7,7 +7,7 @@ public static class Defaults
     public class OverrideChances : ISerializableParameter
     {
         public List<string> Items = new();
-        public Dictionary<int, int> Chances = new();
+        public Dictionary<int, SyncedData.Chance_Data> Chances = new();
 
         public void Serialize(ref ZPackage pkg)
         {
@@ -21,7 +21,7 @@ public static class Defaults
             foreach (var chance in Chances)
             {
                 pkg.Write(chance.Key);
-                pkg.Write(chance.Value);
+                chance.Value.Serialize(ref pkg);
             }
         }
 
@@ -38,7 +38,10 @@ public static class Defaults
             count = pkg.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                Chances.Add(pkg.ReadInt(), pkg.ReadInt());
+                int key = pkg.ReadInt();
+                SyncedData.Chance_Data newChanceData = new();
+                Chances.Add(key, newChanceData);
+                newChanceData.Deserialize(ref pkg);
             }
         }
     }
@@ -173,10 +176,15 @@ public static class Defaults
             { 20, new() { armor_percentage = 50 } },
         };
 
-    private static readonly Dictionary<int, int> DefaultChances = new()
+    private static readonly Dictionary<int, SyncedData.Chance_Data> DefaultChances = new()
     {
-        { 1, 80 }, { 2, 75 }, { 3, 70 }, { 4, 60 }, { 5, 55 }, { 6, 50 }, { 7, 40 }, { 8, 35 }, { 9, 30 }, { 10, 26 },
-        { 11, 22 }, { 12, 18 }, { 13, 14 }, { 14, 10 }, { 15, 8 }, { 16, 6 }, { 17, 5 }, { 18, 4 }, { 19, 3 }, { 20, 0 }
+        { 1, new SyncedData.Chance_Data() {success = 80} }, { 2, new SyncedData.Chance_Data() {success = 75} }, { 3, new SyncedData.Chance_Data() {success = 70} }, 
+        { 4, new SyncedData.Chance_Data() {success = 60} }, { 5, new SyncedData.Chance_Data() {success = 55} }, { 6, new SyncedData.Chance_Data() {success = 50} },
+        { 7, new SyncedData.Chance_Data() {success = 40} }, { 8, new SyncedData.Chance_Data() {success = 35} }, { 9, new SyncedData.Chance_Data() {success = 30} }, 
+        { 10, new SyncedData.Chance_Data() {success = 26} }, { 11, new SyncedData.Chance_Data() {success = 22} }, { 12, new SyncedData.Chance_Data() {success = 18} }, 
+        { 13, new SyncedData.Chance_Data() {success = 14} }, { 14, new SyncedData.Chance_Data() {success = 10} }, { 15, new SyncedData.Chance_Data() {success = 8} }, 
+        { 16, new SyncedData.Chance_Data() {success = 6} }, { 17, new SyncedData.Chance_Data() {success = 5} }, { 18, new SyncedData.Chance_Data() {success = 4} }, 
+        { 19, new SyncedData.Chance_Data() {success = 3} }
     };
 
     private static readonly Dictionary<int, SyncedData.VFX_Data> DefaultColors =
@@ -322,7 +330,8 @@ public static class Defaults
     {
         {new() {
             Items = new() { "SwordCheat", "SledgeCheat" },
-            Chances = new() { { 1, 50 }, { 2, 45 }, { 3, 40 }, { 4, 30 }, { 5, 25 }, { 6, 20 }, { 7, 10 }, { 8, 5 }, { 9, 3 }, { 10, 0 } }
+            Chances = new() { { 1, new() {success = 50} }, { 2, new() {success = 45} }, { 3, new() {success = 40} }, { 4, new() {success = 30} }, { 5, new() {success = 25} },
+                { 6, new() {success = 20} }, { 7, new() {success = 10} }, { 8, new() {success = 5} }, { 9, new() {success = 3} }, { 10, new() {success = 0} } }
         }}
     };
 

@@ -56,7 +56,7 @@ public static class Enchantment_AdditionalEffects
                 ValheimEnchantmentSystem._asset.LoadAsset<Material>("kg_Enchantment_Wings_Mat_" + materialName));
     }
 
-    private static void UpdateVFXs()
+    public static void UpdateVFXs()
     {
         if (!Player.m_localPlayer) return;
         List<ItemDrop.ItemData> toProcess = new();

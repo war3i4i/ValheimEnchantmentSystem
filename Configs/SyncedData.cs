@@ -29,7 +29,7 @@ public static class SyncedData
         SafetyLevel = ValheimEnchantmentSystem.config("Enchantment", "SafetyLevel", 3,
             "The level until which enchantments won't destroy the item. Set to 0 to disable.");
         DropEnchantmentOnUpgrade = ValheimEnchantmentSystem.config("Enchantment", "DropEnchantmentOnUpgrade", false, "Drop enchantment on item upgrade.");
-        ItemDestroyedOnFailure = ValheimEnchantmentSystem.config("Enchantment", "ItemDestroyedOnFailure", false, "Destroy item on enchantment failure. Otherwise decrease enchantment level by 1.");
+        ItemFailureType = ValheimEnchantmentSystem.config("Enchantment", "ItemFailureType", ItemDesctructionTypeEnum.LevelDecrease, "LevelDecrease will remove one level on fail, Destroy will destroy item on fail, Combined will use yaml destroy chance and success chance.");
         AllowJewelcraftingMirrorCopyEnchant = ValheimEnchantmentSystem.config("Enchantment", "AllowJewelcraftingMirrorCopyEnchant", false, "Allow jewelcrafting to copy enchantment from one item to another using mirror.");
         AdditionalEnchantmentChancePerLevel = ValheimEnchantmentSystem.config("Enchantment", "AdditionalEnchantmentChancePerLevel", 0.06f, "Additional enchantment chance per level of Enchantment skill.");
         AllowVFXArmor = ValheimEnchantmentSystem.config("Enchantment", "AllowVFXArmor", false, "Allow VFX on armor.");
@@ -40,7 +40,7 @@ public static class SyncedData
         YAML_Stats_Armor = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentStats_Armor.yml");
         YAML_Colors = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentColors.yml");
         YAML_Reqs = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentReqs.yml");
-        YAML_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentChances.yml");
+        YAML_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "EnchantmentChancesV2.yml");
         Directory_Reqs = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalEnchantmentReqs");
         Directory_Overrides_Chances = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentChances");
         Directory_Overrides_Stats = Path.Combine(ValheimEnchantmentSystem.ConfigFolder, "AdditionalOverrides_EnchantmentStats");
@@ -80,7 +80,7 @@ public static class SyncedData
         Overrides_EnchantmentStats.ValueChanged += OptimizeStats;
         Overrides_EnchantmentColors.ValueChanged += OptimizeColors;
         
-        Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, int>>();
+        Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, Chance_Data>>();
         Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>();
         Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>();
         Synced_EnchantmentColors.Value = YAML_Colors.FromYAML<Dictionary<int, VFX_Data>>();
@@ -92,7 +92,7 @@ public static class SyncedData
         OptimizeStats();
         OptimizeColors();
         
-        FSW_Mapper.Add(YAML_Chances, () => Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, int>>());
+        FSW_Mapper.Add(YAML_Chances, () => Synced_EnchantmentChances.Value = YAML_Chances.FromYAML<Dictionary<int, Chance_Data>>());
         FSW_Mapper.Add(YAML_Stats_Weapons, () => Synced_EnchantmentStats_Weapons.Value = YAML_Stats_Weapons.FromYAML<Dictionary<int, Stat_Data>>());
         FSW_Mapper.Add(YAML_Stats_Armor, () => Synced_EnchantmentStats_Armor.Value = YAML_Stats_Armor.FromYAML<Dictionary<int, Stat_Data>>());
         FSW_Mapper.Add(YAML_Colors, () => Synced_EnchantmentColors.Value = YAML_Colors.FromYAML<Dictionary<int, VFX_Data>>());
@@ -176,8 +176,12 @@ public static class SyncedData
         Overrides_EnchantmentColors.Value = result;
     }
     
-    private static void ResetInventory() => Enchantment_VFX.UpdateGrid();
-    
+    private static void ResetInventory()
+    {
+        Enchantment_VFX.UpdateGrid();
+        Enchantment_AdditionalEffects.UpdateVFXs();
+    }
+
     private static DateTime LastConfigChange = DateTime.Now;
     private static void ConfigChanged(object sender, FileSystemEventArgs e)
     {
@@ -259,19 +263,19 @@ public static class SyncedData
         return Synced_EnchantmentColors.Value.TryGetValue(en.level, out var vfxData) ? vfxData.additionaleffects : null;
     }
 
-    public static int GetEnchantmentChance(Enchantment_Core.Enchanted en)
+    public static Chance_Data GetEnchantmentChance(Enchantment_Core.Enchanted en)
         => GetEnchantmentChance(en.Item.m_dropPrefab?.name, en.level);
 
-    public static int GetEnchantmentChance(string dropPrefab, int level)
+    private static Chance_Data GetEnchantmentChance(string dropPrefab, int level)
     {
-        if (level == 0) return 100;
+        if (level == 0) return new Chance_Data() { success = 100 };
         if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentChances.TryGetValue(dropPrefab, out var overriden))
         {
             if (overriden.TryGetValue(level, out var overrideChance))
                 return overrideChance;
         }
-        
-        return Synced_EnchantmentChances.Value.TryGetValue(level, out var chance) ? chance : 0;
+
+        return Synced_EnchantmentChances.Value.TryGetValue(level, out var chance) ? chance : new Chance_Data() { success = 0 };
     }
 
     public static Stat_Data GetStatIncrease(Enchantment_Core.Enchanted en)
@@ -299,18 +303,20 @@ public static class SyncedData
         return enchantmentLevel * AdditionalEnchantmentChancePerLevel.Value;
     }
 
+    public enum ItemDesctructionTypeEnum{ LevelDecrease, Destroy, Combined }
+    
     public static ConfigEntry<int> SafetyLevel;
     public static ConfigEntry<bool> DropEnchantmentOnUpgrade;
-    public static ConfigEntry<bool> ItemDestroyedOnFailure;
+    public static ConfigEntry<ItemDesctructionTypeEnum> ItemFailureType;
     public static ConfigEntry<bool> AllowJewelcraftingMirrorCopyEnchant;
     public static ConfigEntry<float> AdditionalEnchantmentChancePerLevel;
     public static ConfigEntry<int> EnchantmentNotificationMinLevel;
     public static ConfigEntry<bool> EnchantmentEnableNotifications;
     public static ConfigEntry<bool> AllowVFXArmor;
 
-    public static readonly CustomSyncedValue<Dictionary<int, int>> Synced_EnchantmentChances =
+    public static readonly CustomSyncedValue<Dictionary<int, Chance_Data>> Synced_EnchantmentChances =
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentGlobalChances",
-            new Dictionary<int, int>());
+            new Dictionary<int, Chance_Data>());
 
     public static readonly CustomSyncedValue<Dictionary<int, VFX_Data>> Synced_EnchantmentColors =
         new(ValheimEnchantmentSystem.ConfigSync, "OverridenEnchantmentColors",
@@ -340,10 +346,28 @@ public static class SyncedData
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentReqs",
             new List<EnchantmentReqs>());
 
-    private static readonly Dictionary<string, Dictionary<int, int>> OPTIMIZED_Overrides_EnchantmentChances = new();
+    private static readonly Dictionary<string, Dictionary<int, Chance_Data>> OPTIMIZED_Overrides_EnchantmentChances = new();
     private static readonly Dictionary<string, Dictionary<int, VFX_Data>> OPTIMIZED_Overrides_EnchantmentColors = new();
     private static readonly Dictionary<string, Dictionary<int, Stat_Data>> OPTIMIZED_Overrides_EnchantmentStats = new();
+    
+    public struct Chance_Data : ISerializableParameter
+    {
+        public int success;
+        public int destroy;
+        
+        public void Serialize(ref ZPackage pkg)
+        {
+            pkg.Write(success);
+            pkg.Write(destroy);
+        }
 
+        public void Deserialize(ref ZPackage pkg)
+        {
+            success = pkg.ReadInt();
+            destroy = pkg.ReadInt();
+        }
+    }
+    
     public class Stat_Data : ISerializableParameter
     {
         public int durability;

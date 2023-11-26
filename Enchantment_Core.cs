@@ -79,6 +79,11 @@ public static class Enchantment_Core
 
         public int GetEnchantmentChance()
         {
+            return SyncedData.GetEnchantmentChance(this).success;
+        }
+
+        private SyncedData.Chance_Data GetEnchantmentChanceData()
+        {
             return SyncedData.GetEnchantmentChance(this);
         }
 
@@ -107,12 +112,13 @@ public static class Enchantment_Core
             return reqs != null;
         }
 
-        private bool CheckRandom()
+        private bool CheckRandom(out bool destroy)
         {
             float random = Random.Range(0f, 100f);
-            int chance = GetEnchantmentChance();
+            var chanceData = GetEnchantmentChanceData();
             float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
-            return random <= chance + additionalChance;
+            destroy = chanceData.destroy > 0 && random <= chanceData.destroy;
+            return random <= chanceData.success + additionalChance;
         }
 
         public bool Enchant(bool safeEnchant, out string msg)
@@ -131,42 +137,62 @@ public static class Enchantment_Core
             }
             
             int prevLevel = level;
-            if (CheckRandom())
+            if (CheckRandom(out bool destroy))
             {
                 level++;
                 Save();
                 ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
                 msg = "$enchantment_success".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
                 if (SyncedData.EnchantmentEnableNotifications.Value && SyncedData.EnchantmentNotificationMinLevel.Value <= level)
-                    Notifications_UI.AddNotification(Player.m_localPlayer.GetPlayerName(), Item.m_dropPrefab.name, true, prevLevel, level);
+                    Notifications_UI.AddNotification(Player.m_localPlayer.GetPlayerName(), Item.m_dropPrefab.name, (int)Notifications_UI.NotificationItemResult.Success, prevLevel, level);
                 return true;
             }
-
+            
             if (SyncedData.SafetyLevel.Value <= level && !safeEnchant)
             {
-                if (SyncedData.ItemDestroyedOnFailure.Value)
+                Notifications_UI.NotificationItemResult notification;
+                switch (SyncedData.ItemFailureType.Value)
                 {
-                    Player.m_localPlayer.UnequipItem(Item);
-                    Player.m_localPlayer.m_inventory.RemoveItem(Item);
-                    msg = "$enchantment_fail_destroyed".Localize(Item.m_shared.m_name.Localize());
+                    case SyncedData.ItemDesctructionTypeEnum.LevelDecrease:
+                    default:
+                        level = Mathf.Max(0, level - 1);
+                        Save();
+                        ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
+                        msg = "$enchantment_fail_leveldown".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
+                        notification = Notifications_UI.NotificationItemResult.LevelDecrease;
+                        break;
+                    case SyncedData.ItemDesctructionTypeEnum.Destroy:
+                        Player.m_localPlayer.UnequipItem(Item);
+                        Player.m_localPlayer.m_inventory.RemoveItem(Item);
+                        msg = "$enchantment_fail_destroyed".Localize(Item.m_shared.m_name.Localize());
+                        notification = Notifications_UI.NotificationItemResult.Destroyed;
+                        break;
+                    case SyncedData.ItemDesctructionTypeEnum.Combined:
+                        notification = destroy ? Notifications_UI.NotificationItemResult.Destroyed : Notifications_UI.NotificationItemResult.LevelDecrease;
+                        if (destroy)
+                        {
+                            Player.m_localPlayer.UnequipItem(Item);
+                            Player.m_localPlayer.m_inventory.RemoveItem(Item);
+                            msg = "$enchantment_fail_destroyed".Localize(Item.m_shared.m_name.Localize());
+                        }
+                        else
+                        {
+                            level = Mathf.Max(0, level - 1);
+                            Save();
+                            ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
+                            msg = "$enchantment_fail_leveldown".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
+                        }
+                        break;
                 }
-                else
-                {
-                    level = Mathf.Max(0, level - 1);
-                    Save();
-                    ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
-                    msg = "$enchantment_fail_leveldown".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(),
-                        level.ToString());
-                }
+                
+                if (SyncedData.EnchantmentEnableNotifications.Value && SyncedData.EnchantmentNotificationMinLevel.Value <= level)
+                    Notifications_UI.AddNotification(Player.m_localPlayer.GetPlayerName(), Item.m_dropPrefab.name, (int)notification, prevLevel, level);
             }
             else
             {
                 msg = "$enchantment_fail_nochange".Localize(Item.m_shared.m_name.Localize(), level.ToString());
                 Save();
             }
-
-            if (SyncedData.EnchantmentEnableNotifications.Value && SyncedData.EnchantmentNotificationMinLevel.Value <= level)
-                Notifications_UI.AddNotification(Player.m_localPlayer.GetPlayerName(), Item.m_dropPrefab.name, false, prevLevel, level);
             
             return false;
         }
@@ -284,10 +310,10 @@ public static class Enchantment_Core
                 if (chance <= 0)
                 {
                     blockShowEnchant = true;
-                    __result += $"\n<color={color}>•</color> $enchantment_maxedout";
+                    __result += $"\n<color={color}>•</color> $enchantment_maxedout".Localize();
                 }
             }
-
+            
 
             if (blockShowEnchant) return;
             string dropName = item.m_dropPrefab
@@ -319,6 +345,7 @@ public static class Enchantment_Core
                 
                 __result += canBe;
             }
+           
         }
     }
 

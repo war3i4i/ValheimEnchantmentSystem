@@ -132,6 +132,7 @@
         <Compile Include="GlobalUsings.cs" />
         <Compile Include="Items_Structures\ScrollItems.cs" />
         <Compile Include="Items_Structures\BuildPieces.cs" />
+        <Compile Include="LagoshiDogshit.cs" />
         <Compile Include="Managers\AnimationSpeedManager.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Misc\Attributes.cs" />

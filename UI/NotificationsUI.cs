@@ -15,7 +15,7 @@ public static class Notifications_UI
     {
         public string PlayerName;
         public string ItemPrefab;
-        public bool Success;
+        public int Type;
         public int PrevLevel;
         public int Level;
     }
@@ -108,14 +108,19 @@ public static class Notifications_UI
 
     private static void ShowNotification(Notification not)
     {
-        switch (not.Success) 
+        NotificationItemResult type = (NotificationItemResult)not.Type;
+        
+        switch (type)
         {
-            case true when !FilterConfig.Value.HasFlagFast(Filter.Success):
-            case false when !FilterConfig.Value.HasFlagFast(Filter.Fail):
+            case NotificationItemResult.Success when !FilterConfig.Value.HasFlagFast(Filter.Success):
+                _dequeueTimer = 0f;
+                return;
+            case NotificationItemResult.LevelDecrease or NotificationItemResult.Destroyed when !FilterConfig.Value.HasFlagFast(Filter.Fail):
                 _dequeueTimer = 0f;
                 return;
         }
-        
+
+
         GameObject item = ZNetScene.instance.GetPrefab(not.ItemPrefab);
         if (!item || item.GetComponent<ItemDrop>() is not { } itemDrop) return;
 
@@ -125,31 +130,38 @@ public static class Notifications_UI
         _timer = 0f;
         Scaler.localScale = OriginalScale;
 
-        ResultText.text = not.Success
-            ? "$enchantment_notification_success_topic".Localize()
-            : "$enchantment_notification_fail_topic".Localize();
-        ResultText.color = not.Success ? SuccessColor : FailColor;
+        ResultText.text = type switch
+        {
+            NotificationItemResult.Success => "$enchantment_notification_success_topic".Localize(),
+            NotificationItemResult.LevelDecrease or NotificationItemResult.Destroyed => "$enchantment_notification_fail_topic".Localize(),
+            _ => ""
+        };
+        ResultText.color = type is NotificationItemResult.Success ? SuccessColor : FailColor;
         ItemIcon.sprite = itemDrop.m_itemData.GetIcon();
         
         foreach (var image in _colorGroup)
-            image.color = not.Success ? SuccessColor : FailColor; 
+            image.color = type is NotificationItemResult.Success ? SuccessColor : FailColor; 
 
-        string text = not.Success
-            ? "$enchantment_notification_success".Localize(not.PlayerName, localizedItemName,
-                not.PrevLevel.ToString(), not.Level.ToString())
-            : SyncedData.ItemDestroyedOnFailure.Value
-                ? "$enchantment_notification_fail_destroyed".Localize(not.PlayerName, localizedItemName)
-                : "$enchantment_notification_fail".Localize(not.PlayerName, localizedItemName, not.PrevLevel.ToString(),
-                    not.Level.ToString());
+        string text = type switch
+        {
+            NotificationItemResult.Success => "$enchantment_notification_success".Localize(not.PlayerName, localizedItemName,
+                not.PrevLevel.ToString(), not.Level.ToString()),
+            NotificationItemResult.LevelDecrease => "$enchantment_notification_fail".Localize(not.PlayerName, localizedItemName, not.PrevLevel.ToString(),
+                not.Level.ToString()),
+            NotificationItemResult.Destroyed => "$enchantment_notification_fail_destroyed".Localize(not.PlayerName, localizedItemName),
+            _ => ""
+        };
         ItemNameText.text = text;
-        ItemNameText.color = not.Success ? SuccessColor : FailColor;
-        Outline.color = SyncedData.GetColor(not.ItemPrefab, not.Level, out _, true, not.Success ? "#00FF00" : "#FF0000").IncreaseColorLight().ToColorAlpha();
+        ItemNameText.color = type is NotificationItemResult.Success ? SuccessColor : FailColor;
+        Outline.color = SyncedData.GetColor(not.ItemPrefab, not.Level, out _, true, type is NotificationItemResult.Success ? "#00FF00" : "#FF0000").IncreaseColorLight().ToColorAlpha();
         UI.SetActive(true);
     }
+    
+    public enum NotificationItemResult { Success, LevelDecrease, Destroyed }
 
-    public static void AddNotification(string playerName, string itemPrefab, bool success, int prevLevel, int level) =>
+    public static void AddNotification(string playerName, string itemPrefab, int type, int prevLevel, int level) =>
         ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, "kg_Enchantment_GlobalNotification",
-            playerName ?? "No Name", itemPrefab ?? "No Prefab", success, prevLevel, level);
+            playerName ?? "No Name", itemPrefab ?? "No Prefab", type, prevLevel, level);
 
     [HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
     [ClientOnlyPatch]
@@ -159,12 +171,13 @@ public static class Notifications_UI
         private static void Postfix(ZNetScene __instance)
         {
             ZRoutedRpc.instance.Register("kg_Enchantment_GlobalNotification",
-                (long _, string playerName, string itemPrefab, bool success, int prevLevel, int level) =>
+                (long _, string playerName, string itemPrefab, int type, int prevLevel, int level) =>
                 {
-                    switch (success)
+                    switch ((NotificationItemResult)type)
                     {
-                        case true when !FilterConfig.Value.HasFlagFast(Filter.Success):
-                        case false when !FilterConfig.Value.HasFlagFast(Filter.Fail):
+                        case NotificationItemResult.Success when !FilterConfig.Value.HasFlagFast(Filter.Success):
+                            return;
+                        case NotificationItemResult.LevelDecrease or NotificationItemResult.Destroyed when !FilterConfig.Value.HasFlagFast(Filter.Fail):
                             return;
                     }
                     
@@ -172,7 +185,7 @@ public static class Notifications_UI
                     {
                         PlayerName = playerName,
                         ItemPrefab = itemPrefab,
-                        Success = success,
+                        Type = type,
                         Level = level,
                         PrevLevel = prevLevel
                     });

@@ -161,12 +161,14 @@ public static class Info_UI
         return result.Localize();
     }
 
-    private static string GenerateChancesText(Dictionary<int, int> chances)
+    private static string GenerateChancesText(Dictionary<int, SyncedData.Chance_Data> chances)
     {
         string result = "";
         foreach (var chance in chances.OrderBy(x => x.Key))
         {
-            result += $"<color=yellow>• lvl{chance.Key}:</color> {chance.Value}%\n";
+            string success = $"{chance.Value.success}";
+            string destroy = chance.Value.destroy > 0 ? $", $enchantment_destroychance: {chance.Value.destroy}%" : "";
+            result += $"<color=yellow>• lvl{chance.Key}:</color> {success}%{destroy}\n";
         }
         return result;
     }
@@ -174,6 +176,7 @@ public static class Info_UI
     private static GameObject CreateElementWithText(IEnumerable<string> prefabs, string text, string found,
         string additionalText = null)
     {
+        if (!Player.m_localPlayer) return null;
         var element = UnityEngine.Object.Instantiate(Element, Content);
         var toInstantiate = element.transform.Find("Items/Icon").gameObject;
 
@@ -183,6 +186,7 @@ public static class Info_UI
             {
                 var tryFind = ZNetScene.instance.GetPrefab(prefab);
                 if (!tryFind || tryFind.GetComponent<ItemDrop>() is not { } item) continue;
+                if (!Player.m_localPlayer.m_knownRecipes.Contains(item.m_itemData.m_shared.m_name) && !Player.m_localPlayer.m_knownMaterial.Contains(item.m_itemData.m_shared.m_name)) continue;
                 var icon = UnityEngine.Object.Instantiate(toInstantiate, element.transform.Find("Items"));
                 icon.SetActive(true);
                 icon.transform.Find("Icon").GetComponent<Image>().sprite = item.m_itemData.GetIcon();
@@ -351,7 +355,7 @@ public static class Info_UI
     {
         [UsedImplicitly]
         private static void Postfix(ref bool __result) => __result |= IsVisible();
-    }
+    } 
 
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.Awake))]
     [ClientOnlyPatch]
@@ -362,8 +366,7 @@ public static class Info_UI
         {
             foreach (UITooltip uiTooltip in Element.GetComponentsInChildren<UITooltip>(true))
             {
-                uiTooltip.m_tooltipPrefab =
-                    __instance.m_playerGrid.m_elementPrefab.GetComponent<UITooltip>().m_tooltipPrefab;
+                uiTooltip.m_tooltipPrefab = __instance.m_playerGrid.m_elementPrefab.GetComponent<UITooltip>().m_tooltipPrefab;
             }
         }
     }

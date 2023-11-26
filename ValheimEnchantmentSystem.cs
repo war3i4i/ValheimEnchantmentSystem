@@ -13,14 +13,14 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.5.4";
+        private const string PLUGIN_VERSION = "1.6.0";
         
         public static ValheimEnchantmentSystem _thistype; 
         public static AssetBundle _asset; 
         public static ConfigFile SyncedConfig;
         public static ConfigFile ItemConfig;
         public static string ConfigFolder; 
-        public static readonly Harmony Harmony = new(GUID);
+        public static readonly Harmony Harmony = new(GUID); 
         public static readonly ConfigSync ConfigSync = new(GUID)
         { 
             DisplayName = GUID, ModRequired = true, 
@@ -28,10 +28,11 @@ namespace kg.ValheimEnchantmentSystem
         };
         private enum WorkingAs { Client, Server }
         public static bool AUGA = false;
+        
+        private void Start() => AUGA = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Auga");
          
         private void Awake()
         {
-            AUGA = Type.GetType("Auga.Auga, Auga") != null;
             _thistype = this;
             WorkingAs WorkingAsType = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null ? WorkingAs.Server : WorkingAs.Client;
             JSON.Parameters = new JSONParameters
@@ -90,7 +91,7 @@ namespace kg.ValheimEnchantmentSystem
         }
 
         private static AssetBundle GetAssetBundle(string filename)
-        {
+        { 
             Assembly execAssembly = Assembly.GetExecutingAssembly();
             string resourceName = execAssembly.GetManifestResourceNames().Single(str => str.EndsWith(filename));
             using Stream stream = execAssembly.GetManifestResourceStream(resourceName)!;
