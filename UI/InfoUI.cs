@@ -167,7 +167,7 @@ public static class Info_UI
         foreach (var chance in chances.OrderBy(x => x.Key))
         {
             string success = $"{chance.Value.success}";
-            string destroy = chance.Value.destroy > 0 ? $", $enchantment_destroychance: {chance.Value.destroy}%" : "";
+            string destroy = chance.Value.destroy > 0 ? $", $enchantment_destroychance: {chance.Value.destroy}%".Localize() : "";
             result += $"<color=yellow>• lvl{chance.Key}:</color> {success}%{destroy}\n";
         }
         return result;

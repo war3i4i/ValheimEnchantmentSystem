@@ -232,14 +232,14 @@ public static class VES_UI
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Tab) && !_enchantProcessing && !_shouldReselect)
+        if (Input.GetKeyDown(KeyCode.Tab) && !_enchantProcessing && !_shouldReselect && !Info_UI.IsVisible())
         {
             PlayClick();
             UseBless_ButtonClick();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)) && !Info_UI.IsVisible())
         {
             Start_ButtonClick();
             return;
@@ -581,12 +581,6 @@ public static class VES_UI
         private static void Postfix(InventoryGui __instance)
         {
             if (!Player.m_localPlayer) return;
-            if (Player.m_localPlayer.GetCurrentCraftingStation())
-            {
-                InventoryGui_Awake_Patch._enchantmentBackground.gameObject.SetActive(false);
-                InventoryGui_Awake_Patch._enchantmentButton.gameObject.SetActive(false);
-                return;
-            }
 
             InventoryGui_Awake_Patch._enchantmentBackground.gameObject.SetActive(true);
             InventoryGui_Awake_Patch._enchantmentButton.gameObject.SetActive(true);

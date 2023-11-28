@@ -58,7 +58,7 @@ public static class Enchantment_AdditionalEffects
 
     public static void UpdateVFXs()
     {
-        if (!Player.m_localPlayer) return;
+        if (!Game.instance || Game.instance.m_shuttingDown || !Player.m_localPlayer) return;
         List<ItemDrop.ItemData> toProcess = new();
         foreach (var item in Player.m_localPlayer.m_inventory.GetAllItems())
             if (item is { m_equipped: true })
