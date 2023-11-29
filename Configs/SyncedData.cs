@@ -22,7 +22,7 @@ public static class SyncedData
     
 
     private static readonly Dictionary<string, Action> FSW_Mapper = new();
-
+    
     [UsedImplicitly]
     private static void OnInit()
     {
