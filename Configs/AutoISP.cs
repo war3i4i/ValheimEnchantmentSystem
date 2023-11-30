@@ -4,15 +4,8 @@ using Random = UnityEngine.Random;
 
 namespace ISP_Auto;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class)]
 public class AutoSerialize : Attribute;
-[AttributeUsage(AttributeTargets.Field)]
-public class ISP_Serialize : Attribute;
-public class ISP_Serialize_DefaultString : Attribute
-{
-    public string DefaultValue;
-    public ISP_Serialize_DefaultString(string defaultValue) => DefaultValue = defaultValue; 
-}
 
 public static class ISP_Patcher
 {
@@ -30,25 +23,26 @@ public static class ISP_Patcher
         
         foreach (Type type in typesToPatch)
         {
-            if (type.IsValueType) continue;
+            if (type.IsValueType) continue; 
             
             FieldsByType[type] = new();
-            List<FieldInfo> _fields_noDefaults = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute<ISP_Serialize>() != null).ToList();
-            List<FieldInfo> _fields_withDefaults = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute<ISP_Serialize_DefaultString>() != null).ToList();
-            foreach (FieldInfo fieldNoDefault in _fields_noDefaults)
+            List<FieldInfo> fields = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute<SerializeField>() != null).ToList();
+            foreach (FieldInfo field in fields)
             {
                 FieldISP_Info info = new FieldISP_Info();
-                info.Field = fieldNoDefault;
-                info.Serialize = GetSerializeDelegate(info.Field, null);
+                info.Field = field;
+                info.Serialize = GetSerializeDelegate(info.Field);
                 info.Deserialize = GetDeserializeDelegate(info.Field);
-                FieldsByType[type].Add(info);
-            }
-            foreach (FieldInfo fieldWithDefault in _fields_withDefaults)
-            {
-                FieldISP_Info info = new FieldISP_Info();
-                info.Field = fieldWithDefault;
-                info.Serialize = GetSerializeDelegate(info.Field,  fieldWithDefault.GetCustomAttribute<ISP_Serialize_DefaultString>().DefaultValue);
-                info.Deserialize = GetDeserializeDelegate(info.Field);
+                if (info.Serialize == null)
+                {
+                    ZLog.LogError($"Error creating Serialize delegate for {info.Field}");
+                    continue;
+                }
+                if (info.Deserialize == null)
+                {
+                    ZLog.LogError($"Error creating Deserialize delegate for {info.Field}");
+                    continue;
+                }
                 FieldsByType[type].Add(info);
             }
         }
@@ -91,14 +85,6 @@ public static class ISP_Patcher
         if (!FieldsByType.ContainsKey(t)) return;
         foreach (FieldISP_Info field in FieldsByType[t])
         {
-            if (field.Serialize == null)
-            {
-                ZLog.LogError($"Error: {field.Field} has no Serialize  delegate");
-            }
-            if (field.Deserialize == null)
-            {
-                ZLog.LogError($"Error: {field.Field} has no Deserialize delegate");
-            }
             field.Serialize(instance, pkg);
         }
     }
@@ -111,7 +97,7 @@ public static class ISP_Patcher
             field.Deserialize(instance, pkg);
         }
     }
-    private static Action<object, ZPackage> GetSerializeDelegate(FieldInfo field, string defaultString)
+    private static Action<object, ZPackage> GetSerializeDelegate(FieldInfo field)
     {
         Type t = field.FieldType;
         if (t.IsEnum) return ((object instance, ZPackage pkg) => SerializeInt(pkg, field.GetValue(instance)));
@@ -129,7 +115,7 @@ public static class ISP_Patcher
             if (listInner == typeof(float)) return ((object instance, ZPackage pkg) => SerializeList_Float(pkg, (List<float>)field.GetValue(instance)));
             if (listInner == typeof(double)) return ((object instance, ZPackage pkg) => SerializeList_Double(pkg, (List<double>)field.GetValue(instance)));
             if (listInner == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeList_Bool(pkg, (List<bool>)field.GetValue(instance)));
-            if (listInner == typeof(string)) return ((object instance, ZPackage pkg) => SerializeList_String(pkg, (List<string>)field.GetValue(instance), defaultString == null ? "" : (string)defaultString));
+            if (listInner == typeof(string)) return ((object instance, ZPackage pkg) => SerializeList_String(pkg, (List<string>)field.GetValue(instance)));
             if (listInner == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeList_Quaternion(pkg, (List<Quaternion>)field.GetValue(instance)));
             if (listInner == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeList_Vector2i(pkg, (List<Vector2i>)field.GetValue(instance)));
             if (listInner == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeList_Vector(pkg, (List<Vector3>)field.GetValue(instance)));
@@ -162,7 +148,7 @@ public static class ISP_Patcher
                 if (dictValue == typeof(float)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Float(pkg, (Dictionary<int, float>)field.GetValue(instance)));
                 if (dictValue == typeof(double)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Double(pkg, (Dictionary<int, double>)field.GetValue(instance)));
                 if (dictValue == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Bool(pkg, (Dictionary<int, bool>)field.GetValue(instance)));
-                if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_String(pkg, (Dictionary<int, string>)field.GetValue(instance), defaultString == null ? "" : (string)defaultString));
+                if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_String(pkg, (Dictionary<int, string>)field.GetValue(instance)));
                 if (dictValue == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Quaternion(pkg, (Dictionary<int, Quaternion>)field.GetValue(instance)));
                 if (dictValue == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Vector2i(pkg, (Dictionary<int, Vector2i>)field.GetValue(instance)));
                 if (dictValue == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Vector(pkg, (Dictionary<int, Vector3>)field.GetValue(instance)));
@@ -179,7 +165,7 @@ public static class ISP_Patcher
                 if (dictValue == typeof(float)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Float(pkg, (Dictionary<string, float>)field.GetValue(instance)));
                 if (dictValue == typeof(double)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Double(pkg, (Dictionary<string, double>)field.GetValue(instance)));
                 if (dictValue == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Bool(pkg, (Dictionary<string, bool>)field.GetValue(instance)));
-                if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_String(pkg, (Dictionary<string, string>)field.GetValue(instance), defaultString == null ? "" : (string)defaultString));
+                if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_String(pkg, (Dictionary<string, string>)field.GetValue(instance)));
                 if (dictValue == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Quaternion(pkg, (Dictionary<string, Quaternion>)field.GetValue(instance)));
                 if (dictValue == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Vector2i(pkg, (Dictionary<string, Vector2i>)field.GetValue(instance)));
                 if (dictValue == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Vector(pkg, (Dictionary<string, Vector3>)field.GetValue(instance)));
@@ -195,7 +181,7 @@ public static class ISP_Patcher
         if (t == typeof(float)) return ((object instance, ZPackage pkg) => SerializeFloat(pkg, field.GetValue(instance)));
         if (t == typeof(double)) return ((object instance, ZPackage pkg) => SerializeDouble(pkg, field.GetValue(instance)));
         if (t == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeBool(pkg, field.GetValue(instance)));
-        if (t == typeof(string)) return ((object instance, ZPackage pkg) => SerializeString(pkg, field.GetValue(instance), defaultString == null ? "" : (string)defaultString));
+        if (t == typeof(string)) return ((object instance, ZPackage pkg) => SerializeString(pkg, field.GetValue(instance)));
         if (t == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeQuaternion(pkg, field.GetValue(instance)));
         if (t == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeVector2i(pkg, field.GetValue(instance)));
         if (t == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeVector(pkg, field.GetValue(instance)));
@@ -308,7 +294,7 @@ public static class ISP_Patcher
     private static void SerializeFloat(ZPackage pkg, object value) => pkg.Write((float)value);
     private static void SerializeDouble(ZPackage pkg, object value) => pkg.Write((double)value);
     private static void SerializeBool(ZPackage pkg, object value) => pkg.Write((bool)value);
-    private static void SerializeString(ZPackage pkg, object value, string defaultValue) => pkg.Write((string)value ?? defaultValue);
+    private static void SerializeString(ZPackage pkg, object value) => pkg.Write((string)value ?? "");
     private static void SerializeQuaternion(ZPackage pkg, object value) => pkg.Write((Quaternion)value);
     private static void SerializeVector2i(ZPackage pkg, object value) => pkg.Write((Vector2i)value);
     private static void SerializeVector(ZPackage pkg, object value) => pkg.Write((Vector3)value);
@@ -368,12 +354,12 @@ public static class ISP_Patcher
             pkg.Write(i);
         }
     }
-    private static void SerializeList_String(ZPackage pkg, List<string> value, string defaultValue)
+    private static void SerializeList_String(ZPackage pkg, List<string> value)
     {
         pkg.Write(value.Count);
         foreach (string i in value)
         {
-            pkg.Write(i ?? defaultValue);
+            pkg.Write(i ?? "");
         }
     }
     private static void SerializeList_Quaternion(ZPackage pkg, List<Quaternion> value)
@@ -487,13 +473,13 @@ public static class ISP_Patcher
             pkg.Write(i.Value);
         }
     }
-    private static void SerializeDictionary_Int_String(ZPackage pkg, Dictionary<int, string> value, string defaultValue)
+    private static void SerializeDictionary_Int_String(ZPackage pkg, Dictionary<int, string> value)
     {
         pkg.Write(value.Count);
         foreach (KeyValuePair<int, string> i in value)
         {
             pkg.Write(i.Key);
-            pkg.Write(i.Value ?? defaultValue);
+            pkg.Write(i.Value ?? "");
         }
     }
     private static void SerializeDictionary_Int_Quaternion(ZPackage pkg, Dictionary<int, Quaternion> value)
@@ -614,13 +600,13 @@ public static class ISP_Patcher
             pkg.Write(i.Value);
         }
     }
-    private static void SerializeDictionary_String_String(ZPackage pkg, Dictionary<string, string> value, string defaultValue)
+    private static void SerializeDictionary_String_String(ZPackage pkg, Dictionary<string, string> value)
     {
         pkg.Write(value.Count);
         foreach (KeyValuePair<string, string> i in value)
         {
             pkg.Write(i.Key);
-            pkg.Write(i.Value ?? defaultValue);
+            pkg.Write(i.Value ?? "");
         }
     }
     private static void SerializeDictionary_String_Quaternion(ZPackage pkg, Dictionary<string, Quaternion> value)

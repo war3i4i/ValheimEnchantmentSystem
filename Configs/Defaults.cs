@@ -7,27 +7,27 @@ public static class Defaults
     [AutoSerialize]
     public class OverrideChances : ISerializableParameter
     {
-        [ISP_Serialize] public List<string> Items = new();
-        [ISP_Serialize] public Dictionary<int, SyncedData.Chance_Data> Chances = new();
-        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        [SerializeField] public List<string> Items = new();
+        [SerializeField] public Dictionary<int, SyncedData.Chance_Data> Chances = new();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
     [AutoSerialize]
     public class OverrideColors : ISerializableParameter
     {
-        [ISP_Serialize] public List<string> Items = new();
-        [ISP_Serialize] public Dictionary<int, SyncedData.VFX_Data> Colors = new();
-        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        [SerializeField] public List<string> Items = new();
+        [SerializeField] public Dictionary<int, SyncedData.VFX_Data> Colors = new();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
     [AutoSerialize]
     public class OverrideStats : ISerializableParameter
     {
-        [ISP_Serialize] public List<string> Items = new();
-        [ISP_Serialize] public Dictionary<int, SyncedData.Stat_Data> Stats = new();
-        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        [SerializeField] public List<string> Items = new();
+        [SerializeField] public Dictionary<int, SyncedData.Stat_Data> Stats = new();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     

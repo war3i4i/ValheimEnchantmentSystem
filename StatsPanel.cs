@@ -324,12 +324,20 @@ public static class StatsPanel
                 output.Append($"\"{fieldInfo}\"");
                 return false;
             }
-            
+             
             if (obj is Delegate d)
             {
                 StringBuilder output =
                     (StringBuilder)AccessTools.Field(__instance.GetType(), "_output").GetValue(__instance);
                 output.Append($"\"{d.Method}\"");
+                return false;
+            }
+
+            if (obj is Type t)
+            {
+                StringBuilder output =
+                    (StringBuilder)AccessTools.Field(__instance.GetType(), "_output").GetValue(__instance);
+                output.Append($"\"{t}\"");
                 return false;
             }
 

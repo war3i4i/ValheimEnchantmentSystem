@@ -354,46 +354,46 @@ public static class SyncedData
     [AutoSerialize]
     public class Chance_Data : ISerializableParameter
     {
-        [ISP_Serialize] public int success;
-        [ISP_Serialize] public int destroy;
-        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        [SerializeField] public int success;
+        [SerializeField] public int destroy;
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
     [AutoSerialize]
     public partial class Stat_Data : ISerializableParameter
     {
-        [ISP_Serialize] public int durability;
-        [ISP_Serialize] public int durability_percentage;
-        [ISP_Serialize] public int armor_percentage;
-        [ISP_Serialize] public int armor;
-        [ISP_Serialize] public int damage_percentage;
-        [ISP_Serialize] public int damage_true;
-        [ISP_Serialize] public int damage_blunt;
-        [ISP_Serialize] public int damage_slash;
-        [ISP_Serialize] public int damage_pierce;
-        [ISP_Serialize] public int damage_chop;
-        [ISP_Serialize] public int damage_pickaxe;
-        [ISP_Serialize] public int damage_fire;
-        [ISP_Serialize] public int damage_frost;
-        [ISP_Serialize] public int damage_lightning;
-        [ISP_Serialize] public int damage_poison;
-        [ISP_Serialize] public int damage_spirit;
-        [ISP_Serialize] public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
-        [ISP_Serialize] public int attack_speed;
-        [ISP_Serialize] public int slash_wave;
-        [ISP_Serialize] public int movement_speed;
+        [SerializeField] public int durability;
+        [SerializeField] public int durability_percentage;
+        [SerializeField] public int armor_percentage;
+        [SerializeField] public int armor;
+        [SerializeField] public int damage_percentage;
+        [SerializeField] public int damage_true;
+        [SerializeField] public int damage_blunt;
+        [SerializeField] public int damage_slash;
+        [SerializeField] public int damage_pierce;
+        [SerializeField] public int damage_chop;
+        [SerializeField] public int damage_pickaxe;
+        [SerializeField] public int damage_fire;
+        [SerializeField] public int damage_frost;
+        [SerializeField] public int damage_lightning;
+        [SerializeField] public int damage_poison;
+        [SerializeField] public int damage_spirit;
+        [SerializeField] public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
+        [SerializeField] public int attack_speed;
+        [SerializeField] public int slash_wave;
+        [SerializeField] public int movement_speed;
         
-        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
         public static implicit operator bool(Stat_Data data) => data != null;
     }
@@ -488,33 +488,33 @@ public static class SyncedData
     [AutoSerialize]
     public class req : ISerializableParameter
     {
-        [ISP_Serialize_DefaultString("")] public string prefab;
-        [ISP_Serialize] public int amount;
+        [SerializeField] public string prefab;
+        [SerializeField] public int amount;
         public req() { }
         public req (string prefab, int amount) { this.prefab = prefab; this.amount = amount; }
         public bool IsValid() => !string.IsNullOrEmpty(prefab) && amount > 0 && ZNetScene.instance.GetPrefab(prefab);
-        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
     [AutoSerialize]
     public class EnchantmentReqs : ISerializableParameter
     {
-        [ISP_Serialize] public int required_skill = 0;
-        [ISP_Serialize] public req enchant_prefab = new();
-        [ISP_Serialize] public req blessed_enchant_prefab = new();
-        [ISP_Serialize_DefaultString("")] public List<string> Items = new();
-        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        [SerializeField] public int required_skill = 0;
+        [SerializeField] public req enchant_prefab = new();
+        [SerializeField] public req blessed_enchant_prefab = new();
+        [SerializeField] public List<string> Items = new();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
     [AutoSerialize]
     public class VFX_Data : ISerializableParameter
     {
-        [ISP_Serialize_DefaultString("#00000000")] public string color;
-        [ISP_Serialize] public int variant;
-        [ISP_Serialize] public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
-        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        [SerializeField] public string color = "#00000000";
+        [SerializeField] public int variant;
+        [SerializeField] public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
