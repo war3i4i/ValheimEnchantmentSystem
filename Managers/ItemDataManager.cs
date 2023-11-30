@@ -1,9 +1,17 @@
-﻿using System.Reflection.Emit;
+﻿/*using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
+using BepInEx;
 using BepInEx.Bootstrap;
+using HarmonyLib;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace ItemDataManager;
 
@@ -116,8 +124,6 @@ public abstract class ItemData
 
 		return serializedFields[t] = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.GetCustomAttributes(typeof(SerializeField), true).Length > 0).ToDictionary(f => f.Name, f => f);
 	}
-	
-	public static implicit operator bool(ItemData item) => item != null;
 }
 
 public sealed class StringItemData : ItemData;
@@ -155,6 +161,11 @@ public class ItemInfo : IEnumerable<ItemData>
 
 	internal HashSet<string> isCloned = new();
 	private static ItemDrop.ItemData? awakeningItem = null;
+	
+	private static Assembly primaryAssembly = Assembly.GetExecutingAssembly();
+	private static Dictionary<Assembly, string> assemblyNameCache = new();
+	private static Dictionary<Type, string> classKeyCache = new();
+	private HashSet<string> fetchedClassKeys = new();
 
 	internal static void addTypeToInheritorsCache(Type type, string typeKey)
 	{
@@ -184,11 +195,27 @@ public class ItemInfo : IEnumerable<ItemData>
 		}
 	}
 
+	private static string cachedAssemblyName(Assembly assembly)
+	{
+		if (assemblyNameCache.TryGetValue(assembly, out string name))
+		{
+			return name;
+		}
+		return assemblyNameCache[assembly] = assembly.GetName().Name;
+	}
+
 	internal static string classKey(Type type, string key)
 	{
-		string typeKey = type.FullName + (type.Assembly != Assembly.GetExecutingAssembly() ? $",{type.Assembly.GetName().Name}" : "");
-		addTypeToInheritorsCache(type, typeKey);
-		return typeKey + (key == "" ? "" : $"#{key}");
+		if (!classKeyCache.TryGetValue(type, out string typeKey))
+		{
+			typeKey = type.FullName + (type.Assembly != primaryAssembly ? $",{cachedAssemblyName(type.Assembly)}" : "");
+			addTypeToInheritorsCache(type, typeKey);
+		}
+		if (key == "")
+		{
+			return typeKey;
+		}
+		return $"{typeKey}#{key}";
 	}
 
 	internal static string dataKey(string key) => $"{modGuid}#{key}";
@@ -224,11 +251,16 @@ public class ItemInfo : IEnumerable<ItemData>
 	public T? Add<T>(string key = "") where T : ItemData, new()
 	{
 		string compoundKey = classKey(typeof(T), key);
+		if (fetchedClassKeys.Contains(compoundKey) && data.ContainsKey(compoundKey))
+		{
+			return null;
+		}
+
 		string fullKey = dataKey(compoundKey);
 		if (ItemData.m_customData.ContainsKey(fullKey) || (awakeningItem != ItemData && data.ContainsKey(compoundKey)))
 		{
 			return null;
-		}
+		}			
 
 		ItemData.m_customData[fullKey] = "";
 		ItemDataManager.ItemData.constructingInfo = selfReference ??= new WeakReference<ItemInfo>(this);
@@ -258,9 +290,10 @@ public class ItemInfo : IEnumerable<ItemData>
 				return (T?)(object)dataObj;
 			}
 
-			if (awakeningItem != ItemData)
+			if (!fetchedClassKeys.Contains(compoundKey) && awakeningItem != ItemData)
 			{
 				string fullKey = dataKey(compoundKey);
+				fetchedClassKeys.Add(compoundKey);
 				if (ItemData.m_customData.ContainsKey(fullKey))
 				{
 					return (T?)(object)constructDataObj(compoundKey)!;
@@ -296,7 +329,16 @@ public class ItemInfo : IEnumerable<ItemData>
 		return false;
 	}
 
-	public bool Remove<T>(T itemData) where T : ItemData => Remove<T>(itemData.Key);
+	private static MethodInfo removeMethod = typeof(ItemInfo).GetMethods().Single(m => m.Name == nameof(Remove) && m.IsGenericMethod && m.GetParameters()[0].ParameterType == typeof(string));
+	public bool Remove<T>(T itemData) where T : ItemData
+	{
+		if (typeof(T) == itemData.GetType())
+		{
+			return Remove<T>(itemData.Key);
+		}
+
+		return (bool)removeMethod.MakeGenericMethod(itemData.GetType()).Invoke(this, new object[] { itemData.Key });
+	}
 
 	private ItemData? constructDataObj(string key)
 	{
@@ -455,7 +497,7 @@ public class ItemInfo : IEnumerable<ItemData>
 	}
 
 	private static void ItemDropAwakeDelayed(ItemDrop __instance)
-	{
+	{ 
 		if (!ZNetView.m_forceDisableInit)
 		{
 			RegisterForceLoadedTypes(__instance.m_itemData);
@@ -809,7 +851,7 @@ public class ForeignItemInfo : IEnumerable<object>
 
 	public T GetOrCreate<T>(string key = "") where T : class, new() => Add<T>(key) ?? Get<T>(key)!;
 
-	private object? call(string name, object?[] values, Type?[] args, Type? generic = null)
+	public object? call(string name, object?[] values, Type?[] args, Type? generic = null)
 	{
 		foreach (MethodInfo method in foreignItemInfo.GetType().GetMethods())
 		{
@@ -883,4 +925,4 @@ public static class ItemExtensions
 		Debug.LogWarning($"Mod {mod} has an {typeof(ItemExtensions).FullName} class, but no Data(ItemDrop.ItemData) method could be called on it.");
 		return foreignInfos[mod] = null;
 	}
-}
+}*/

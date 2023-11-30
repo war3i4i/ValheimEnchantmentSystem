@@ -393,6 +393,10 @@ public static class SyncedData
         [SerializeField] public int slash_wave;
         [SerializeField] public int movement_speed;
         
+        //api stats
+        [SerializeField] public int API_backpacks_additionalrow_x;
+        [SerializeField] public int API_backpacks_additionalrow_y;
+        
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
         public static implicit operator bool(Stat_Data data) => data != null;
@@ -410,7 +414,7 @@ public static class SyncedData
                    resistance_pickaxe != HitData.DamageModifier.Normal || resistance_fire != HitData.DamageModifier.Normal ||
                    resistance_frost != HitData.DamageModifier.Normal || resistance_lightning != HitData.DamageModifier.Normal ||
                    resistance_poison != HitData.DamageModifier.Normal|| resistance_spirit != HitData.DamageModifier.Normal || 
-                   attack_speed != 0 || slash_wave != 0 || movement_speed != 0;
+                   attack_speed != 0 || slash_wave != 0 || movement_speed != 0 || API_backpacks_additionalrow_x != 0 || API_backpacks_additionalrow_y != 0;
         }
         
         private List<HitData.DamageModPair> cached_resistance_pairs;
@@ -460,6 +464,8 @@ public static class SyncedData
             if (damage_spirit > 0) builder.Append($"\n<color={color}>•</color> $inventory_spirit: <color=#FFFFA0>{damage_spirit}</color>");
             if (armor > 0) builder.Append($"\n<color={color}>•</color> $item_armor: <color=#808080>{armor}</color>");
             if (durability > 0) builder.Append($"\n<color={color}>•</color> $item_durability: <color=#7393B3>{durability}</color>");
+            if (API_backpacks_additionalrow_x > 0) builder.Append($"\n<color={color}>•</color> $enchantment_backpacks_additionalrow_x: <color=#7393B3>{API_backpacks_additionalrow_x}</color>");
+            if (API_backpacks_additionalrow_y > 0) builder.Append($"\n<color={color}>•</color> $enchantment_backpacks_additionalrow_x: <color=#7393B3>{API_backpacks_additionalrow_y}</color>");
             
             builder.Append(SE_Stats.GetDamageModifiersTooltipString(GetResistancePairs()).Replace("\n", $"\n<color={color}>•</color> "));
             

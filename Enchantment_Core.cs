@@ -53,6 +53,8 @@ public static class Enchantment_Core
     {
         public int level;
 
+        public SyncedData.Stat_Data Stats => SyncedData.GetStatIncrease(this);
+
         public override void Save()
         {
             Value = level.ToString();
@@ -201,6 +203,7 @@ public static class Enchantment_Core
             
             return false;
         }
+        public static implicit operator bool(Enchanted en) => en != null;
     }
 
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]

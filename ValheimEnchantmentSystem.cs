@@ -10,6 +10,7 @@ namespace kg.ValheimEnchantmentSystem
     [BepInPlugin(GUID, PLUGIN_NAME, PLUGIN_VERSION)]
     [BepInDependency("org.bepinex.plugins.jewelcrafting", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.bepis.bepinex.configurationmanager", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("org.bepinex.plugins.backpacks", BepInDependency.DependencyFlags.SoftDependency)]
     public class ValheimEnchantmentSystem : BaseUnityPlugin
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
@@ -80,25 +81,25 @@ namespace kg.ValheimEnchantmentSystem
             AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly())
                 .Where(t => WorkingAsType switch
                 {
-                    WorkingAs.Client => t.GetCustomAttribute<ServerOnlyPatch>() == null,
-                    WorkingAs.Server => t.GetCustomAttribute<ClientOnlyPatch>() == null,
+                    WorkingAs.Client => t.GetCustomAttribute<ServerOnlyPatch>() == null, 
+                    WorkingAs.Server => t.GetCustomAttribute<ClientOnlyPatch>() == null, 
                     _ => true
                 }).Do(type => Harmony.CreateClassProcessor(type).Patch());
-        }
-
+        } 
+ 
         private void Update()
         {
             VES_UI.Update();
             Info_UI.Update();
-            Notifications_UI.Update();
+            Notifications_UI.Update(); 
         }
 
         private void OnGUI() 
-        {
-            StatsPanel.OnGUI();
+        { 
+            StatsPanel.OnGUI(); 
         }
 
-        private static AssetBundle GetAssetBundle(string filename)
+        private static AssetBundle GetAssetBundle(string filename) 
         { 
             Assembly execAssembly = Assembly.GetExecutingAssembly();
             string resourceName = execAssembly.GetManifestResourceNames().Single(str => str.EndsWith(filename));

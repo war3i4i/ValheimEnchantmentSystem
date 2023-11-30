@@ -137,7 +137,7 @@ public static class ISP_Patcher
             if (dictValue.GetInterface(nameof(ISerializableParameter)) != null)
             {
                 if (dictKey == typeof(int)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_ISP(pkg, (IDictionary)field.GetValue(instance)));
-                if (dictKey == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_ISP(pkg, (Dictionary<string,object>)field.GetValue(instance)));
+                if (dictKey == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_ISP(pkg, (IDictionary)field.GetValue(instance)));
             }
 
             if (dictKey == typeof(int))
