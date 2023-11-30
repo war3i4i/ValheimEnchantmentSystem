@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using ServerSync;
+using ISP_Auto;
 
 namespace kg.ValheimEnchantmentSystem.Configs;
 
@@ -115,22 +116,22 @@ public static class SyncedData
     private static void OptimizeChances()
     {
         OPTIMIZED_Overrides_EnchantmentChances.Clear();
-        foreach (var chance in Overrides_EnchantmentChances.Value)
-            foreach (var entry in chance.Items)
+        foreach (Defaults.OverrideChances chance in Overrides_EnchantmentChances.Value)
+            foreach (string entry in chance.Items)
                  OPTIMIZED_Overrides_EnchantmentChances[entry] = chance.Chances;
     }
     private static void OptimizeColors()
     {
         OPTIMIZED_Overrides_EnchantmentColors.Clear();
-        foreach (var chance in Overrides_EnchantmentColors.Value)
-            foreach (var entry in chance.Items)
+        foreach (Defaults.OverrideColors chance in Overrides_EnchantmentColors.Value)
+            foreach (string entry in chance.Items)
                 OPTIMIZED_Overrides_EnchantmentColors[entry] = chance.Colors;
     }
     private static void OptimizeStats()
     {
         OPTIMIZED_Overrides_EnchantmentStats.Clear();
-        foreach (var chance in Overrides_EnchantmentStats.Value)
-            foreach (var entry in chance.Items)
+        foreach (Defaults.OverrideStats chance in Overrides_EnchantmentStats.Value)
+            foreach (string entry in chance.Items)
                 OPTIMIZED_Overrides_EnchantmentStats[entry] = chance.Stats;
     }
     private static void ReadReqs()
@@ -139,7 +140,7 @@ public static class SyncedData
         if(YAML_Reqs.FromYAML<List<EnchantmentReqs>>() is { } yamlData)
             result.AddRange(yamlData);
         
-        foreach (var file in Directory.GetFiles(Directory_Reqs, "*.yml", SearchOption.TopDirectoryOnly))
+        foreach (string file in Directory.GetFiles(Directory_Reqs, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<EnchantmentReqs>>() is { } data)
                 result.AddRange(data);
         
@@ -149,7 +150,7 @@ public static class SyncedData
     {
         List<Defaults.OverrideChances> result = new();
 
-        foreach (var file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml", SearchOption.TopDirectoryOnly))
+        foreach (string file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideChances>>() is {} data)
                 result.AddRange(data);
 
@@ -159,7 +160,7 @@ public static class SyncedData
     {
         List<Defaults.OverrideStats> result = new();
 
-        foreach (var file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml", SearchOption.TopDirectoryOnly))
+        foreach (string file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideStats>>() is {} data)
                 result.AddRange(data);
 
@@ -169,7 +170,7 @@ public static class SyncedData
     {
         List<Defaults.OverrideColors> result = new();
 
-        foreach (var file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml", SearchOption.TopDirectoryOnly))
+        foreach (string file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml", SearchOption.TopDirectoryOnly))
             if (file.FromYAML<List<Defaults.OverrideColors>>() is {} data)
                 result.AddRange(data);
 
@@ -189,7 +190,7 @@ public static class SyncedData
         if (e.ChangeType != WatcherChangeTypes.Changed) return;
         string extention = Path.GetExtension(e.FullPath);
         if (extention != ".yml" && extention != ".cfg") return;
-        if (FSW_Mapper.TryGetValue(e.FullPath, out var action))
+        if (FSW_Mapper.TryGetValue(e.FullPath, out Action action))
         {
             if (DateTime.Now - LastConfigChange < TimeSpan.FromSeconds(3)) return;
             LastConfigChange = DateTime.Now;
@@ -197,10 +198,10 @@ public static class SyncedData
             {
                 Utils.print($"Reloading config {e.FullPath}");
                 action.Invoke();
-            }
+            } 
             catch (Exception ex)
             {
-                Utils.print($"Error while reloading config {e.FullPath}: {ex}", ConsoleColor.Red);
+                Utils.print($"Error while reloading config {e.FullPath}: {ex}", ConsoleColor.Red); 
             }
             return;
         }
@@ -229,20 +230,20 @@ public static class SyncedData
     {
         variant = 0;
         if (level == 0) return trimApha ? defaultValue.Substring(0,7) : defaultValue;
-        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out Dictionary<int, VFX_Data> overriden))
         {
-            if (overriden.TryGetValue(level, out var overrideVfxData))
+            if (overriden.TryGetValue(level, out VFX_Data overrideVfxData))
             {
-                var result = overrideVfxData.color;
+                string result = overrideVfxData.color;
                 if (trimApha) result = result.Substring(0, 7);
                 variant = Mathf.Clamp(overrideVfxData.variant, 0, Enchantment_VFX.VFXs.Count - 1);
                 return result;
             }
         }
         
-        if (Synced_EnchantmentColors.Value.TryGetValue(level, out var vfxData))
+        if (Synced_EnchantmentColors.Value.TryGetValue(level, out VFX_Data vfxData))
         {
-            var result = vfxData.color;
+            string result = vfxData.color;
             if (trimApha) result = result.Substring(0, 7);
             variant = Mathf.Clamp(vfxData.variant - 1, 0, Enchantment_VFX.VFXs.Count - 1);
             return result;
@@ -255,12 +256,12 @@ public static class SyncedData
     {
         if (en.level == 0) return null;
         string dropPrefab = en.Item.m_dropPrefab?.name;
-        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out Dictionary<int, VFX_Data> overriden))
         {
-            return overriden.TryGetValue(en.level, out var overrideChance) ? overrideChance.additionaleffects : null;
+            return overriden.TryGetValue(en.level, out VFX_Data overrideChance) ? overrideChance.additionaleffects : null;
         }
         
-        return Synced_EnchantmentColors.Value.TryGetValue(en.level, out var vfxData) ? vfxData.additionaleffects : null;
+        return Synced_EnchantmentColors.Value.TryGetValue(en.level, out VFX_Data vfxData) ? vfxData.additionaleffects : null;
     }
 
     public static Chance_Data GetEnchantmentChance(Enchantment_Core.Enchanted en)
@@ -269,26 +270,26 @@ public static class SyncedData
     private static Chance_Data GetEnchantmentChance(string dropPrefab, int level)
     {
         if (level == 0) return new Chance_Data() { success = 100 };
-        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentChances.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentChances.TryGetValue(dropPrefab, out Dictionary<int, Chance_Data> overriden))
         {
-            if (overriden.TryGetValue(level, out var overrideChance))
+            if (overriden.TryGetValue(level, out Chance_Data overrideChance))
                 return overrideChance;
         }
 
-        return Synced_EnchantmentChances.Value.TryGetValue(level, out var chance) ? chance : new Chance_Data() { success = 0 };
+        return Synced_EnchantmentChances.Value.TryGetValue(level, out Chance_Data chance) ? chance : new Chance_Data() { success = 0 };
     }
 
     public static Stat_Data GetStatIncrease(Enchantment_Core.Enchanted en)
     {
         if (en.level == 0) return null;
         string dropPrefab = en.Item.m_dropPrefab?.name;
-        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentStats.TryGetValue(dropPrefab, out var overriden))
+        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentStats.TryGetValue(dropPrefab, out Dictionary<int, Stat_Data> overriden))
         {
-            return overriden.TryGetValue(en.level, out var overrideChance) ? overrideChance : null;
+            return overriden.TryGetValue(en.level, out Stat_Data overrideChance) ? overrideChance : null;
         }
 
-        var target = en.Item.IsWeapon() ? Synced_EnchantmentStats_Weapons.Value : Synced_EnchantmentStats_Armor.Value;
-        return target.TryGetValue(en.level, out var increase) ? increase : null;
+        Dictionary<int, Stat_Data> target = en.Item.IsWeapon() ? Synced_EnchantmentStats_Weapons.Value : Synced_EnchantmentStats_Armor.Value;
+        return target.TryGetValue(en.level, out Stat_Data increase) ? increase : null;
     }
 
     public static EnchantmentReqs GetReqs(string prefab)
@@ -350,58 +351,55 @@ public static class SyncedData
     private static readonly Dictionary<string, Dictionary<int, VFX_Data>> OPTIMIZED_Overrides_EnchantmentColors = new();
     private static readonly Dictionary<string, Dictionary<int, Stat_Data>> OPTIMIZED_Overrides_EnchantmentStats = new();
     
-    public struct Chance_Data : ISerializableParameter
+    [AutoSerialize]
+    public class Chance_Data : ISerializableParameter
     {
-        public int success;
-        public int destroy;
-        
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(success);
-            pkg.Write(destroy);
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            success = pkg.ReadInt();
-            destroy = pkg.ReadInt();
-        }
+        [ISP_Serialize] public int success;
+        [ISP_Serialize] public int destroy;
+        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
-    public class Stat_Data : ISerializableParameter
+    [AutoSerialize]
+    public partial class Stat_Data : ISerializableParameter
     {
-        public int durability;
-        public int durability_percentage;
-        public int armor_percentage;
-        public int armor;
-        public int damage_percentage;
-        public int damage_true;
-        public int damage_blunt;
-        public int damage_slash;
-        public int damage_pierce;
-        public int damage_chop;
-        public int damage_pickaxe;
-        public int damage_fire;
-        public int damage_frost;
-        public int damage_lightning;
-        public int damage_poison;
-        public int damage_spirit;
+        [ISP_Serialize] public int durability;
+        [ISP_Serialize] public int durability_percentage;
+        [ISP_Serialize] public int armor_percentage;
+        [ISP_Serialize] public int armor;
+        [ISP_Serialize] public int damage_percentage;
+        [ISP_Serialize] public int damage_true;
+        [ISP_Serialize] public int damage_blunt;
+        [ISP_Serialize] public int damage_slash;
+        [ISP_Serialize] public int damage_pierce;
+        [ISP_Serialize] public int damage_chop;
+        [ISP_Serialize] public int damage_pickaxe;
+        [ISP_Serialize] public int damage_fire;
+        [ISP_Serialize] public int damage_frost;
+        [ISP_Serialize] public int damage_lightning;
+        [ISP_Serialize] public int damage_poison;
+        [ISP_Serialize] public int damage_spirit;
+        [ISP_Serialize] public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
+        [ISP_Serialize] public int attack_speed;
+        [ISP_Serialize] public int slash_wave;
+        [ISP_Serialize] public int movement_speed;
+        
+        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+        public static implicit operator bool(Stat_Data data) => data != null;
+    }
 
-        public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
-        public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
-
-        public int attack_speed;
-        public int slash_wave;
-        public int movement_speed;
-
+    public partial class Stat_Data
+    {
         private bool ShouldShow()
         {
             return damage_true != 0 || damage_blunt != 0 || damage_slash != 0 || damage_pierce != 0 ||
@@ -484,270 +482,40 @@ public static class SyncedData
             result += BuildAdditionalStats("#FFFFFF");
             return result;
         }
-
-        public static implicit operator bool(Stat_Data data) => data != null;
-        
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(durability);
-            pkg.Write(durability_percentage);
-            pkg.Write(armor_percentage);
-            pkg.Write(armor);
-            pkg.Write(damage_percentage);
-            pkg.Write(damage_true);
-            pkg.Write(damage_blunt);
-            pkg.Write(damage_slash);
-            pkg.Write(damage_pierce);
-            pkg.Write(damage_chop);
-            pkg.Write(damage_pickaxe);
-            pkg.Write(damage_fire);
-            pkg.Write(damage_frost);
-            pkg.Write(damage_lightning);
-            pkg.Write(damage_poison);
-            pkg.Write(damage_spirit);
-            
-            pkg.Write((int)resistance_blunt);
-            pkg.Write((int)resistance_slash);
-            pkg.Write((int)resistance_pierce);
-            pkg.Write((int)resistance_chop);
-            pkg.Write((int)resistance_pickaxe);
-            pkg.Write((int)resistance_fire);
-            pkg.Write((int)resistance_frost);
-            pkg.Write((int)resistance_lightning);
-            pkg.Write((int)resistance_poison);
-            pkg.Write((int)resistance_spirit);
-            
-            pkg.Write(attack_speed);
-            pkg.Write(slash_wave);
-            pkg.Write(movement_speed);
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            durability = pkg.ReadInt();
-            durability_percentage = pkg.ReadInt();
-            armor_percentage = pkg.ReadInt();
-            armor = pkg.ReadInt();
-            damage_percentage = pkg.ReadInt();
-            damage_true = pkg.ReadInt();
-            damage_blunt = pkg.ReadInt();
-            damage_slash = pkg.ReadInt();
-            damage_pierce = pkg.ReadInt();
-            damage_chop = pkg.ReadInt();
-            damage_pickaxe = pkg.ReadInt();
-            damage_fire = pkg.ReadInt();
-            damage_frost = pkg.ReadInt();
-            damage_lightning = pkg.ReadInt();
-            damage_poison = pkg.ReadInt();
-            damage_spirit = pkg.ReadInt();
-            
-            resistance_blunt = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_slash = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_pierce = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_chop = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_pickaxe = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_fire = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_frost = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_lightning = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_poison = (HitData.DamageModifier)pkg.ReadInt();
-            resistance_spirit = (HitData.DamageModifier)pkg.ReadInt();
-            
-            attack_speed = pkg.ReadInt();
-            slash_wave = pkg.ReadInt();
-            movement_speed = pkg.ReadInt();
-        }
     }
-
+    
+    
+    [AutoSerialize]
+    public class req : ISerializableParameter
+    {
+        [ISP_Serialize_DefaultString("")] public string prefab;
+        [ISP_Serialize] public int amount;
+        public req() { }
+        public req (string prefab, int amount) { this.prefab = prefab; this.amount = amount; }
+        public bool IsValid() => !string.IsNullOrEmpty(prefab) && amount > 0 && ZNetScene.instance.GetPrefab(prefab);
+        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+    }
+    
+    [AutoSerialize]
     public class EnchantmentReqs : ISerializableParameter
     {
-        public class req
-        {
-            public string prefab;
-            public int amount;
-
-            public req()
-            {
-            }
-
-            public req(string prefab, int amount)
-            {
-                this.prefab = prefab;
-                this.amount = amount;
-            }
-
-            public bool IsValid() =>
-                !string.IsNullOrEmpty(prefab) && amount > 0 && ZNetScene.instance.GetPrefab(prefab);
-        }
-
-        public int required_skill = 0;
-        public req enchant_prefab = new();
-        public req blessed_enchant_prefab = new();
-        public List<string> Items = new();
-
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(enchant_prefab.prefab ?? "");
-            pkg.Write(enchant_prefab.amount);
-            pkg.Write(blessed_enchant_prefab.prefab ?? "");
-            pkg.Write(blessed_enchant_prefab.amount);
-            pkg.Write(Items.Count);
-            foreach (var item in Items)
-            {
-                pkg.Write(item);
-            }
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            enchant_prefab = new(pkg.ReadString(), pkg.ReadInt());
-            blessed_enchant_prefab = new(pkg.ReadString(), pkg.ReadInt());
-            int count = pkg.ReadInt();
-            for (int i = 0; i < count; i++)
-            {
-                Items.Add(pkg.ReadString());
-            }
-        }
+        [ISP_Serialize] public int required_skill = 0;
+        [ISP_Serialize] public req enchant_prefab = new();
+        [ISP_Serialize] public req blessed_enchant_prefab = new();
+        [ISP_Serialize_DefaultString("")] public List<string> Items = new();
+        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
+    [AutoSerialize]
     public class VFX_Data : ISerializableParameter
     {
-        public string color;
-        public int variant;
-        public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
-
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(color ?? "#00000000");
-            pkg.Write(variant);
-            pkg.Write(additionaleffects != null);
-            additionaleffects?.Serialize(ref pkg);
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            color = pkg.ReadString();
-            variant = pkg.ReadInt();
-            if (pkg.ReadBool())
-            {
-                additionaleffects = new Enchantment_AdditionalEffects.AdditionalEffectsModule();
-                additionaleffects.Deserialize(ref pkg);
-            }
-        }
-
-        [Flags]
-        public enum SpecialEffect
-        {
-            FireStep = 1 << 1,
-            IceStep = 1 << 2,
-            LightningStep = 1 << 3,
-            PoisonStep = 1 << 4,
-            WingsFire = 1 << 5,
-            WingsIce = 1 << 6,
-            WingsLightning = 1 << 7,
-            WingsPoison = 1 << 8,
-            AuraFire = 1 << 9,
-            AuraIce = 1 << 10,
-            AuraLightning = 1 << 11,
-            AuraPoison = 1 << 12,
-            CrownFire = 1 << 13,
-            CrownIce = 1 << 14,
-            CrownLightning = 1 << 15,
-            CrownPoison = 1 << 16,
-        }
+        [ISP_Serialize_DefaultString("#00000000")] public string color;
+        [ISP_Serialize] public int variant;
+        [ISP_Serialize] public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
+        public void Serialize(ref ZPackage pkg)=> throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
-
-    /*[HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
-    private static class ZNetScene_Awake_Patch
-    {
-        [UsedImplicitly]
-        private static void Postfix(ZNetScene __instance)
-        {
-            var recipes = ObjectDB.instance.m_recipes;
-            List<string> S_tiercomponents = new List<string>() { "Eitr", "YggdrasilWood" };
-            List<string> A_tiercomponents = new List<string>() { "Silver", "BlackMetal", "DragonTear" };
-            List<string> B_tiercomponents = new List<string>() { "Iron", "Obsidian", "Crystal", "IronNails", "ElderBark" };
-            List<string> C_tiercomponents = new List<string>() { "Bronze", "TrollHide", "BronzeNails" };
-            List<string> D_tiercomponents = new List<string>() { "DeerHide", "Wood", "Stone" };
-
-            string _tier_prefab_weapon = "kg_EnchantScroll_Weapon_";
-            string _tier_prefab_weapon_blessed = "kg_EnchantScroll_Weapon_Blessed_";
-            string _tier_prefab_armor = "kg_EnchantScroll_Armor_";
-            string _tier_prefab_armor_blessed = "kg_EnchantScroll_Armor_Blessed_";
-
-            List<string> S_tierList = new List<string>();
-            List<string> A_tierList = new List<string>();
-            List<string> B_tierList = new List<string>();
-            List<string> C_tierList = new List<string>();
-            List<string> D_tierList = new List<string>();
-            List<string> NOTFOUND_tierList = new List<string>();
-
-            StringBuilder builder = new StringBuilder();
-
-            void TryFindStuff(List<string> source, List<string> to, Piece.Requirement[] reqs, string itemName, string usePrefab, string usePrefab_blessed, ref bool done)
-            {
-                foreach (var req in reqs)
-                {
-                    if (source.Contains(req.m_resItem.name))
-                    {
-                        to.Add($"{{\"{itemName}\", new EnchantmentReqs() {{ enchant_prefab = new(\"{usePrefab}\", 1), blessed_enchant_prefab = new(\"{usePrefab_blessed}\", 1) }} }},\n");
-                        done = true;
-                        break;
-                    }
-                }
-            }
-
-            foreach (var recipe in recipes)
-            {
-                string usePrefab = _tier_prefab_armor;
-                string usePrefab_blessed = _tier_prefab_armor_blessed;
-                if(recipe.m_item == null) continue;
-                if (recipe.m_item.m_itemData.IsWeapon())
-                {
-                    usePrefab = _tier_prefab_weapon;
-                    usePrefab_blessed = _tier_prefab_weapon_blessed;
-                }
-                else if (recipe.m_item.m_itemData.IsEquipable() &&
-                         recipe.m_item.m_itemData.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.Ammo
-                             or ItemDrop.ItemData.ItemType.AmmoNonEquipable or ItemDrop.ItemData.ItemType.Utility)
-                {
-                    usePrefab = _tier_prefab_armor;
-                    usePrefab_blessed = _tier_prefab_armor_blessed;
-                }
-                else
-                {
-                    continue;
-                }
-
-                if(recipe.m_craftingStation == null) continue;
-
-                var reqs = recipe.m_resources;
-
-                bool done = false;
-                TryFindStuff(S_tiercomponents, S_tierList, reqs, recipe.m_item.name, usePrefab + "S", usePrefab_blessed + "S", ref done);
-                if (done) continue;
-                TryFindStuff(A_tiercomponents, A_tierList, reqs, recipe.m_item.name, usePrefab + "A", usePrefab_blessed + "A", ref done);
-                if (done) continue;
-                TryFindStuff(B_tiercomponents, B_tierList, reqs, recipe.m_item.name, usePrefab + "B", usePrefab_blessed + "B", ref done);
-                if (done) continue;
-                TryFindStuff(C_tiercomponents, C_tierList, reqs, recipe.m_item.name, usePrefab + "C", usePrefab_blessed + "C", ref done);
-                if (done) continue;
-                TryFindStuff(D_tiercomponents, D_tierList, reqs, recipe.m_item.name, usePrefab + "D", usePrefab_blessed + "D", ref done);
-                if (!done)
-                {
-                    NOTFOUND_tierList.Add($"{{\"{recipe.m_item.name}(NOTFOUND)\", new EnchantmentReqs() {{ enchant_prefab = new(\"{usePrefab}\", 1), blessed_enchant_prefab = new(\"{usePrefab_blessed}\", 1) }} }},\n");
-                }
-            }
-
-            S_tierList.ForEach(s => builder.Append(s));
-            A_tierList.ForEach(s => builder.Append(s));
-            B_tierList.ForEach(s => builder.Append(s));
-            C_tierList.ForEach(s => builder.Append(s));
-            D_tierList.ForEach(s => builder.Append(s));
-            NOTFOUND_tierList.ForEach(s => builder.Append(s));
-
-            string result = builder.ToString();
-            File.WriteAllText("EnchantmentReqs.txt", result);
-
-        }
-    }*/
+    
 }

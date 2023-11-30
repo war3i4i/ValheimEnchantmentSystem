@@ -63,13 +63,13 @@ public static class ScrollItems
     
     private static void FillRecipe(Item item, char tier, bool bless)
     {
-        var targetDic = bless ? DefaultRecipes_Blessed : DefaultRecipes;
-        var recipe = targetDic[tier];
-        foreach (var s in recipe)
+        Dictionary<char, string[]> targetDic = bless ? DefaultRecipes_Blessed : DefaultRecipes;
+        string[] recipe = targetDic[tier];
+        foreach (string s in recipe)
         {
             string[] split = s.Split(',');
-            var name = split[0];
-            var amount = int.Parse(split[1]);
+            string name = split[0];
+            int amount = int.Parse(split[1]);
             item.RequiredItems.Add(name, amount);
         }
         item.Crafting.Add("kg_EnchantmentScrollStation", 1);
@@ -105,7 +105,7 @@ public static class ScrollItems
         
         
         char[] DCBAS = {'F', 'D', 'C', 'B', 'A', 'S'};
-        foreach (var c in DCBAS)
+        foreach (char c in DCBAS)
         {
             Item weaponScroll = new Item(ValheimEnchantmentSystem._asset, $"kg_EnchantScroll_Weapon_{c}")
             {
@@ -155,8 +155,8 @@ public static class ScrollItems
     {
         ExludedDroPrefabs.Clear();
         if(string.IsNullOrWhiteSpace(ExcludePrefabsFromDrop.Value)) return;
-        var split = ExcludePrefabsFromDrop.Value.Replace(" ","").Split(',');
-        foreach (var s in split)
+        string[] split = ExcludePrefabsFromDrop.Value.Replace(" ","").Split(',');
+        foreach (string s in split)
         {
             ExludedDroPrefabs.Add(s);
         }
@@ -168,7 +168,7 @@ public static class ScrollItems
         [UsedImplicitly]
         private static void Postfix(ZNetScene __instance)
         {
-            foreach (var go in SkillScrolls)
+            foreach (GameObject go in SkillScrolls)
                 __instance.m_namedPrefabs[go.name.GetStableHashCode()] = go;
         }
     }
@@ -198,12 +198,12 @@ public static class ScrollItems
         private static void TryDropDefault(char tier, bool isBoss, Vector3 pos)
         {
             float rand = Random.value;
-            var dropChance = isBoss ? DropChance_Bosses.Value : DropChance.Value;
+            float dropChance = isBoss ? DropChance_Bosses.Value : DropChance.Value;
             dropChance /= 100f;
             if(rand <= dropChance)
             {
                 bool isWeapon = Random.value < 0.5f;
-                var book = isWeapon ? $"kg_EnchantScroll_Weapon_{tier}" : $"kg_EnchantScroll_Armor_{tier}";
+                string book = isWeapon ? $"kg_EnchantScroll_Weapon_{tier}" : $"kg_EnchantScroll_Armor_{tier}";
                 DropItem(ZNetScene.instance.GetPrefab(book), pos + Vector3.up * 0.75f, 0.5f);
             }
         }
@@ -211,12 +211,12 @@ public static class ScrollItems
         private static void TryDropBlessed(char tier, bool isBoss, Vector3 pos)
         {
             float rand = Random.value;
-            var dropChance = isBoss ? DropChance_Blessed_Bosses.Value : DropChance_Blessed.Value;
+            float dropChance = isBoss ? DropChance_Blessed_Bosses.Value : DropChance_Blessed.Value;
             dropChance /= 100f;
             if(rand <= dropChance)
             {
                 bool isWeapon = Random.value < 0.5f;
-                var book = isWeapon ? $"kg_EnchantScroll_Weapon_Blessed_{tier}" : $"kg_EnchantScroll_Armor_Blessed_{tier}";
+                string book = isWeapon ? $"kg_EnchantScroll_Weapon_Blessed_{tier}" : $"kg_EnchantScroll_Armor_Blessed_{tier}";
                 DropItem(ZNetScene.instance.GetPrefab(book), pos + Vector3.up * 0.75f, 0.5f);
             }
         }
@@ -229,7 +229,7 @@ public static class ScrollItems
             if (ExludedDroPrefabs.Contains(prefabName)) return;
             Heightmap.Biome biome = EnvMan.instance.m_currentBiome;
             if(!BiomeMapper.TryGetValue(biome, out ConfigEntry<string> tier)) return;
-            var position = __instance.transform.position;
+            Vector3 position = __instance.transform.position;
             char tierValue = tier.Value[0];
             TryDropDefault(tierValue, __instance.IsBoss(), position);
             TryDropBlessed(tierValue, __instance.IsBoss(), position);
@@ -243,7 +243,7 @@ public static class ScrollItems
         private static void TryDropSkillScroll(char tier, bool isBoss, Vector3 pos)
         {
             float rand = Random.value;
-            var dropChance = isBoss ? DropChance_Skill_Bosses.Value : DropChance_Skill.Value;
+            float dropChance = isBoss ? DropChance_Skill_Bosses.Value : DropChance_Skill.Value;
             dropChance /= 100f;
             if(rand <= dropChance)
             {
@@ -259,7 +259,7 @@ public static class ScrollItems
             if (ExludedDroPrefabs.Contains(prefabName)) return;
             Heightmap.Biome biome = EnvMan.instance.m_currentBiome;
             if(!BiomeMapper.TryGetValue(biome, out ConfigEntry<string> tier)) return;
-            var position = __instance.transform.position;
+            Vector3 position = __instance.transform.position;
             char tierValue = tier.Value[0];
             TryDropSkillScroll(tierValue, __instance.IsBoss(), position);
         }
@@ -350,18 +350,18 @@ public static class ScrollItems
     private static bool HaveSurrounds_3(ItemDrop.ItemData item, Inventory grid, out int toInstantiate, bool removeIfTrue = false)
     {
         toInstantiate = 0;
-        var pos = item.m_gridPos;
-        var gridX = grid.m_width;
+        Vector2i pos = item.m_gridPos;
+        int gridX = grid.m_width;
         
-        var left = pos.x - 1;
-        var right = pos.x + 1;
-        var leftLeft = pos.x - 2;
-        var rightRight = pos.x + 2; 
+        int left = pos.x - 1;
+        int right = pos.x + 1;
+        int leftLeft = pos.x - 2;
+        int rightRight = pos.x + 2; 
         
         if(left < 0 || right >= gridX) return false;
         
-        var leftItem = grid.GetItemAt(left, pos.y);
-        var rightItem = grid.GetItemAt(right, pos.y);
+        ItemDrop.ItemData leftItem = grid.GetItemAt(left, pos.y);
+        ItemDrop.ItemData rightItem = grid.GetItemAt(right, pos.y);
         if (leftItem == null || rightItem == null) return false;
         if (leftItem.m_dropPrefab.name != item.m_dropPrefab.name || rightItem.m_dropPrefab.name != item.m_dropPrefab.name) return false;
         
@@ -382,19 +382,19 @@ public static class ScrollItems
     private static bool HaveSurrounds_5(ItemDrop.ItemData item, Inventory grid, out int toInstantiate, bool removeIfTrue = false)
     {
         toInstantiate = 0;
-        var pos = item.m_gridPos;
+        Vector2i pos = item.m_gridPos;
         if (ValheimEnchantmentSystem.AUGA && pos.y <= 1) return false;
-        var gridX = grid.m_width;
+        int gridX = grid.m_width;
 
-        var left = pos.x - 1;
-        var right = pos.x + 1;
-        var leftLeft = pos.x - 2;
-        var rightRight = pos.x + 2;
+        int left = pos.x - 1;
+        int right = pos.x + 1;
+        int leftLeft = pos.x - 2;
+        int rightRight = pos.x + 2;
 
         if (left < 0 || right >= gridX) return false;
 
-        var leftItem = grid.GetItemAt(left, pos.y);
-        var rightItem = grid.GetItemAt(right, pos.y);
+        ItemDrop.ItemData leftItem = grid.GetItemAt(left, pos.y);
+        ItemDrop.ItemData rightItem = grid.GetItemAt(right, pos.y);
         if (leftItem == null || rightItem == null) return false;
         if (leftItem.m_dropPrefab.name != item.m_dropPrefab.name ||
             rightItem.m_dropPrefab.name != item.m_dropPrefab.name) return false;
@@ -404,15 +404,15 @@ public static class ScrollItems
         if (rightRight < gridX && grid.GetItemAt(rightRight, pos.y) is { } rightRightItem &&
             rightRightItem.m_dropPrefab.name == item.m_dropPrefab.name) return false;
 
-        var up = pos.y - 1;
-        var down = pos.y + 1;
-        var upUp = pos.y - 2;
-        var downDown = pos.y + 2;
+        int up = pos.y - 1;
+        int down = pos.y + 1;
+        int upUp = pos.y - 2;
+        int downDown = pos.y + 2;
 
         if (up < 0 || down >= grid.m_height) return false;
 
-        var upItem = grid.GetItemAt(pos.x, up);
-        var downItem = grid.GetItemAt(pos.x, down);
+        ItemDrop.ItemData upItem = grid.GetItemAt(pos.x, up);
+        ItemDrop.ItemData downItem = grid.GetItemAt(pos.x, down);
         if (upItem == null || downItem == null) return false;
         if (upItem.m_dropPrefab.name != item.m_dropPrefab.name ||
             downItem.m_dropPrefab.name != item.m_dropPrefab.name) return false;
@@ -460,8 +460,8 @@ public static class ScrollItems
                         break;
                     default: continue;
                 }
-                var element = __instance.m_elements[item.m_gridPos.y * __instance.m_inventory.m_width + item.m_gridPos.x];
-                var combine = element.m_go.transform.Find("VES_Combine");
+                InventoryGrid.Element element = __instance.m_elements[item.m_gridPos.y * __instance.m_inventory.m_width + item.m_gridPos.x];
+                Transform combine = element.m_go.transform.Find("VES_Combine");
                 combine.gameObject.SetActive(true);
                 combine.transform.GetChild(1).gameObject.SetActive(RequiredLine_Config.Value == RequiredLine.Three);
                 combine.transform.GetChild(2).gameObject.SetActive(RequiredLine_Config.Value == RequiredLine.Five);

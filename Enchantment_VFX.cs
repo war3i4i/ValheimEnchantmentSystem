@@ -89,13 +89,13 @@ public static class Enchantment_VFX
         }
      
         List<Renderer> renderers = item.GetComponentsInChildren<SkinnedMeshRenderer>(true).Cast<Renderer>().Concat(item.GetComponentsInChildren<MeshRenderer>(true)).ToList();
-        foreach (var renderer in renderers)
+        foreach (Renderer renderer in renderers)
         {
             List<Material> list = renderer.sharedMaterials.ToList();
             list.Add(VFXs[variant]);
             renderer.sharedMaterials = list.ToArray();
         }
-        foreach (var material in renderers.SelectMany(m => m.materials))
+        foreach (Material material in renderers.SelectMany(m => m.materials))
                 if (material.name.Contains("Enchantment_VFX_Mat"))
                     material.SetColor(TintColor, isArmor ? c : c * INTENSITY[variant]);
     }
@@ -234,7 +234,7 @@ public static class Enchantment_VFX
             if (string.IsNullOrEmpty(chestColor)) return;
             Color c = chestColor.ToColorAlpha();
             int variant = __instance.m_nview.m_zdo.GetInt("VES_chestitemColor_variant");
-            foreach (var itemInstance in __instance.m_chestItemInstances)
+            foreach (GameObject itemInstance in __instance.m_chestItemInstances)
             {
                 AttachMeshEffect(itemInstance, c, variant, true);
             }
@@ -267,7 +267,7 @@ public static class Enchantment_VFX
             if (string.IsNullOrEmpty(legsColor)) return;
             Color c = legsColor.ToColorAlpha();
             int variant = __instance.m_nview.m_zdo.GetInt("VES_legsitemColor_variant");
-            foreach (var itemInstance in __instance.m_legItemInstances)
+            foreach (GameObject itemInstance in __instance.m_legItemInstances)
             {
                 AttachMeshEffect(itemInstance, c, variant, true);
             }
@@ -300,7 +300,7 @@ public static class Enchantment_VFX
             if (string.IsNullOrEmpty(shoulderColor)) return;
             Color c = shoulderColor.ToColorAlpha();
             int variant = __instance.m_nview.m_zdo.GetInt("VES_shoulderitemColor_variant");
-            foreach (var itemInstance in __instance.m_shoulderItemInstances)
+            foreach (GameObject itemInstance in __instance.m_shoulderItemInstances)
             {
                 AttachMeshEffect(itemInstance, c, variant, true);
             }
@@ -372,7 +372,7 @@ public static class Enchantment_VFX
         private static void Postfix(ItemStand __instance, bool __state)
         {
             if(!__state) return;
-            var visualItem = __instance.m_visualItem;
+            GameObject visualItem = __instance.m_visualItem;
             if (!visualItem) return;   
             
             string itemPrefab = __instance.m_nview.GetZDO().GetString(ZDOVars.s_item);
@@ -399,7 +399,7 @@ public static class Enchantment_VFX
             if (done) return;
             done = true;
             if (__instance.transform.Find("StartGame/Panel/JoinPanel/serverCount")?.GetComponent<TextMeshProUGUI>() is not { } vanilla) return;
-            var tmp = HOTBAR_PART.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI tmp = HOTBAR_PART.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
             tmp.font = vanilla.font;
             AccessTools.Field(typeof(TextMeshProUGUI), "m_canvasRenderer").SetValue(tmp, tmp.GetComponent<CanvasRenderer>());
             tmp.outlineWidth = 0.15f;
@@ -468,7 +468,7 @@ public static class Enchantment_VFX
                 element.m_go.transform.Find("VES_Level").gameObject.SetActive(false);
             }
 
-            foreach (var itemData in __instance.m_items)
+            foreach (ItemDrop.ItemData itemData in __instance.m_items)
             {
                 HotkeyBar.ElementData element = __instance.m_elements[itemData.m_gridPos.x];
                 Transform ves = element.m_go.transform.Find("VES_Level");

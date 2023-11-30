@@ -19,11 +19,11 @@ public static class SettingsUI
         {
             if (!firstInit) return;
             firstInit = false;
-            var settingsPrefab = __instance.m_settingsPrefab;
-            var controls = settingsPrefab.transform.Find("panel/TabButtons/Controlls");
+            GameObject settingsPrefab = __instance.m_settingsPrefab;
+            Transform controls = settingsPrefab.transform.Find("panel/TabButtons/Controlls");
             if (!controls) controls = settingsPrefab.transform.Find("panel/TabButtons/Tabs/Controls");
             if (!controls) return;
-            var newButton = UnityEngine.Object.Instantiate(controls);
+            Transform newButton = UnityEngine.Object.Instantiate(controls);
             newButton.SetParent(controls.parent, false);
             newButton.name = "kg_Enchantment";
             newButton.SetAsLastSibling();
@@ -31,8 +31,8 @@ public static class SettingsUI
             if(!textTransform) textTransform = newButton.transform.Find("Selected/Text");
             if(!textTransform) return;
             textTransform.GetComponent<TMP_Text>().text = "$enchantment_enchantment".Localize();
-            var tabHandler = settingsPrefab.transform.Find("panel/TabButtons").GetComponent<TabHandler>();
-            var page = settingsPrefab.transform.Find("panel/Tabs");
+            TabHandler tabHandler = settingsPrefab.transform.Find("panel/TabButtons").GetComponent<TabHandler>();
+            Transform page = settingsPrefab.transform.Find("panel/Tabs");
             GameObject newPage = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantments_Settings"));
             Localization.instance.Localize(newPage.transform);
             newPage.transform.SetParent(page); 
@@ -59,7 +59,7 @@ public static class SettingsUI
         [UsedImplicitly]
         private static void Postfix(Settings __instance)
         {
-            var enTab = __instance.transform.Find("panel/Tabs/kg_Enchantment");
+            Transform enTab = __instance.transform.Find("panel/Tabs/kg_Enchantment");
             if (!enTab) return;
             CurrentUI = enTab.gameObject;
 

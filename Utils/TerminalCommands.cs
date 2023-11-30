@@ -33,7 +33,7 @@ public static class TerminalCommands
                 if(!Utils.IsDebug_Strict) return;
                 int level = int.Parse(args[1]);
 
-                foreach (var item in Player.m_localPlayer.m_inventory.m_inventory.Where(x => SyncedData.GetReqs(x.m_dropPrefab?.name) != null))
+                foreach (ItemDrop.ItemData item in Player.m_localPlayer.m_inventory.m_inventory.Where(x => SyncedData.GetReqs(x.m_dropPrefab?.name) != null))
                 {
                     Enchantment_Core.Enchanted en = item.Data().GetOrCreate<Enchantment_Core.Enchanted>();
                     en.level = level;

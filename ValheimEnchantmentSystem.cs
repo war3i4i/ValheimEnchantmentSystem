@@ -3,7 +3,8 @@ using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
 using ServerSync;
 using UnityEngine.Rendering;
- 
+using VES.Stats;
+
 namespace kg.ValheimEnchantmentSystem
 {
     [BepInPlugin(GUID, PLUGIN_NAME, PLUGIN_VERSION)]
@@ -35,9 +36,10 @@ namespace kg.ValheimEnchantmentSystem
         private void Awake()
         {
             _thistype = this;
+            ISP_Auto.ISP_Patcher.OnInit();
             WorkingAs WorkingAsType = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null ? WorkingAs.Server : WorkingAs.Client;
             JSON.Parameters = new JSONParameters
-            {
+            {  
                 UseExtensions = false,
                 SerializeNullValues = false,
                 DateTimeMilliseconds = false,
@@ -45,7 +47,7 @@ namespace kg.ValheimEnchantmentSystem
                 UseOptimizedDatasetSchema = true,
                 UseValuesOfEnums = true, 
             };
-            Localizer.Load();
+            Localizer.Load();  
             ConfigFolder = Path.Combine(Paths.ConfigPath, "ValheimEnchantmentSystem");
             if (!Directory.Exists(ConfigFolder))
                 Directory.CreateDirectory(ConfigFolder);
@@ -89,6 +91,11 @@ namespace kg.ValheimEnchantmentSystem
             VES_UI.Update();
             Info_UI.Update();
             Notifications_UI.Update();
+        }
+
+        private void OnGUI() 
+        {
+            StatsPanel.OnGUI();
         }
 
         private static AssetBundle GetAssetBundle(string filename)

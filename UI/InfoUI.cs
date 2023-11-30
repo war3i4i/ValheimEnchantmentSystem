@@ -42,7 +42,7 @@ public static class Info_UI
         Content = UI.transform.Find("Canvas/Background/Scroll View/Viewport/Content");
         for (int i = 0; i < _categories.Length; i++)
         {
-            var category = (Category)i;
+            Category category = (Category)i;
             _categories[i].GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
@@ -71,7 +71,7 @@ public static class Info_UI
     private static void SelectCategory(Category cat)
     {
         _currentCategory = cat;
-        foreach (var category in _categories)
+        foreach (GameObject category in _categories)
             category.transform.Find("Text").GetComponent<Text>().color = Color.white;
         _categories[(int)cat].transform.Find("Text").GetComponent<Text>().color = Color.yellow;
     }
@@ -99,7 +99,7 @@ public static class Info_UI
     private static bool HasAny(IEnumerable<string> list, string search, out string found)
     {
         search = search.ToLower().Replace(" ", "");
-        foreach (var prefab in list)
+        foreach (string prefab in list)
         {
             if (prefab.ToLower().Replace(" ", "").Contains(search))
             {
@@ -107,7 +107,7 @@ public static class Info_UI
                 return true;
             }
 
-            var tryFind = ZNetScene.instance.GetPrefab(prefab);
+            GameObject tryFind = ZNetScene.instance.GetPrefab(prefab);
             if (!tryFind || tryFind.GetComponent<ItemDrop>() is not { } item) continue;
             bool check = item.m_itemData.m_shared.m_name.Localize().Contains(search);
             if (check)
@@ -152,7 +152,7 @@ public static class Info_UI
     private static string GenerateStatsText(Dictionary<int, SyncedData.Stat_Data> stats)
     {
         string result = "";
-        foreach (var stat in stats.OrderBy(x => x.Key))
+        foreach (KeyValuePair<int, SyncedData.Stat_Data> stat in stats.OrderBy(x => x.Key))
         {
             result += $"<color=yellow>• lvl{stat.Key}:</color>";
             result += stat.Value.Info_Description();
@@ -164,7 +164,7 @@ public static class Info_UI
     private static string GenerateChancesText(Dictionary<int, SyncedData.Chance_Data> chances)
     {
         string result = "";
-        foreach (var chance in chances.OrderBy(x => x.Key))
+        foreach (KeyValuePair<int, SyncedData.Chance_Data> chance in chances.OrderBy(x => x.Key))
         {
             string success = $"{chance.Value.success}";
             string destroy = chance.Value.destroy > 0 ? $", $enchantment_destroychance: {chance.Value.destroy}%".Localize() : "";
@@ -177,17 +177,17 @@ public static class Info_UI
         string additionalText = null)
     {
         if (!Player.m_localPlayer) return null;
-        var element = UnityEngine.Object.Instantiate(Element, Content);
-        var toInstantiate = element.transform.Find("Items/Icon").gameObject;
+        GameObject element = UnityEngine.Object.Instantiate(Element, Content);
+        GameObject toInstantiate = element.transform.Find("Items/Icon").gameObject;
 
         if (prefabs != null)
         {
-            foreach (var prefab in prefabs)
+            foreach (string prefab in prefabs)
             {
-                var tryFind = ZNetScene.instance.GetPrefab(prefab);
+                GameObject tryFind = ZNetScene.instance.GetPrefab(prefab);
                 if (!tryFind || tryFind.GetComponent<ItemDrop>() is not { } item) continue;
                 if (!Player.m_localPlayer.m_knownRecipes.Contains(item.m_itemData.m_shared.m_name) && !Player.m_localPlayer.m_knownMaterial.Contains(item.m_itemData.m_shared.m_name)) continue;
-                var icon = UnityEngine.Object.Instantiate(toInstantiate, element.transform.Find("Items"));
+                GameObject icon = UnityEngine.Object.Instantiate(toInstantiate, element.transform.Find("Items"));
                 icon.SetActive(true);
                 icon.transform.Find("Icon").GetComponent<Image>().sprite = item.m_itemData.GetIcon();
                 icon.GetComponent<UITooltip>().m_topic = item.m_itemData.m_shared.m_name.Localize();
@@ -218,7 +218,7 @@ public static class Info_UI
         element.transform.Find("Open").GetComponent<Button>().onClick.AddListener(() =>
         {
             VES_UI.PlayClick();
-            var isActive = element.transform.Find("Info").gameObject.activeSelf;
+            bool isActive = element.transform.Find("Info").gameObject.activeSelf;
             isActive = !isActive;
             element.transform.Find("Info").gameObject.SetActive(isActive);
             if (isActive)
@@ -242,14 +242,14 @@ public static class Info_UI
 
     private static void LoadReqs()
     {
-        var target = SyncedData.Synced_EnchantmentReqs.Value;
+        List<SyncedData.EnchantmentReqs> target = SyncedData.Synced_EnchantmentReqs.Value;
         List<GameObject> _fittersUpdate = new();
 
-        foreach (var req in target)
+        foreach (SyncedData.EnchantmentReqs req in target)
         {
             string found = null;
             if (!string.IsNullOrWhiteSpace(_search.text) && !HasAny(req.Items, _search.text, out found)) continue;
-            var element = CreateElementWithText(req.Items, GenerateReqsText(req), found);
+            GameObject element = CreateElementWithText(req.Items, GenerateReqsText(req), found);
             if (element) _fittersUpdate.Add(element);
         }
         ForceCanvas();
@@ -262,20 +262,20 @@ public static class Info_UI
 
         if (string.IsNullOrWhiteSpace(_search.text))
         {
-            var defaultWeapons = CreateElementWithText(null,
+            GameObject defaultWeapons = CreateElementWithText(null,
                 GenerateStatsText(SyncedData.Synced_EnchantmentStats_Weapons.Value), null, "$enchantment_defaultstats_weapon".Localize());
             _fittersUpdate.Add(defaultWeapons);
-            var defaultArmor = CreateElementWithText(null,
+            GameObject defaultArmor = CreateElementWithText(null,
                 GenerateStatsText(SyncedData.Synced_EnchantmentStats_Armor.Value), null, "$enchantment_defaultstats_armor".Localize());
             _fittersUpdate.Add(defaultArmor);
         }
 
-        var target = SyncedData.Overrides_EnchantmentStats.Value;
-        foreach (var stat in target)
+        List<Defaults.OverrideStats> target = SyncedData.Overrides_EnchantmentStats.Value;
+        foreach (Defaults.OverrideStats stat in target)
         {
             string found = null;
             if (!string.IsNullOrWhiteSpace(_search.text) && !HasAny(stat.Items, _search.text, out found)) continue;
-            var element = CreateElementWithText(stat.Items, GenerateStatsText(stat.Stats), found);
+            GameObject element = CreateElementWithText(stat.Items, GenerateStatsText(stat.Stats), found);
             if (element) _fittersUpdate.Add(element);
         } 
         ForceCanvas();
@@ -288,17 +288,17 @@ public static class Info_UI
         
         if (string.IsNullOrWhiteSpace(_search.text))
         {
-            var defaultChances = CreateElementWithText(null, GenerateChancesText(SyncedData.Synced_EnchantmentChances.Value), null, "$enchantment_defaultchances".Localize());
+            GameObject defaultChances = CreateElementWithText(null, GenerateChancesText(SyncedData.Synced_EnchantmentChances.Value), null, "$enchantment_defaultchances".Localize());
             _fittersUpdate.Add(defaultChances);
         }
         
-        var target = SyncedData.Overrides_EnchantmentChances.Value;
+        List<Defaults.OverrideChances> target = SyncedData.Overrides_EnchantmentChances.Value;
         
-        foreach (var chance in target)
+        foreach (Defaults.OverrideChances chance in target)
         {
             string found = null;
             if (!string.IsNullOrWhiteSpace(_search.text) && !HasAny(chance.Items, _search.text, out found)) continue;
-            var element = CreateElementWithText(chance.Items, GenerateChancesText(chance.Chances), found);
+            GameObject element = CreateElementWithText(chance.Items, GenerateChancesText(chance.Chances), found);
             if (element) _fittersUpdate.Add(element);
         }
         ForceCanvas();

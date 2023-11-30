@@ -79,7 +79,7 @@ public static class Notifications_UI
             _dequeueTimer = 1f;
             if (_notifications.Count > 0 && !IsVisible() && Player.m_localPlayer)
             {
-                var notification = _notifications.Dequeue();
+                Notification notification = _notifications.Dequeue();
                 ShowNotification(notification);
             }
         } 
@@ -139,7 +139,7 @@ public static class Notifications_UI
         ResultText.color = type is NotificationItemResult.Success ? SuccessColor : FailColor;
         ItemIcon.sprite = itemDrop.m_itemData.GetIcon();
         
-        foreach (var image in _colorGroup)
+        foreach (Image image in _colorGroup)
             image.color = type is NotificationItemResult.Success ? SuccessColor : FailColor; 
 
         string text = type switch

@@ -1,129 +1,34 @@
 ﻿using YamlDotNet.Serialization;
-
+using ISP_Auto;
 namespace kg.ValheimEnchantmentSystem.Configs;
 
 public static class Defaults
 {
+    [AutoSerialize]
     public class OverrideChances : ISerializableParameter
     {
-        public List<string> Items = new();
-        public Dictionary<int, SyncedData.Chance_Data> Chances = new();
-
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(Items.Count);
-            foreach (var item in Items)
-            {
-                pkg.Write(item);
-            }
-
-            pkg.Write(Chances.Count);
-            foreach (var chance in Chances)
-            {
-                pkg.Write(chance.Key);
-                chance.Value.Serialize(ref pkg);
-            }
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            Items.Clear();
-            int count = pkg.ReadInt();
-            for (int i = 0; i < count; i++)
-            {
-                Items.Add(pkg.ReadString());
-            }
-
-            Chances.Clear();
-            count = pkg.ReadInt();
-            for (int i = 0; i < count; i++)
-            {
-                int key = pkg.ReadInt();
-                SyncedData.Chance_Data newChanceData = new();
-                Chances.Add(key, newChanceData);
-                newChanceData.Deserialize(ref pkg);
-            }
-        }
+        [ISP_Serialize] public List<string> Items = new();
+        [ISP_Serialize] public Dictionary<int, SyncedData.Chance_Data> Chances = new();
+        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
+    [AutoSerialize]
     public class OverrideColors : ISerializableParameter
     {
-        public List<string> Items = new();
-        public Dictionary<int, SyncedData.VFX_Data> Colors = new();
-
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(Items.Count);
-            foreach (var item in Items)
-            {
-                pkg.Write(item);
-            }
-
-            pkg.Write(Colors.Count);
-            foreach (var color in Colors)
-            {
-                pkg.Write(color.Key);
-                color.Value.Serialize(ref pkg);
-            }
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            Items.Clear();
-            int count = pkg.ReadInt();
-            for (int i = 0; i < count; i++)
-            {
-                Items.Add(pkg.ReadString());
-            }
-            Colors.Clear();
-            count = pkg.ReadInt();
-            for (int i = 0; i < count; i++)
-            {
-                SyncedData.VFX_Data newVFXData = new();
-                Colors.Add(pkg.ReadInt(), newVFXData);
-                newVFXData.Deserialize(ref pkg);
-            }
-        }
+        [ISP_Serialize] public List<string> Items = new();
+        [ISP_Serialize] public Dictionary<int, SyncedData.VFX_Data> Colors = new();
+        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
+    [AutoSerialize]
     public class OverrideStats : ISerializableParameter
     {
-        public List<string> Items = new();
-        public Dictionary<int, SyncedData.Stat_Data> Stats = new();
-        public void Serialize(ref ZPackage pkg)
-        {
-            pkg.Write(Items.Count);
-            foreach (var item in Items)
-            {
-                pkg.Write(item);
-            }
-
-            pkg.Write(Stats.Count);
-            foreach (var stat in Stats)
-            {
-                pkg.Write(stat.Key);
-                stat.Value.Serialize(ref pkg);
-            }
-        }
-
-        public void Deserialize(ref ZPackage pkg)
-        {
-            Items.Clear();
-            int count = pkg.ReadInt();
-            for (int i = 0; i < count; i++)
-            {
-                Items.Add(pkg.ReadString());
-            }
-
-            Stats.Clear();
-            count = pkg.ReadInt();
-            for (int i = 0; i < count; ++i)
-            {
-                var newStatData = new SyncedData.Stat_Data();
-                Stats.Add(pkg.ReadInt(), newStatData);
-                newStatData.Deserialize(ref pkg);
-            }
-        }
+        [ISP_Serialize] public List<string> Items = new();
+        [ISP_Serialize] public Dictionary<int, SyncedData.Stat_Data> Stats = new();
+        public void Serialize(ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
     private static readonly Dictionary<int, SyncedData.Stat_Data> DefaultStats_Weapons =

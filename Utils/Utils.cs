@@ -94,7 +94,7 @@ public static class Utils
                 float g = ((colorValue >> 16) & 0xFF) / 255.0f;
                 float b = ((colorValue >> 8) & 0xFF) / 255.0f;
                 float a = (colorValue & 0xFF) / 255.0f;
-                var color = new Color(r, g, b, a);
+                Color color = new Color(r, g, b, a);
                 return color;
             }
             case 6:
@@ -102,7 +102,7 @@ public static class Utils
                 float r = ((colorValue >> 16) & 0xFF) / 255.0f;
                 float g = ((colorValue >> 8) & 0xFF) / 255.0f;
                 float b = (colorValue & 0xFF) / 255.0f;
-                var color = new Color(r, g, b, 1f);
+                Color color = new Color(r, g, b, 1f);
                 return color;
             }
             default:
@@ -144,8 +144,8 @@ public static class Utils
 
     public static string IncreaseColorLight(this string color)
     {
-        if (!ColorUtility.TryParseHtmlString(color, out var c)) return color;
-        Color.RGBToHSV(c, out var h, out var s, out var v);
+        if (!ColorUtility.TryParseHtmlString(color, out Color c)) return color;
+        Color.RGBToHSV(c, out float h, out float s, out float v);
         v = 1f;
         c = Color.HSVToRGB(h, s, v);
         return "#" + ColorUtility.ToHtmlStringRGB(c);
@@ -153,7 +153,7 @@ public static class Utils
 
     public static Color IncreaseColorLight(this Color c)
     {
-        Color.RGBToHSV(c, out var h, out var s, out var v);
+        Color.RGBToHSV(c, out float h, out float s, out float v);
         v = 1f;
         c = Color.HSVToRGB(h, s, v);
         return c;
@@ -161,7 +161,7 @@ public static class Utils
 
     public static string GetPrefabNameByItemName(string itemname)
     {
-        var find = ObjectDB.instance.m_items.FirstOrDefault(x =>
+        GameObject find = ObjectDB.instance.m_items.FirstOrDefault(x =>
             x.GetComponent<ItemDrop>().m_itemData.m_shared.m_name == itemname);
         if (find == null) return null;
         return find.name;
@@ -262,7 +262,7 @@ public static class Utils
         Player p = Player.m_localPlayer;
         if (!p || !prefab || count == 0) return;
 
-        var inventory = overrideInventory ?? p.m_inventory;
+        Inventory inventory = overrideInventory ?? p.m_inventory;
 
         if (prefab.GetComponent<ItemDrop>() is not { } item) return;
         

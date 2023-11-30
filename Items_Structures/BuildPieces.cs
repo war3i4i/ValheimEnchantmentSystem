@@ -45,7 +45,7 @@ public static class BuildPieces
             if (Piece.s_allPieces?.Count > 0)
             {
                 IEnumerable<Piece> piece = Piece.s_allPieces.Where(x => global::Utils.GetPrefabName(x.gameObject) == Station.name);
-                foreach (var p in piece)
+                foreach (Piece p in piece)
                     p.m_resources = reqs.ToArray();
             }
         }
@@ -64,7 +64,7 @@ public static class BuildPieces
         private static void Postfix(ZNetScene __instance)
         {
             __instance.m_namedPrefabs[Station.name.GetStableHashCode()] = Station;
-            var hammer = __instance.GetPrefab("Hammer").GetComponent<ItemDrop>().m_itemData.m_shared.m_buildPieces.m_pieces;
+            List<GameObject> hammer = __instance.GetPrefab("Hammer").GetComponent<ItemDrop>().m_itemData.m_shared.m_buildPieces.m_pieces;
             if(!hammer.Contains(Station)) hammer.Add(Station);
             StationRequirementsChanged();
         }

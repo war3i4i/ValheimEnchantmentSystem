@@ -60,7 +60,7 @@ public static class Enchantment_AdditionalEffects
     {
         if (!Game.instance || Game.instance.m_shuttingDown || !Player.m_localPlayer) return;
         List<ItemDrop.ItemData> toProcess = new();
-        foreach (var item in Player.m_localPlayer.m_inventory.GetAllItems())
+        foreach (ItemDrop.ItemData item in Player.m_localPlayer.m_inventory.GetAllItems())
             if (item is { m_equipped: true })
                 toProcess.Add(item);
 
@@ -70,11 +70,11 @@ public static class Enchantment_AdditionalEffects
         int auramodel = 0;
         string auracolor = null;
 
-        foreach (var item in toProcess)
+        foreach (ItemDrop.ItemData item in toProcess)
         {
             if (item.Data().Get<Enchantment_Core.Enchanted>() is not { level: > 0 } enchantment) continue;
 
-            var vfxModule = SyncedData.GetAdditionalEffects(enchantment);
+            AdditionalEffectsModule vfxModule = SyncedData.GetAdditionalEffects(enchantment);
             if (vfxModule is null) continue;
 
             wingsmodel = vfxModule.wingsmodel;
@@ -185,10 +185,10 @@ public static class Enchantment_AdditionalEffects
             Transform aura = p.transform.Find("kg_Enchantment_Aura");
             if (aura) UnityEngine.Object.Destroy(aura.gameObject);
             if (!_enableAuraEffects.Value || i == 0 || i > _auraModels.Count) return;
-            ColorUtility.TryParseHtmlString(color, out var c);
-            foreach (var mr in _auraModels[i - 1].GetComponentsInChildren<ParticleSystem>())
+            ColorUtility.TryParseHtmlString(color, out Color c);
+            foreach (ParticleSystem mr in _auraModels[i - 1].GetComponentsInChildren<ParticleSystem>())
             {  
-                var main = mr.main;  
+                ParticleSystem.MainModule main = mr.main;  
                 main.startColor = new Color(c.r, c.g, c.b, main.startColor.color.a);
             }
             GameObject gameObject = UnityEngine.Object.Instantiate(_auraModels[i - 1], p.transform);

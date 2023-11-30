@@ -89,11 +89,11 @@ public static class Enchantment_Core
 
         private bool HaveReqs(bool bless)
         {
-            SyncedData.EnchantmentReqs.req req = bless
+            SyncedData.req req = bless
                 ? SyncedData.GetReqs(Item.m_dropPrefab.name).blessed_enchant_prefab
                 : SyncedData.GetReqs(Item.m_dropPrefab.name).enchant_prefab;
             if (req == null || !req.IsValid()) return false;
-            var prefab = ZNetScene.instance.GetPrefab(req.prefab);
+            GameObject prefab = ZNetScene.instance.GetPrefab(req.prefab);
             if (prefab == null) return false;
             int count = Utils.CustomCountItemsNoLevel(prefab.name);
             if (count >= req.amount)
@@ -115,7 +115,7 @@ public static class Enchantment_Core
         private bool CheckRandom(out bool destroy)
         {
             float random = Random.Range(0f, 100f);
-            var chanceData = GetEnchantmentChanceData();
+            SyncedData.Chance_Data chanceData = GetEnchantmentChanceData();
             float additionalChance = SyncedData.GetAdditionalEnchantmentChance();
             destroy = chanceData.destroy > 0 && random <= chanceData.destroy;
             return random <= chanceData.success + additionalChance;
@@ -141,6 +141,7 @@ public static class Enchantment_Core
             {
                 level++;
                 Save();
+                Other_Mods_APIs.ApplyAPIs(this);
                 ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
                 msg = "$enchantment_success".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
                 if (SyncedData.EnchantmentEnableNotifications.Value && SyncedData.EnchantmentNotificationMinLevel.Value <= level)
@@ -157,6 +158,7 @@ public static class Enchantment_Core
                     default:
                         level = Mathf.Max(0, level - 1);
                         Save();
+                        Other_Mods_APIs.ApplyAPIs(this);
                         ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
                         msg = "$enchantment_fail_leveldown".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
                         notification = Notifications_UI.NotificationItemResult.LevelDecrease;
@@ -179,6 +181,7 @@ public static class Enchantment_Core
                         {
                             level = Mathf.Max(0, level - 1);
                             Save();
+                            Other_Mods_APIs.ApplyAPIs(this);
                             ValheimEnchantmentSystem._thistype.StartCoroutine(FrameSkipEquip(Item));
                             msg = "$enchantment_fail_leveldown".Localize(Item.m_shared.m_name.Localize(), prevLevel.ToString(), level.ToString());
                         }
@@ -267,7 +270,7 @@ public static class Enchantment_Core
                     if (damagePercent > 0)
                     {
                         Player.m_localPlayer.GetSkills().GetRandomSkillRange(out float minFactor, out float maxFactor, item.m_shared.m_skillType);
-                        var damage = item.GetDamage(qualityLevel, item.m_worldLevel);
+                        HitData.DamageTypes damage = item.GetDamage(qualityLevel, item.m_worldLevel);
                         __result = new Regex("(\\$inventory_damage.*)").Replace(__result,
                             $"$1 (<color={color}>+{(damage.m_damage * damagePercent / 100f * minFactor).RoundOne()} - {(damage.m_damage * damagePercent / 100f * maxFactor).RoundOne()}</color>)");
                         __result = new Regex("(\\$inventory_blunt.*)").Replace(__result,
@@ -383,7 +386,7 @@ public static class Enchantment_Core
             CodeMatcher matcher = new(code);
             matcher.MatchForward(false, new CodeMatch(OpCodes.Stloc_2));
             if (matcher.IsInvalid) return matcher.InstructionEnumeration();
-            var method = AccessTools.Method(typeof(InventoryGui_AddRecipeToList_Patch), nameof(Modify));
+            MethodInfo method = AccessTools.Method(typeof(InventoryGui_AddRecipeToList_Patch), nameof(Modify));
             matcher.Advance(1).InsertAndAdvance(new CodeInstruction(OpCodes.Ldloca_S, 2))
                 .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_3))
                 .InsertAndAdvance(new CodeInstruction(OpCodes.Call, method));
@@ -549,7 +552,7 @@ public static class Enchantment_Core
             if (__instance.m_character != Player.m_localPlayer) return;
             if (__instance.m_weapon?.Data().Get<Enchanted>() is not { level: > 0 } data || SyncedData.GetStatIncrease(data) is not { slash_wave: > 0 } stats) return;
             Color color = SyncedData.GetColor(data, out _, true).ToColorAlpha();
-            var pt = Player.m_localPlayer.transform;
+            Transform pt = Player.m_localPlayer.transform;
             SlashContoller.CreateNewSlash(
                 SlashPrefab, 
                 pt.position + Vector3.up * 1.2f, 

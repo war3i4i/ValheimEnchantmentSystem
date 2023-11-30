@@ -3,6 +3,7 @@ using ItemDataManager;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Configs;
 using kg.ValheimEnchantmentSystem.Misc;
+using UnityEngine.Audio;
 
 namespace kg.ValheimEnchantmentSystem.UI;
 
@@ -174,11 +175,11 @@ public static class VES_UI
         }
         else
         {
-            SyncedData.EnchantmentReqs.req req = _useBless
+            SyncedData.req req = _useBless
                 ? SyncedData.GetReqs(_currentItem.m_dropPrefab.name).blessed_enchant_prefab
                 : SyncedData.GetReqs(_currentItem.m_dropPrefab.name).enchant_prefab;
             if (req == null || !req.IsValid()) return;
-            var prefab = ZNetScene.instance.GetPrefab(req.prefab);
+            GameObject prefab = ZNetScene.instance.GetPrefab(req.prefab);
             if (!prefab) return;
             if (Utils.CustomCountItemsNoLevel(prefab.name) < req.amount) return;
 
@@ -273,7 +274,7 @@ public static class VES_UI
             Item_Visual.color = enchanted ? Color.green : Color.red;
             Color c = SyncedData.GetColor(en, out _, true).IncreaseColorLight().ToColorAlpha();
             Item_Trail.color = c;
-            var uifx = UnityEngine.Object.Instantiate(VFX1, Item_Transform.transform);
+            GameObject uifx = UnityEngine.Object.Instantiate(VFX1, Item_Transform.transform);
             uifx.GetComponent<ParticleSystem>().startColor = enchanted ? Color.green : Color.red;
             AUsrc.PlayOneShot(enchanted ? SuccessSound : FailSound);
             Item_Trail.material.SetFloat(Speed, 0.5f);
@@ -367,12 +368,12 @@ public static class VES_UI
         _useBless = !_useBless;
         UseBless_Icon.gameObject.SetActive(_useBless);
 
-        var reqs = SyncedData.GetReqs(_currentItem.m_dropPrefab?.name);
+        SyncedData.EnchantmentReqs reqs = SyncedData.GetReqs(_currentItem.m_dropPrefab?.name);
 
-        SyncedData.EnchantmentReqs.req req = _useBless ? reqs.blessed_enchant_prefab : reqs.enchant_prefab;
+        SyncedData.req req = _useBless ? reqs.blessed_enchant_prefab : reqs.enchant_prefab;
         if (req.IsValid())
         {
-            var enchant_item = ZNetScene.instance.GetPrefab(req.prefab);
+            GameObject enchant_item = ZNetScene.instance.GetPrefab(req.prefab);
             Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() + " <color=yellow>x" + req.amount + "</color>";
             Scroll_Text.color = Utils.CustomCountItemsNoLevel(req.prefab) >= req.amount ? Color.white : Color.red;
             Scroll_Icon.sprite = enchant_item.GetComponent<ItemDrop>().m_itemData.GetIcon();
@@ -396,8 +397,15 @@ public static class VES_UI
         Default();
         InventoryGui.instance.SetupDragItem(null, null, 1);
         if (!Player.m_localPlayer.m_inventory.ContainsItem(item)) return;
-        var reqs = SyncedData.GetReqs(item.m_dropPrefab?.name);
+        SyncedData.EnchantmentReqs reqs = SyncedData.GetReqs(item.m_dropPrefab?.name);
         if (reqs == null) return;
+        
+        if (!Other_Mods_APIs.CanEnchant(item, out string msg))
+        {
+            Item_Text.text = msg;
+            Item_Text.color = Color.red;
+            return;
+        }
 
         int enchantSkillLvl = (int)Player.m_localPlayer.GetSkillLevel(Enchantment_Skill.SkillType_Enchantment);
         if (enchantSkillLvl < reqs.required_skill) return;
@@ -446,7 +454,7 @@ public static class VES_UI
         Scroll_Trail.gameObject.SetActive(true);
         if (reqs.enchant_prefab.IsValid())
         {
-            var enchant_item = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab);
+            GameObject enchant_item = ZNetScene.instance.GetPrefab(reqs.enchant_prefab.prefab);
             Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() + " <color=yellow>x" + reqs.enchant_prefab.amount + "</color>";
             Scroll_Icon.sprite = enchant_item.GetComponent<ItemDrop>().m_itemData.GetIcon();
             Scroll_Text.color = Utils.CustomCountItemsNoLevel(reqs.enchant_prefab.prefab) >= reqs.enchant_prefab.amount ? Color.white : Color.red;
@@ -503,7 +511,7 @@ public static class VES_UI
         [UsedImplicitly]
         private static void Postfix(AudioMan __instance)
         {
-            var SFXgroup = __instance.m_masterMixer.FindMatchingGroups("SFX")[0];
+            AudioMixerGroup SFXgroup = __instance.m_masterMixer.FindMatchingGroups("SFX")[0];
             AUsrc = Chainloader.ManagerObject.AddComponent<AudioSource>();
             AUsrc.reverbZoneMix = 0;
             AUsrc.spatialBlend = 0;
@@ -512,7 +520,7 @@ public static class VES_UI
             AUsrc.volume = 1f;
             AUsrc.outputAudioMixerGroup = SFXgroup;
 
-            foreach (var asset in ValheimEnchantmentSystem._asset.LoadAllAssets<GameObject>())
+            foreach (GameObject asset in ValheimEnchantmentSystem._asset.LoadAllAssets<GameObject>())
                 foreach (AudioSource audioSource in asset.GetComponentsInChildren<AudioSource>(true))
                     audioSource.outputAudioMixerGroup = SFXgroup;
         }

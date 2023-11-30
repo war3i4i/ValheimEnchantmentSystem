@@ -37,12 +37,12 @@ public class SlashContoller : MonoBehaviour
         _slashParticles[2] = transform.Find("effect/3").GetComponent<ParticleSystem>();
         if (_znv.IsOwner()) return;
         
-        var euler = Rotation.localRotation.eulerAngles;
+        Vector3 euler = Rotation.localRotation.eulerAngles;
         Rotation.localRotation = Quaternion.Euler(_randomRotation, euler.y, euler.z);
 
-        foreach (var slashParticle in _slashParticles)
+        foreach (ParticleSystem slashParticle in _slashParticles)
         {
-            var main = slashParticle.main;
+            ParticleSystem.MainModule main = slashParticle.main;
             main.startColor = _color;
         }
     }
@@ -52,16 +52,16 @@ public class SlashContoller : MonoBehaviour
     {
         _dir = dir;
         _color = color;
-        foreach (var slashParticle in _slashParticles)
+        foreach (ParticleSystem slashParticle in _slashParticles)
         {
-            var main = slashParticle.main;
+            ParticleSystem.MainModule main = slashParticle.main;
             main.startColor = color;
         }
 
         _damage = damage;
         int rRot = UnityEngine.Random.Range(0, 360);
         _randomRotation = rRot;
-        var euler = Rotation.localRotation.eulerAngles;
+        Vector3 euler = Rotation.localRotation.eulerAngles;
         Rotation.localRotation = Quaternion.Euler(rRot, euler.y, euler.z);
         speed = UnityEngine.Random.Range(14.5f, 16f);
     }

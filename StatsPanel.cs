@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,13 +6,15 @@ using System.Reflection.Emit;
 using System.Text;
 using fastJSON;
 using HarmonyLib;
+using kg.ValheimEnchantmentSystem.Misc;
 using ServerSync;
 using UnityEngine;
 
 namespace VES.Stats;
 
+[VES_Autoload]
 public static class StatsPanel
-{
+{ 
     private static bool Show;
     private static JSONParameters PARAMS;
     private static readonly Dictionary<string, Stats> StatsDict = new();
@@ -102,7 +104,7 @@ public static class StatsPanel
                     
                     bool cond2 = gentypedefstr.Contains("System.Collections.Generic.Dictionary") || gentypedefstr.Contains("System.Collections.Generic.List");
                     
-                    if (type.Namespace != null && type.Namespace.Contains("ValheimEnchantmentSystem") && field.IsStatic && field.FieldType.IsGenericType && cond2)
+                    if (type.Namespace != null && (type.Namespace.Contains("ValheimEnchantmentSystem") || type.Namespace.Contains("ISP_Auto"))  && field.IsStatic && field.FieldType.IsGenericType && cond2)
                     {
                         StatsDict["Dictionary / List"]._statsList.Add(new(field, type.FullName, null, false));
                     }
@@ -315,7 +317,23 @@ public static class StatsPanel
                 return false;
             }
 
+            if (obj is FieldInfo fieldInfo)
+            {
+                StringBuilder output =
+                    (StringBuilder)AccessTools.Field(__instance.GetType(), "_output").GetValue(__instance);
+                output.Append($"\"{fieldInfo}\"");
+                return false;
+            }
+            
+            if (obj is Action action)
+            {
+                StringBuilder output =
+                    (StringBuilder)AccessTools.Field(__instance.GetType(), "_output").GetValue(__instance);
+                output.Append($"\"{action.Method}\"");
+                return false;
+            }
+
             return true;
         }
     }
-}*/
+}
