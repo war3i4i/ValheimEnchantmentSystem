@@ -325,11 +325,11 @@ public static class StatsPanel
                 return false;
             }
             
-            if (obj is Action action)
+            if (obj is Delegate d)
             {
                 StringBuilder output =
                     (StringBuilder)AccessTools.Field(__instance.GetType(), "_output").GetValue(__instance);
-                output.Append($"\"{action.Method}\"");
+                output.Append($"\"{d.Method}\"");
                 return false;
             }
 
