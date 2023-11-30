@@ -47,9 +47,9 @@ public static class ISP_Patcher
             }
         }
 
+        Harmony harmony = new Harmony("AutoISP" + Random.Range(int.MinValue, int.MaxValue));
         foreach (Type type in typesToPatch)
         {
-            Harmony harmony = new Harmony("ISP_Automatization" + Random.Range(int.MinValue, int.MaxValue));
             MethodInfo serializeMethod = AccessTools.Method(type, nameof(ISerializableParameter.Serialize));
             MethodInfo deserializeMethod = AccessTools.Method(type, nameof(ISerializableParameter.Deserialize));
             if (serializeMethod == null || deserializeMethod == null)
