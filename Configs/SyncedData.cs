@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.CodeDom;
+using System.Text;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using ServerSync;
@@ -402,21 +403,10 @@ public static class SyncedData
         public static implicit operator bool(Stat_Data data) => data != null;
     }
 
+    private static List<FieldInfo> _stat_Data_Cached_Fields = AccessTools.GetDeclaredFields(typeof(Stat_Data)).Where(x => x.FieldType.IsValueType).ToList();
     public partial class Stat_Data
     {
-        private bool ShouldShow()
-        {
-            return damage_true != 0 || damage_blunt != 0 || damage_slash != 0 || damage_pierce != 0 ||
-                   damage_chop != 0 || damage_pickaxe != 0 || damage_fire != 0 || damage_frost != 0 ||
-                   damage_lightning != 0 || damage_poison != 0 || damage_spirit != 0 || armor != 0 ||
-                   durability != 0 || resistance_blunt != HitData.DamageModifier.Normal || resistance_slash != HitData.DamageModifier.Normal ||
-                   resistance_pierce != HitData.DamageModifier.Normal || resistance_chop != HitData.DamageModifier.Normal ||
-                   resistance_pickaxe != HitData.DamageModifier.Normal || resistance_fire != HitData.DamageModifier.Normal ||
-                   resistance_frost != HitData.DamageModifier.Normal || resistance_lightning != HitData.DamageModifier.Normal ||
-                   resistance_poison != HitData.DamageModifier.Normal|| resistance_spirit != HitData.DamageModifier.Normal || 
-                   attack_speed != 0 || slash_wave != 0 || movement_speed != 0 || API_backpacks_additionalrow_x != 0 || API_backpacks_additionalrow_y != 0;
-        }
-        
+        private bool ShouldShow() => _stat_Data_Cached_Fields.Any(x => !x.GetValue(this).Equals(Activator.CreateInstance(x.FieldType)));
         private List<HitData.DamageModPair> cached_resistance_pairs;
         public List<HitData.DamageModPair> GetResistancePairs()
         {

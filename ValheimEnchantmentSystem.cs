@@ -1,4 +1,5 @@
-﻿using kg.ValheimEnchantmentSystem.Misc;
+﻿using JetBrains.Annotations;
+using kg.ValheimEnchantmentSystem.Misc;
 using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
 using ServerSync;
@@ -98,7 +99,7 @@ namespace kg.ValheimEnchantmentSystem
         { 
             StatsPanel.OnGUI(); 
         }
-
+        
         private static AssetBundle GetAssetBundle(string filename) 
         { 
             Assembly execAssembly = Assembly.GetExecutingAssembly();

@@ -72,8 +72,8 @@ public static class Enchantment_VFX
             InsertColor(p, "VES_shoulderitemColor", GetEnchantmentColor(p!.m_shoulderItem, out int variantrsh), variantrsh);
         }
     }
-    
-    private static void AttachMeshEffect(GameObject item, Color c, int variant, bool isArmor = false)
+
+    public static void AttachMeshEffect(GameObject item, Color c, int variant, bool isArmor = false)
     {
         if (!_enableMainVFX.Value) return;
         if (!isArmor)
@@ -347,7 +347,7 @@ public static class Enchantment_VFX
             if(__instance.m_itemData.Data()?.Get<Enchantment_Core.Enchanted>() is not { level: > 0 } en) return;
             string prefabName = global::Utils.GetPrefabName(__instance.gameObject);
             string color = SyncedData.GetColor(prefabName, en.level, out int variant, false);
-            AttachMeshEffect(__instance.gameObject, color.ToColorAlpha(), variant);
+            AttachMeshEffect(__instance.gameObject, color.ToColorAlpha(), variant, !__instance.m_itemData.IsWeapon());
         }
     }
     

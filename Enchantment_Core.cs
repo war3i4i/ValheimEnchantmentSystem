@@ -77,6 +77,14 @@ public static class Enchantment_Core
                     Enchantment_VFX.UpdateGrid();
                 }, 1);
             }
+            else
+            {
+                ValheimEnchantmentSystem._thistype.DelayedInvoke(() =>
+                {
+                    Other_Mods_APIs.ApplyAPIs_Upgraded(this);
+                    Enchantment_VFX.UpdateGrid();
+                }, 1);
+            }
         }
 
         public int GetEnchantmentChance()

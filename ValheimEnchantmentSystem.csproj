@@ -132,7 +132,6 @@
         <Compile Include="Enchantment_Core.cs" />
         <Compile Include="Enchantment_Skill.cs" />
         <Compile Include="Enchantment_VFX.cs" />
-        <Compile Include="Fixing_JC_Item.cs" />
         <Compile Include="GlobalUsings.cs" />
         <Compile Include="Items_Structures\ScrollItems.cs" />
         <Compile Include="Items_Structures\BuildPieces.cs" />
@@ -154,7 +153,6 @@
         <Compile Include="Managers\ServerSync.cs" />
         <Compile Include="Managers\ItemManager.cs" />
         <Compile Include="Managers\SkillManager.cs" />
-        <Compile Include="Managers\ItemDataManager.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="App.config" />

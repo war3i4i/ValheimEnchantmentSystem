@@ -9,10 +9,9 @@ public class AutoSerialize : Attribute;
 
 public static class ISP_Patcher
 {
-    public static Dictionary<Type, List<FieldISP_Info>> FieldsByType = new();
-    public class FieldISP_Info
+    public static Dictionary<Type, List<ISP_Field>> FieldsByType = new();
+    public class ISP_Field
     {
-        public FieldInfo Field;
         public Action<object, ZPackage> Serialize;
         public Action<object, ZPackage> Deserialize;
     }
@@ -29,18 +28,17 @@ public static class ISP_Patcher
             List<FieldInfo> fields = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute<SerializeField>() != null).ToList();
             foreach (FieldInfo field in fields)
             {
-                FieldISP_Info info = new FieldISP_Info();
-                info.Field = field;
-                info.Serialize = GetSerializeDelegate(info.Field);
-                info.Deserialize = GetDeserializeDelegate(info.Field);
+                ISP_Field info = new ISP_Field();
+                info.Serialize = GetSerializeDelegate(field);
+                info.Deserialize = GetDeserializeDelegate(field);
                 if (info.Serialize == null)
                 {
-                    ZLog.LogError($"Error creating Serialize delegate for {info.Field}");
+                    ZLog.LogError($"Error creating Serialize delegate for {field}");
                     continue;
                 }
                 if (info.Deserialize == null)
                 {
-                    ZLog.LogError($"Error creating Deserialize delegate for {info.Field}");
+                    ZLog.LogError($"Error creating Deserialize delegate for {field}");
                     continue;
                 }
                 FieldsByType[type].Add(info);
@@ -83,7 +81,7 @@ public static class ISP_Patcher
     {
         Type t = instance.GetType();
         if (!FieldsByType.ContainsKey(t)) return;
-        foreach (FieldISP_Info field in FieldsByType[t])
+        foreach (ISP_Field field in FieldsByType[t])
         {
             field.Serialize(instance, pkg);
         }
@@ -92,7 +90,7 @@ public static class ISP_Patcher
     {
         Type t = instance.GetType();
         if (!FieldsByType.ContainsKey(t)) return;
-        foreach (FieldISP_Info field in FieldsByType[t])
+        foreach (ISP_Field field in FieldsByType[t])
         {
             field.Deserialize(instance, pkg);
         }
