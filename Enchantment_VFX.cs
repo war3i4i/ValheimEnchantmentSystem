@@ -13,6 +13,7 @@ public static class Enchantment_VFX
     private static GameObject HOTBAR_PART;
     private static readonly int TintColor = Shader.PropertyToID("_TintColor");
 
+    private static GameObject VES_MPE;
     private static readonly List<float> INTENSITY = new List<float> { 220f, 80f, 1000f, 10f };
 
     public static readonly List<Material> VFXs = new List<Material>();
@@ -28,6 +29,7 @@ public static class Enchantment_VFX
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat2"));
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat3")); 
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat4"));
+        VES_MPE = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("VES_MPE");
         HOTBAR_PART = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("Enchantment_HotbarPart");
         _enableHotbarVisual = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableHotbarVisual", true, "Enable hotbar visual");
         _enableInventoryVisual = ValheimEnchantmentSystem._thistype.Config.Bind("Visual", "EnableInventoryVisual", true, "Enable inventory visual");
@@ -94,8 +96,38 @@ public static class Enchantment_VFX
             List<Material> list = renderer.sharedMaterials.ToList();
             list.Add(VFXs[variant]);
             renderer.sharedMaterials = list.ToArray();
+            if (isArmor) continue;
+            bool isSkinned = renderer is SkinnedMeshRenderer;
+            if (isSkinned)
+            {
+                if (!(renderer as SkinnedMeshRenderer).sharedMesh.isReadable) continue;
+            }
+            else
+            {
+                 MeshFilter mf = renderer.GetComponent<MeshFilter>();
+                 if (!mf || !mf.sharedMesh.isReadable) continue;
+            }
+            GameObject vfx = Object.Instantiate(VES_MPE, item.transform);
+            vfx.transform.localPosition = Vector3.zero;
+            vfx.transform.localRotation = Quaternion.identity;
+            vfx.transform.localScale = Vector3.one;
+            float boundsMag = renderer.bounds.size.magnitude;
+            float lossyMag = item.transform.lossyScale.magnitude;
+            Color.RGBToHSV(c, out float h, out float s, out float v);
+            Color mepC = Color.HSVToRGB(h, s, v * 5f);
+             
+            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                ParticleSystem.MainModule main = ps.main;
+                main.startColor = mepC; 
+                main.startSizeMultiplier *= (boundsMag / lossyMag);
+                ParticleSystem.ShapeModule shape = ps.shape; 
+                shape.shapeType = isSkinned ? ParticleSystemShapeType.SkinnedMeshRenderer : ParticleSystemShapeType.MeshRenderer;
+                if (isSkinned) shape.skinnedMeshRenderer = renderer as SkinnedMeshRenderer; else shape.meshRenderer = renderer as MeshRenderer;
+                ps.gameObject.SetActive(true); 
+            }  
         }
-        foreach (Material material in renderers.SelectMany(m => m.materials))
+        foreach (Material material in renderers.SelectMany(m => m.materials)) 
                 if (material.name.Contains("Enchantment_VFX_Mat"))
                     material.SetColor(TintColor, isArmor ? c : c * INTENSITY[variant]);
     }

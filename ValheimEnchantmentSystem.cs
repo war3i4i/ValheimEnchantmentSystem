@@ -70,7 +70,7 @@ namespace kg.ValheimEnchantmentSystem
                     continue;
                 }
                 try
-                {
+                { 
                     method.Invoke(null, null);
                 }
                 catch (Exception ex)
