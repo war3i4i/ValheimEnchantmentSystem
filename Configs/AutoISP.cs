@@ -10,18 +10,23 @@ namespace ISP_Auto
 
     internal static class ISP_Patcher
     {
+        private static Type SearchClass = typeof(AutoSerialize);
+        private static Type SearchField = typeof(SerializeField);
         private static Dictionary<Type, List<ISP_Field>> FieldsByType = new();
         private class ISP_Field { public Action<object, ZPackage> Serialize; public Action<object, ZPackage> Deserialize; }
 
         [ModuleInitializer]
         internal static void Init()
         {
-            List<Type> typesToPatch = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttribute<AutoSerialize>() != null && t.GetInterface(nameof(ISerializableParameter)) != null).ToList();
+            Harmony harmony = new Harmony("AutoISP_" + Assembly.GetExecutingAssembly().GetName().Name);
+            HarmonyMethod serializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Serialize)));
+            HarmonyMethod deserializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Deserialize)));
+            List<Type> typesToPatch = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttribute(SearchClass) != null && t.GetInterface(nameof(ISerializableParameter)) != null).ToList();
             foreach (Type type in typesToPatch)
             {
                 if (type.IsValueType) continue;
                 FieldsByType[type] = new();
-                List<FieldInfo> fields = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute<SerializeField>() != null).ToList();
+                List<FieldInfo> fields = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute(SearchField) != null).ToList();
                 foreach (FieldInfo field in fields)
                 {
                     ISP_Field info = new ISP_Field();
@@ -31,13 +36,6 @@ namespace ISP_Auto
                     if (info.Deserialize == null) { ZLog.LogError($"Error creating Deserialize delegate for {field}. Type is not supported"); continue; }
                     FieldsByType[type].Add(info);
                 }
-            }
-
-            Harmony harmony = new Harmony("AutoISP_" + Assembly.GetExecutingAssembly().GetName().Name);
-            HarmonyMethod serializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Serialize)));
-            HarmonyMethod deserializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Deserialize)));
-            foreach (Type type in typesToPatch)
-            {
                 MethodInfo serializeMethod = AccessTools.Method(type, nameof(ISerializableParameter.Serialize));
                 MethodInfo deserializeMethod = AccessTools.Method(type, nameof(ISerializableParameter.Deserialize));
                 if (serializeMethod == null || deserializeMethod == null) { ZLog.LogError($"Error: {type.Name} does not implement ISerializableParameter"); continue; }
