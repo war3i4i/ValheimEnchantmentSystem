@@ -9,11 +9,19 @@ namespace kg.ValheimEnchantmentSystem;
 [VES_Autoload]
 public static class Other_Mods_APIs
 {
+    public static bool AUGA;
+
+    public static void Start()
+    {
+        AUGA = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Auga");
+    }
+    
     [UsedImplicitly]
     private static void OnInit()
     {
-        Backpacks.API.EquippedBackpackUpdate += Backpacks_API_EquippedBackpackUpdate;
+        API.EquippedBackpackUpdate += Backpacks_API_EquippedBackpackUpdate;
         Jewelcrafting.API.OnItemMirrored(OnItemMirror);
+       
     }
 
     private static void Backpacks_API_EquippedBackpackUpdate(Player obj)

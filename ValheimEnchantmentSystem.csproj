@@ -44,7 +44,7 @@
           <HintPath>Libs\assembly_guiutils.dll</HintPath>
         </Reference>
         <Reference Include="assembly_postprocessing">
-          <HintPath>Libs\assembly_postprocessing.dll</HintPath>
+          <HintPath>..\..\SteamLibrary\steamapps\common\Valheim\valheim_Data\Managed\assembly_postprocessing.dll</HintPath>
         </Reference>
         <Reference Include="assembly_utils">
           <HintPath>Libs\assembly_utils.dll</HintPath>

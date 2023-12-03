@@ -3,7 +3,7 @@ using System.Text;
 using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using ServerSync;
-using ISP_Auto;
+using AutoISP;
 
 namespace kg.ValheimEnchantmentSystem.Configs;
 
@@ -514,7 +514,7 @@ public static class SyncedData
     public class OverrideChances : ISerializableParameter
     {
         [SerializeField] public List<string> Items = new();
-        [SerializeField] public Dictionary<int, SyncedData.Chance_Data> Chances = new();
+        [SerializeField] public Dictionary<int, Chance_Data> Chances = new();
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
@@ -523,7 +523,7 @@ public static class SyncedData
     public class OverrideColors : ISerializableParameter
     {
         [SerializeField] public List<string> Items = new();
-        [SerializeField] public Dictionary<int, SyncedData.VFX_Data> Colors = new();
+        [SerializeField] public Dictionary<int, VFX_Data> Colors = new();
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
@@ -532,7 +532,7 @@ public static class SyncedData
     public class OverrideStats : ISerializableParameter
     {
         [SerializeField] public List<string> Items = new();
-        [SerializeField] public Dictionary<int, SyncedData.Stat_Data> Stats = new();
+        [SerializeField] public Dictionary<int, Stat_Data> Stats = new();
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }

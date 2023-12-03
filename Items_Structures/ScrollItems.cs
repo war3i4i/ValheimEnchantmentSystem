@@ -291,20 +291,20 @@ public static class ScrollItems
             if (EnvMan.instance.m_totalSeconds - CreationTime > MaxDuration)
             {
                 _znv.ClaimOwnership();
-                ZNetScene.instance.Destroy(this.gameObject);
+                ZNetScene.instance.Destroy(gameObject);
             }
             
         }
 
         public bool Interact(Humanoid user, bool hold, bool alt)
         {
-            string prefabName = global::Utils.GetPrefabName(this.gameObject);
+            string prefabName = global::Utils.GetPrefabName(gameObject);
             char tier = prefabName[prefabName.Length - 1];
             if (!BookXPMapper.TryGetValue(tier, out ConfigEntry<int> exp)) return false;
             Utils.IncreaseSkillEXP(Enchantment_Skill.SkillType_Enchantment, exp.Value);
             Instantiate(ZNetScene.instance.GetPrefab("fx_Potion_frostresist"), Player.m_localPlayer.transform.position, Quaternion.identity);
             _znv.ClaimOwnership();
-            ZNetScene.instance.Destroy(this.gameObject);
+            ZNetScene.instance.Destroy(gameObject);
             return true;
         }
 
@@ -383,7 +383,7 @@ public static class ScrollItems
     {
         toInstantiate = 0;
         Vector2i pos = item.m_gridPos;
-        if (ValheimEnchantmentSystem.AUGA && pos.y <= 1) return false;
+        if (Other_Mods_APIs.AUGA && pos.y <= 1) return false;
         int gridX = grid.m_width;
 
         int left = pos.x - 1;

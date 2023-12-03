@@ -46,7 +46,7 @@ public static class SettingsUI
             };
             tabHandler.m_tabs.Add(newTab);
             
-            if (ValheimEnchantmentSystem.AUGA)
+            if (Other_Mods_APIs.AUGA)
                 newPage.transform.localScale *= 0.7f;
             
         }

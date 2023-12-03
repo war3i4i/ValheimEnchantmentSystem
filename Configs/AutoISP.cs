@@ -1,18 +1,17 @@
 ﻿using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
-namespace System.Runtime.CompilerServices { [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)] public sealed class ModuleInitializerAttribute : Attribute { } }
+namespace System.Runtime.CompilerServices { [AttributeUsage(AttributeTargets.Method)] public sealed class ModuleInitializerAttribute : Attribute; }
 
-namespace ISP_Auto
+namespace AutoISP
 {
     [AttributeUsage(AttributeTargets.Class)]
     internal class AutoSerialize : Attribute;
 
     internal static class ISP_Patcher
     {
-        private static Type SearchClass = typeof(AutoSerialize);
-        private static Type SearchField = typeof(SerializeField);
-        private static Dictionary<Type, List<ISP_Field>> FieldsByType = new();
+        private static readonly Type SearchClass = typeof(AutoSerialize);
+        private static readonly Type SearchField = typeof(SerializeField);
+        private static readonly Dictionary<Type, List<ISP_Field>> FieldsByType = new();
         private class ISP_Field { public Action<object, ZPackage> Serialize; public Action<object, ZPackage> Deserialize; }
 
         [ModuleInitializer]
@@ -22,9 +21,8 @@ namespace ISP_Auto
             HarmonyMethod serializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Serialize)));
             HarmonyMethod deserializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Deserialize)));
             List<Type> typesToPatch = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttribute(SearchClass) != null && t.GetInterface(nameof(ISerializableParameter)) != null).ToList();
-            foreach (Type type in typesToPatch)
+            foreach (var type in typesToPatch.Where(type => !type.IsValueType))
             {
-                if (type.IsValueType) continue;
                 FieldsByType[type] = new();
                 List<FieldInfo> fields = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute(SearchField) != null).ToList();
                 foreach (FieldInfo field in fields)
@@ -48,36 +46,36 @@ namespace ISP_Auto
         private static void Replace_Serialize(object instance, ref ZPackage pkg) { Type t = instance.GetType(); if (!FieldsByType.ContainsKey(t)) return; foreach (ISP_Field field in FieldsByType[t]) field.Serialize(instance, pkg); }
         private static void Replace_Deserialize(object instance, ref ZPackage pkg) { Type t = instance.GetType(); if (!FieldsByType.ContainsKey(t)) return; foreach (ISP_Field field in FieldsByType[t]) field.Deserialize(instance, pkg); }
         private static CodeInstruction[] TranspileWithMethod(MethodInfo method) => new[] { new CodeInstruction(OpCodes.Ldarg_0), new CodeInstruction(OpCodes.Ldarg_1), new CodeInstruction(OpCodes.Call, method), new CodeInstruction(OpCodes.Ret) };
-        private static IEnumerable<CodeInstruction> Transpiler_Serialize(IEnumerable<CodeInstruction> instructions) => TranspileWithMethod(AccessTools.Method(typeof(ISP_Patcher), nameof(Replace_Serialize)));
-        private static IEnumerable<CodeInstruction> Transpiler_Deserialize(IEnumerable<CodeInstruction> instructions) => TranspileWithMethod(AccessTools.Method(typeof(ISP_Patcher), nameof(Replace_Deserialize)));
+        private static IEnumerable<CodeInstruction> Transpiler_Serialize() => TranspileWithMethod(AccessTools.Method(typeof(ISP_Patcher), nameof(Replace_Serialize)));
+        private static IEnumerable<CodeInstruction> Transpiler_Deserialize() => TranspileWithMethod(AccessTools.Method(typeof(ISP_Patcher), nameof(Replace_Deserialize)));
         #endregion
         
         #region SerializeDelegates
         private static Action<object, ZPackage> GetSerializeDelegate(FieldInfo field)
         {
             Type t = field.FieldType;
-            if (t.IsEnum) return ((object instance, ZPackage pkg) => SerializeInt(pkg, field.GetValue(instance)));
-            if (t.GetInterface(nameof(ISerializableParameter)) != null) return ((object instance, ZPackage pkg) => SerializeISP(pkg, field.GetValue(instance)));
+            if (t.IsEnum) return ((instance, pkg) => SerializeInt(pkg, field.GetValue(instance)));
+            if (t.GetInterface(nameof(ISerializableParameter)) != null) return ((instance, pkg) => SerializeISP(pkg, field.GetValue(instance)));
 
             bool isList = t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>);
             if (isList)
             {
                 Type listInner = t.GetGenericArguments()[0];
-                if (listInner.GetInterface(nameof(ISerializableParameter)) != null) return ((object instance, ZPackage pkg) => SerializeList_ISP(pkg, (IList)field.GetValue(instance)));
+                if (listInner.GetInterface(nameof(ISerializableParameter)) != null) return ((instance, pkg) => SerializeList_ISP(pkg, (IList)field.GetValue(instance)));
 
-                if (listInner == typeof(int)) return ((object instance, ZPackage pkg) => SerializeList_Int(pkg, (List<int>)field.GetValue(instance)));
-                if (listInner == typeof(uint)) return ((object instance, ZPackage pkg) => SerializeList_UInt(pkg, (List<uint>)field.GetValue(instance)));
-                if (listInner == typeof(long)) return ((object instance, ZPackage pkg) => SerializeList_Long(pkg, (List<long>)field.GetValue(instance)));
-                if (listInner == typeof(float)) return ((object instance, ZPackage pkg) => SerializeList_Float(pkg, (List<float>)field.GetValue(instance)));
-                if (listInner == typeof(double)) return ((object instance, ZPackage pkg) => SerializeList_Double(pkg, (List<double>)field.GetValue(instance)));
-                if (listInner == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeList_Bool(pkg, (List<bool>)field.GetValue(instance)));
-                if (listInner == typeof(string)) return ((object instance, ZPackage pkg) => SerializeList_String(pkg, (List<string>)field.GetValue(instance)));
-                if (listInner == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeList_Quaternion(pkg, (List<Quaternion>)field.GetValue(instance)));
-                if (listInner == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeList_Vector2i(pkg, (List<Vector2i>)field.GetValue(instance)));
-                if (listInner == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeList_Vector(pkg, (List<Vector3>)field.GetValue(instance)));
-                if (listInner == typeof(Color)) return ((object instance, ZPackage pkg) => SerializeList_Color(pkg, (List<Color>)field.GetValue(instance)));
-                if (listInner == typeof(Color32)) return ((object instance, ZPackage pkg) => SerializeList_Color32(pkg, (List<Color32>)field.GetValue(instance)));
-                if (listInner == typeof(ZPackage)) return ((object instance, ZPackage pkg) => SerializeList_ZPackage(pkg, (List<ZPackage>)field.GetValue(instance)));
+                if (listInner == typeof(int)) return ((instance, pkg) => SerializeList_Int(pkg, (List<int>)field.GetValue(instance)));
+                if (listInner == typeof(uint)) return ((instance, pkg) => SerializeList_UInt(pkg, (List<uint>)field.GetValue(instance)));
+                if (listInner == typeof(long)) return ((instance, pkg) => SerializeList_Long(pkg, (List<long>)field.GetValue(instance)));
+                if (listInner == typeof(float)) return ((instance, pkg) => SerializeList_Float(pkg, (List<float>)field.GetValue(instance)));
+                if (listInner == typeof(double)) return ((instance, pkg) => SerializeList_Double(pkg, (List<double>)field.GetValue(instance)));
+                if (listInner == typeof(bool)) return ((instance, pkg) => SerializeList_Bool(pkg, (List<bool>)field.GetValue(instance)));
+                if (listInner == typeof(string)) return ((instance, pkg) => SerializeList_String(pkg, (List<string>)field.GetValue(instance)));
+                if (listInner == typeof(Quaternion)) return ((instance, pkg) => SerializeList_Quaternion(pkg, (List<Quaternion>)field.GetValue(instance)));
+                if (listInner == typeof(Vector2i)) return ((instance, pkg) => SerializeList_Vector2i(pkg, (List<Vector2i>)field.GetValue(instance)));
+                if (listInner == typeof(Vector3)) return ((instance, pkg) => SerializeList_Vector(pkg, (List<Vector3>)field.GetValue(instance)));
+                if (listInner == typeof(Color)) return ((instance, pkg) => SerializeList_Color(pkg, (List<Color>)field.GetValue(instance)));
+                if (listInner == typeof(Color32)) return ((instance, pkg) => SerializeList_Color32(pkg, (List<Color32>)field.GetValue(instance)));
+                if (listInner == typeof(ZPackage)) return ((instance, pkg) => SerializeList_ZPackage(pkg, (List<ZPackage>)field.GetValue(instance)));
             }
 
             bool isDictionary = t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>);
@@ -93,58 +91,58 @@ namespace ISP_Auto
                 Type dictValue = t.GetGenericArguments()[1];
                 if (dictValue.GetInterface(nameof(ISerializableParameter)) != null)
                 {
-                    if (dictKey == typeof(int)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_ISP(pkg, (IDictionary)field.GetValue(instance)));
-                    if (dictKey == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_ISP(pkg, (IDictionary)field.GetValue(instance)));
+                    if (dictKey == typeof(int)) return ((instance, pkg) => SerializeDictionary_Int_ISP(pkg, (IDictionary)field.GetValue(instance)));
+                    if (dictKey == typeof(string)) return ((instance, pkg) => SerializeDictionary_String_ISP(pkg, (IDictionary)field.GetValue(instance)));
                 }
 
                 if (dictKey == typeof(int))
                 {
-                    if (dictValue == typeof(int)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Int(pkg, (Dictionary<int, int>)field.GetValue(instance)));
-                    if (dictValue == typeof(uint)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_UInt(pkg, (Dictionary<int, uint>)field.GetValue(instance)));
-                    if (dictValue == typeof(long)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Long(pkg, (Dictionary<int, long>)field.GetValue(instance)));
-                    if (dictValue == typeof(float)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Float(pkg, (Dictionary<int, float>)field.GetValue(instance)));
-                    if (dictValue == typeof(double)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Double(pkg, (Dictionary<int, double>)field.GetValue(instance)));
-                    if (dictValue == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Bool(pkg, (Dictionary<int, bool>)field.GetValue(instance)));
-                    if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_String(pkg, (Dictionary<int, string>)field.GetValue(instance)));
-                    if (dictValue == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Quaternion(pkg, (Dictionary<int, Quaternion>)field.GetValue(instance)));
-                    if (dictValue == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Vector2i(pkg, (Dictionary<int, Vector2i>)field.GetValue(instance)));
-                    if (dictValue == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Vector(pkg, (Dictionary<int, Vector3>)field.GetValue(instance)));
-                    if (dictValue == typeof(Color)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Color(pkg, (Dictionary<int, Color>)field.GetValue(instance)));
-                    if (dictValue == typeof(Color32)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_Color32(pkg, (Dictionary<int, Color32>)field.GetValue(instance)));
-                    if (dictValue == typeof(ZPackage)) return ((object instance, ZPackage pkg) => SerializeDictionary_Int_ZPackage(pkg, (Dictionary<int, ZPackage>)field.GetValue(instance)));
+                    if (dictValue == typeof(int)) return ((instance, pkg) => SerializeDictionary_Int_Int(pkg, (Dictionary<int, int>)field.GetValue(instance)));
+                    if (dictValue == typeof(uint)) return ((instance, pkg) => SerializeDictionary_Int_UInt(pkg, (Dictionary<int, uint>)field.GetValue(instance)));
+                    if (dictValue == typeof(long)) return ((instance, pkg) => SerializeDictionary_Int_Long(pkg, (Dictionary<int, long>)field.GetValue(instance)));
+                    if (dictValue == typeof(float)) return ((instance, pkg) => SerializeDictionary_Int_Float(pkg, (Dictionary<int, float>)field.GetValue(instance)));
+                    if (dictValue == typeof(double)) return ((instance, pkg) => SerializeDictionary_Int_Double(pkg, (Dictionary<int, double>)field.GetValue(instance)));
+                    if (dictValue == typeof(bool)) return ((instance, pkg) => SerializeDictionary_Int_Bool(pkg, (Dictionary<int, bool>)field.GetValue(instance)));
+                    if (dictValue == typeof(string)) return ((instance, pkg) => SerializeDictionary_Int_String(pkg, (Dictionary<int, string>)field.GetValue(instance)));
+                    if (dictValue == typeof(Quaternion)) return ((instance, pkg) => SerializeDictionary_Int_Quaternion(pkg, (Dictionary<int, Quaternion>)field.GetValue(instance)));
+                    if (dictValue == typeof(Vector2i)) return ((instance, pkg) => SerializeDictionary_Int_Vector2i(pkg, (Dictionary<int, Vector2i>)field.GetValue(instance)));
+                    if (dictValue == typeof(Vector3)) return ((instance, pkg) => SerializeDictionary_Int_Vector(pkg, (Dictionary<int, Vector3>)field.GetValue(instance)));
+                    if (dictValue == typeof(Color)) return ((instance, pkg) => SerializeDictionary_Int_Color(pkg, (Dictionary<int, Color>)field.GetValue(instance)));
+                    if (dictValue == typeof(Color32)) return ((instance, pkg) => SerializeDictionary_Int_Color32(pkg, (Dictionary<int, Color32>)field.GetValue(instance)));
+                    if (dictValue == typeof(ZPackage)) return ((instance, pkg) => SerializeDictionary_Int_ZPackage(pkg, (Dictionary<int, ZPackage>)field.GetValue(instance)));
                 }
 
                 if (dictKey == typeof(string))
                 {
-                    if (dictValue == typeof(int)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Int(pkg, (Dictionary<string, int>)field.GetValue(instance)));
-                    if (dictValue == typeof(uint)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_UInt(pkg, (Dictionary<string, uint>)field.GetValue(instance)));
-                    if (dictValue == typeof(long)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Long(pkg, (Dictionary<string, long>)field.GetValue(instance)));
-                    if (dictValue == typeof(float)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Float(pkg, (Dictionary<string, float>)field.GetValue(instance)));
-                    if (dictValue == typeof(double)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Double(pkg, (Dictionary<string, double>)field.GetValue(instance)));
-                    if (dictValue == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Bool(pkg, (Dictionary<string, bool>)field.GetValue(instance)));
-                    if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_String(pkg, (Dictionary<string, string>)field.GetValue(instance)));
-                    if (dictValue == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Quaternion(pkg, (Dictionary<string, Quaternion>)field.GetValue(instance)));
-                    if (dictValue == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Vector2i(pkg, (Dictionary<string, Vector2i>)field.GetValue(instance)));
-                    if (dictValue == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Vector(pkg, (Dictionary<string, Vector3>)field.GetValue(instance)));
-                    if (dictValue == typeof(Color)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Color(pkg, (Dictionary<string, Color>)field.GetValue(instance)));
-                    if (dictValue == typeof(Color32)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_Color32(pkg, (Dictionary<string, Color32>)field.GetValue(instance)));
-                    if (dictValue == typeof(ZPackage)) return ((object instance, ZPackage pkg) => SerializeDictionary_String_ZPackage(pkg, (Dictionary<string, ZPackage>)field.GetValue(instance)));
+                    if (dictValue == typeof(int)) return ((instance, pkg) => SerializeDictionary_String_Int(pkg, (Dictionary<string, int>)field.GetValue(instance)));
+                    if (dictValue == typeof(uint)) return ((instance, pkg) => SerializeDictionary_String_UInt(pkg, (Dictionary<string, uint>)field.GetValue(instance)));
+                    if (dictValue == typeof(long)) return ((instance, pkg) => SerializeDictionary_String_Long(pkg, (Dictionary<string, long>)field.GetValue(instance)));
+                    if (dictValue == typeof(float)) return ((instance, pkg) => SerializeDictionary_String_Float(pkg, (Dictionary<string, float>)field.GetValue(instance)));
+                    if (dictValue == typeof(double)) return ((instance, pkg) => SerializeDictionary_String_Double(pkg, (Dictionary<string, double>)field.GetValue(instance)));
+                    if (dictValue == typeof(bool)) return ((instance, pkg) => SerializeDictionary_String_Bool(pkg, (Dictionary<string, bool>)field.GetValue(instance)));
+                    if (dictValue == typeof(string)) return ((instance, pkg) => SerializeDictionary_String_String(pkg, (Dictionary<string, string>)field.GetValue(instance)));
+                    if (dictValue == typeof(Quaternion)) return ((instance, pkg) => SerializeDictionary_String_Quaternion(pkg, (Dictionary<string, Quaternion>)field.GetValue(instance)));
+                    if (dictValue == typeof(Vector2i)) return ((instance, pkg) => SerializeDictionary_String_Vector2i(pkg, (Dictionary<string, Vector2i>)field.GetValue(instance)));
+                    if (dictValue == typeof(Vector3)) return ((instance, pkg) => SerializeDictionary_String_Vector(pkg, (Dictionary<string, Vector3>)field.GetValue(instance)));
+                    if (dictValue == typeof(Color)) return ((instance, pkg) => SerializeDictionary_String_Color(pkg, (Dictionary<string, Color>)field.GetValue(instance)));
+                    if (dictValue == typeof(Color32)) return ((instance, pkg) => SerializeDictionary_String_Color32(pkg, (Dictionary<string, Color32>)field.GetValue(instance)));
+                    if (dictValue == typeof(ZPackage)) return ((instance, pkg) => SerializeDictionary_String_ZPackage(pkg, (Dictionary<string, ZPackage>)field.GetValue(instance)));
                 }
             }
 
-            if (t == typeof(int)) return ((object instance, ZPackage pkg) => SerializeInt(pkg, field.GetValue(instance)));
-            if (t == typeof(uint)) return ((object instance, ZPackage pkg) => SerializeUInt(pkg, field.GetValue(instance)));
-            if (t == typeof(long)) return ((object instance, ZPackage pkg) => SerializeLong(pkg, field.GetValue(instance)));
-            if (t == typeof(float)) return ((object instance, ZPackage pkg) => SerializeFloat(pkg, field.GetValue(instance)));
-            if (t == typeof(double)) return ((object instance, ZPackage pkg) => SerializeDouble(pkg, field.GetValue(instance)));
-            if (t == typeof(bool)) return ((object instance, ZPackage pkg) => SerializeBool(pkg, field.GetValue(instance)));
-            if (t == typeof(string)) return ((object instance, ZPackage pkg) => SerializeString(pkg, field.GetValue(instance)));
-            if (t == typeof(Quaternion)) return ((object instance, ZPackage pkg) => SerializeQuaternion(pkg, field.GetValue(instance)));
-            if (t == typeof(Vector2i)) return ((object instance, ZPackage pkg) => SerializeVector2i(pkg, field.GetValue(instance)));
-            if (t == typeof(Vector3)) return ((object instance, ZPackage pkg) => SerializeVector(pkg, field.GetValue(instance)));
-            if (t == typeof(Color)) return ((object instance, ZPackage pkg) => SerializeColor(pkg, field.GetValue(instance)));
-            if (t == typeof(Color32)) return ((object instance, ZPackage pkg) => SerializeColor32(pkg, field.GetValue(instance)));
-            if (t == typeof(ZPackage)) return ((object instance, ZPackage pkg) => SerializeZPackage(pkg, field.GetValue(instance)));
+            if (t == typeof(int)) return ((instance, pkg) => SerializeInt(pkg, field.GetValue(instance)));
+            if (t == typeof(uint)) return ((instance, pkg) => SerializeUInt(pkg, field.GetValue(instance)));
+            if (t == typeof(long)) return ((instance, pkg) => SerializeLong(pkg, field.GetValue(instance)));
+            if (t == typeof(float)) return ((instance, pkg) => SerializeFloat(pkg, field.GetValue(instance)));
+            if (t == typeof(double)) return ((instance, pkg) => SerializeDouble(pkg, field.GetValue(instance)));
+            if (t == typeof(bool)) return ((instance, pkg) => SerializeBool(pkg, field.GetValue(instance)));
+            if (t == typeof(string)) return ((instance, pkg) => SerializeString(pkg, field.GetValue(instance)));
+            if (t == typeof(Quaternion)) return ((instance, pkg) => SerializeQuaternion(pkg, field.GetValue(instance)));
+            if (t == typeof(Vector2i)) return ((instance, pkg) => SerializeVector2i(pkg, field.GetValue(instance)));
+            if (t == typeof(Vector3)) return ((instance, pkg) => SerializeVector(pkg, field.GetValue(instance)));
+            if (t == typeof(Color)) return ((instance, pkg) => SerializeColor(pkg, field.GetValue(instance)));
+            if (t == typeof(Color32)) return ((instance, pkg) => SerializeColor32(pkg, field.GetValue(instance)));
+            if (t == typeof(ZPackage)) return ((instance, pkg) => SerializeZPackage(pkg, field.GetValue(instance)));
 
             return null;
         }
@@ -154,28 +152,28 @@ namespace ISP_Auto
         private static Action<object, ZPackage> GetDeserializeDelegate(FieldInfo field)
         {
             Type t = field.FieldType;
-            if (t.GetInterface(nameof(ISerializableParameter)) != null) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeISP(pkg, t)));
-            if (t.IsEnum) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeInt(pkg)));
+            if (t.GetInterface(nameof(ISerializableParameter)) != null) return ((instance, pkg) => field.SetValue(instance, DeserializeISP(pkg, t)));
+            if (t.IsEnum) return ((instance, pkg) => field.SetValue(instance, DeserializeInt(pkg)));
 
             bool isList = t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>);
             if (isList)
             {
                 Type listInner = t.GetGenericArguments()[0];
-                if (listInner.GetInterface(nameof(ISerializableParameter)) != null) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_ISP(pkg, listInner)));
+                if (listInner.GetInterface(nameof(ISerializableParameter)) != null) return ((instance, pkg) => field.SetValue(instance, DeserializeList_ISP(pkg, listInner)));
 
-                if (listInner == typeof(int)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Int(pkg)));
-                if (listInner == typeof(uint)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_UInt(pkg)));
-                if (listInner == typeof(long)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Long(pkg)));
-                if (listInner == typeof(float)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Float(pkg)));
-                if (listInner == typeof(double)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Double(pkg)));
-                if (listInner == typeof(bool)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Bool(pkg)));
-                if (listInner == typeof(string)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_String(pkg)));
-                if (listInner == typeof(Quaternion)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Quaternion(pkg)));
-                if (listInner == typeof(Vector2i)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Vector2i(pkg)));
-                if (listInner == typeof(Vector3)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Vector(pkg)));
-                if (listInner == typeof(Color)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Color(pkg)));
-                if (listInner == typeof(Color32)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_Color32(pkg)));
-                if (listInner == typeof(ZPackage)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeList_ZPackage(pkg)));
+                if (listInner == typeof(int)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Int(pkg)));
+                if (listInner == typeof(uint)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_UInt(pkg)));
+                if (listInner == typeof(long)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Long(pkg)));
+                if (listInner == typeof(float)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Float(pkg)));
+                if (listInner == typeof(double)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Double(pkg)));
+                if (listInner == typeof(bool)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Bool(pkg)));
+                if (listInner == typeof(string)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_String(pkg)));
+                if (listInner == typeof(Quaternion)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Quaternion(pkg)));
+                if (listInner == typeof(Vector2i)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Vector2i(pkg)));
+                if (listInner == typeof(Vector3)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Vector(pkg)));
+                if (listInner == typeof(Color)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Color(pkg)));
+                if (listInner == typeof(Color32)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_Color32(pkg)));
+                if (listInner == typeof(ZPackage)) return ((instance, pkg) => field.SetValue(instance, DeserializeList_ZPackage(pkg)));
             }
 
             bool isDictionary = t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>);
@@ -191,58 +189,58 @@ namespace ISP_Auto
                 Type dictValue = t.GetGenericArguments()[1];
                 if (dictValue.GetInterface(nameof(ISerializableParameter)) != null)
                 {
-                    if (dictKey == typeof(int)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_ISP(pkg, dictValue)));
-                    if (dictKey == typeof(string)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_ISP(pkg, dictValue)));
+                    if (dictKey == typeof(int)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_ISP(pkg, dictValue)));
+                    if (dictKey == typeof(string)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_ISP(pkg, dictValue)));
                 }
 
                 if (dictKey == typeof(int))
                 {
-                    if (dictValue == typeof(int)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Int(pkg)));
-                    if (dictValue == typeof(uint)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_UInt(pkg)));
-                    if (dictValue == typeof(long)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Long(pkg)));
-                    if (dictValue == typeof(float)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Float(pkg)));
-                    if (dictValue == typeof(double)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Double(pkg)));
-                    if (dictValue == typeof(bool)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Bool(pkg)));
-                    if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_String(pkg)));
-                    if (dictValue == typeof(Quaternion)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Quaternion(pkg)));
-                    if (dictValue == typeof(Vector2i)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Vector2i(pkg)));
-                    if (dictValue == typeof(Vector3)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Vector(pkg)));
-                    if (dictValue == typeof(Color)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Color(pkg)));
-                    if (dictValue == typeof(Color32)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_Color32(pkg)));
-                    if (dictValue == typeof(ZPackage)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_Int_ZPackage(pkg)));
+                    if (dictValue == typeof(int)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Int(pkg)));
+                    if (dictValue == typeof(uint)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_UInt(pkg)));
+                    if (dictValue == typeof(long)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Long(pkg)));
+                    if (dictValue == typeof(float)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Float(pkg)));
+                    if (dictValue == typeof(double)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Double(pkg)));
+                    if (dictValue == typeof(bool)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Bool(pkg)));
+                    if (dictValue == typeof(string)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_String(pkg)));
+                    if (dictValue == typeof(Quaternion)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Quaternion(pkg)));
+                    if (dictValue == typeof(Vector2i)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Vector2i(pkg)));
+                    if (dictValue == typeof(Vector3)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Vector(pkg)));
+                    if (dictValue == typeof(Color)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Color(pkg)));
+                    if (dictValue == typeof(Color32)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_Color32(pkg)));
+                    if (dictValue == typeof(ZPackage)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_Int_ZPackage(pkg)));
                 }
 
                 if (dictKey == typeof(string))
                 {
-                    if (dictValue == typeof(int)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Int(pkg)));
-                    if (dictValue == typeof(uint)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_UInt(pkg)));
-                    if (dictValue == typeof(long)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Long(pkg)));
-                    if (dictValue == typeof(float)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Float(pkg)));
-                    if (dictValue == typeof(double)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Double(pkg)));
-                    if (dictValue == typeof(bool)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Bool(pkg)));
-                    if (dictValue == typeof(string)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_String(pkg)));
-                    if (dictValue == typeof(Quaternion)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Quaternion(pkg)));
-                    if (dictValue == typeof(Vector2i)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Vector2i(pkg)));
-                    if (dictValue == typeof(Vector3)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Vector(pkg)));
-                    if (dictValue == typeof(Color)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Color(pkg)));
-                    if (dictValue == typeof(Color32)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_Color32(pkg)));
-                    if (dictValue == typeof(ZPackage)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDictionary_String_ZPackage(pkg)));
+                    if (dictValue == typeof(int)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Int(pkg)));
+                    if (dictValue == typeof(uint)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_UInt(pkg)));
+                    if (dictValue == typeof(long)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Long(pkg)));
+                    if (dictValue == typeof(float)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Float(pkg)));
+                    if (dictValue == typeof(double)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Double(pkg)));
+                    if (dictValue == typeof(bool)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Bool(pkg)));
+                    if (dictValue == typeof(string)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_String(pkg)));
+                    if (dictValue == typeof(Quaternion)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Quaternion(pkg)));
+                    if (dictValue == typeof(Vector2i)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Vector2i(pkg)));
+                    if (dictValue == typeof(Vector3)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Vector(pkg)));
+                    if (dictValue == typeof(Color)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Color(pkg)));
+                    if (dictValue == typeof(Color32)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_Color32(pkg)));
+                    if (dictValue == typeof(ZPackage)) return ((instance, pkg) => field.SetValue(instance, DeserializeDictionary_String_ZPackage(pkg)));
                 }
             }
 
-            if (t == typeof(int)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeInt(pkg)));
-            if (t == typeof(uint)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeUInt(pkg)));
-            if (t == typeof(long)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeLong(pkg)));
-            if (t == typeof(float)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeFloat(pkg)));
-            if (t == typeof(double)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeDouble(pkg)));
-            if (t == typeof(bool)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeBool(pkg)));
-            if (t == typeof(string)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeString(pkg)));
-            if (t == typeof(Quaternion)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeQuaternion(pkg)));
-            if (t == typeof(Vector2i)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeVector2i(pkg)));
-            if (t == typeof(Vector3)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeVector(pkg)));
-            if (t == typeof(Color)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeColor(pkg)));
-            if (t == typeof(Color32)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeColor32(pkg)));
-            if (t == typeof(ZPackage)) return ((object instance, ZPackage pkg) => field.SetValue(instance, DeserializeZPackage(pkg)));
+            if (t == typeof(int)) return ((instance, pkg) => field.SetValue(instance, DeserializeInt(pkg)));
+            if (t == typeof(uint)) return ((instance, pkg) => field.SetValue(instance, DeserializeUInt(pkg)));
+            if (t == typeof(long)) return ((instance, pkg) => field.SetValue(instance, DeserializeLong(pkg)));
+            if (t == typeof(float)) return ((instance, pkg) => field.SetValue(instance, DeserializeFloat(pkg)));
+            if (t == typeof(double)) return ((instance, pkg) => field.SetValue(instance, DeserializeDouble(pkg)));
+            if (t == typeof(bool)) return ((instance, pkg) => field.SetValue(instance, DeserializeBool(pkg)));
+            if (t == typeof(string)) return ((instance, pkg) => field.SetValue(instance, DeserializeString(pkg)));
+            if (t == typeof(Quaternion)) return ((instance, pkg) => field.SetValue(instance, DeserializeQuaternion(pkg)));
+            if (t == typeof(Vector2i)) return ((instance, pkg) => field.SetValue(instance, DeserializeVector2i(pkg)));
+            if (t == typeof(Vector3)) return ((instance, pkg) => field.SetValue(instance, DeserializeVector(pkg)));
+            if (t == typeof(Color)) return ((instance, pkg) => field.SetValue(instance, DeserializeColor(pkg)));
+            if (t == typeof(Color32)) return ((instance, pkg) => field.SetValue(instance, DeserializeColor32(pkg)));
+            if (t == typeof(ZPackage)) return ((instance, pkg) => field.SetValue(instance, DeserializeZPackage(pkg)));
 
             return null;
         }
@@ -259,8 +257,8 @@ namespace ISP_Auto
         private static void SerializeQuaternion(ZPackage pkg, object value) => pkg.Write((Quaternion)value);
         private static void SerializeVector2i(ZPackage pkg, object value) => pkg.Write((Vector2i)value);
         private static void SerializeVector(ZPackage pkg, object value) => pkg.Write((Vector3)value);
-        private static void SerializeColor(ZPackage pkg, object value) => pkg.Write(global::Utils.ColorToVec3((Color)value));
-        private static void SerializeColor32(ZPackage pkg, object value) => pkg.Write(global::Utils.ColorToVec3((Color32)value));
+        private static void SerializeColor(ZPackage pkg, object value) => pkg.Write(Utils.ColorToVec3((Color)value));
+        private static void SerializeColor32(ZPackage pkg, object value) => pkg.Write(Utils.ColorToVec3((Color32)value));
         private static void SerializeZPackage(ZPackage pkg, object value) => pkg.Write((ZPackage)value);
 
         private static void SerializeISP(ZPackage pkg, object value)
@@ -364,7 +362,7 @@ namespace ISP_Auto
             pkg.Write(value.Count);
             foreach (Color i in value)
             {
-                pkg.Write(global::Utils.ColorToVec3(i));
+                pkg.Write(Utils.ColorToVec3(i));
             }
         }
 
@@ -373,7 +371,7 @@ namespace ISP_Auto
             pkg.Write(value.Count);
             foreach (Color32 i in value)
             {
-                pkg.Write(global::Utils.ColorToVec3(i));
+                pkg.Write(Utils.ColorToVec3(i));
             }
         }
 
@@ -502,7 +500,7 @@ namespace ISP_Auto
             foreach (KeyValuePair<int, Color> i in value)
             {
                 pkg.Write(i.Key);
-                pkg.Write(global::Utils.ColorToVec3(i.Value));
+                pkg.Write(Utils.ColorToVec3(i.Value));
             }
         }
 
@@ -512,7 +510,7 @@ namespace ISP_Auto
             foreach (KeyValuePair<int, Color32> i in value)
             {
                 pkg.Write(i.Key);
-                pkg.Write(global::Utils.ColorToVec3(i.Value));
+                pkg.Write(Utils.ColorToVec3(i.Value));
             }
         }
 
@@ -643,7 +641,7 @@ namespace ISP_Auto
             foreach (KeyValuePair<string, Color> i in value)
             {
                 pkg.Write(i.Key);
-                pkg.Write(global::Utils.ColorToVec3(i.Value));
+                pkg.Write(Utils.ColorToVec3(i.Value));
             }
         }
 
@@ -653,7 +651,7 @@ namespace ISP_Auto
             foreach (KeyValuePair<string, Color32> i in value)
             {
                 pkg.Write(i.Key);
-                pkg.Write(global::Utils.ColorToVec3(i.Value));
+                pkg.Write(Utils.ColorToVec3(i.Value));
             }
         }
 
@@ -690,8 +688,8 @@ namespace ISP_Auto
         private static Quaternion DeserializeQuaternion(ZPackage pkg) => pkg.ReadQuaternion();
         private static Vector2i DeserializeVector2i(ZPackage pkg) => pkg.ReadVector2i();
         private static Vector3 DeserializeVector(ZPackage pkg) => pkg.ReadVector3();
-        private static Color DeserializeColor(ZPackage pkg) => global::Utils.Vec3ToColor(pkg.ReadVector3());
-        private static Color32 DeserializeColor32(ZPackage pkg) => global::Utils.Vec3ToColor(pkg.ReadVector3());
+        private static Color DeserializeColor(ZPackage pkg) => Utils.Vec3ToColor(pkg.ReadVector3());
+        private static Color32 DeserializeColor32(ZPackage pkg) => Utils.Vec3ToColor(pkg.ReadVector3());
         private static ZPackage DeserializeZPackage(ZPackage pkg) => pkg.ReadPackage();
 
         private static object DeserializeISP(ZPackage pkg, Type t)
@@ -829,7 +827,7 @@ namespace ISP_Auto
             List<Color> list = new();
             for (int i = 0; i < count; i++)
             {
-                list.Add(global::Utils.Vec3ToColor(pkg.ReadVector3()));
+                list.Add(Utils.Vec3ToColor(pkg.ReadVector3()));
             }
 
             return list;
@@ -841,7 +839,7 @@ namespace ISP_Auto
             List<Color32> list = new();
             for (int i = 0; i < count; i++)
             {
-                list.Add(global::Utils.Vec3ToColor(pkg.ReadVector3()));
+                list.Add(Utils.Vec3ToColor(pkg.ReadVector3()));
             }
 
             return list;
@@ -1005,7 +1003,7 @@ namespace ISP_Auto
             Dictionary<int, Color> dict = new();
             for (int i = 0; i < count; i++)
             {
-                dict[pkg.ReadInt()] = global::Utils.Vec3ToColor(pkg.ReadVector3());
+                dict[pkg.ReadInt()] = Utils.Vec3ToColor(pkg.ReadVector3());
             }
 
             return dict;
@@ -1017,7 +1015,7 @@ namespace ISP_Auto
             Dictionary<int, Color32> dict = new();
             for (int i = 0; i < count; i++)
             {
-                dict[pkg.ReadInt()] = global::Utils.Vec3ToColor(pkg.ReadVector3());
+                dict[pkg.ReadInt()] = Utils.Vec3ToColor(pkg.ReadVector3());
             }
 
             return dict;
@@ -1182,7 +1180,7 @@ namespace ISP_Auto
             Dictionary<string, Color> dict = new();
             for (int i = 0; i < count; i++)
             {
-                dict[pkg.ReadString()] = global::Utils.Vec3ToColor(pkg.ReadVector3());
+                dict[pkg.ReadString()] = Utils.Vec3ToColor(pkg.ReadVector3());
             }
 
             return dict;
@@ -1194,7 +1192,7 @@ namespace ISP_Auto
             Dictionary<string, Color32> dict = new();
             for (int i = 0; i < count; i++)
             {
-                dict[pkg.ReadString()] = global::Utils.Vec3ToColor(pkg.ReadVector3());
+                dict[pkg.ReadString()] = Utils.Vec3ToColor(pkg.ReadVector3());
             }
 
             return dict;

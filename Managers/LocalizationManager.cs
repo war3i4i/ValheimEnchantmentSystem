@@ -120,7 +120,7 @@ public class Localizer
 
 			if (localizationFiles.ContainsKey(key))
 			{
-				UnityEngine.Debug.LogWarning($"Duplicate key {key} found for {plugin.Info.Metadata.GUID}. The duplicate file found at {file} will be skipped.");
+				Debug.LogWarning($"Duplicate key {key} found for {plugin.Info.Metadata.GUID}. The duplicate file found at {file} will be skipped.");
 			}
 			else
 			{

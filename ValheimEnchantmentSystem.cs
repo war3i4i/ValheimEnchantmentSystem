@@ -16,7 +16,7 @@ namespace kg.ValheimEnchantmentSystem
     {
         private const string GUID = "kg.ValheimEnchantmentSystem";
         private const string PLUGIN_NAME = "Valheim Enchantment System";
-        private const string PLUGIN_VERSION = "1.6.3";
+        private const string PLUGIN_VERSION = "1.6.4";
         
         public static ValheimEnchantmentSystem _thistype;  
         public static AssetBundle _asset; 
@@ -31,9 +31,6 @@ namespace kg.ValheimEnchantmentSystem
             IsLocked = true
         };
         private enum WorkingAs { Client, Server }
-        public static bool AUGA = false;
-        
-        private void Start() => AUGA = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Auga");
          
         private void Awake()
         {
@@ -93,7 +90,12 @@ namespace kg.ValheimEnchantmentSystem
             Info_UI.Update();
             Notifications_UI.Update();
         }
-        
+
+        private void Start()
+        {
+            Other_Mods_APIs.Start();
+        }
+
         private static AssetBundle GetAssetBundle(string filename) 
         { 
             Assembly execAssembly = Assembly.GetExecutingAssembly();
