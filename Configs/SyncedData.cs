@@ -117,21 +117,21 @@ public static class SyncedData
     private static void OptimizeChances()
     {
         OPTIMIZED_Overrides_EnchantmentChances.Clear();
-        foreach (Defaults.OverrideChances chance in Overrides_EnchantmentChances.Value)
+        foreach (OverrideChances chance in Overrides_EnchantmentChances.Value)
             foreach (string entry in chance.Items)
                  OPTIMIZED_Overrides_EnchantmentChances[entry] = chance.Chances;
     }
     private static void OptimizeColors()
     {
         OPTIMIZED_Overrides_EnchantmentColors.Clear();
-        foreach (Defaults.OverrideColors chance in Overrides_EnchantmentColors.Value)
+        foreach (OverrideColors chance in Overrides_EnchantmentColors.Value)
             foreach (string entry in chance.Items)
                 OPTIMIZED_Overrides_EnchantmentColors[entry] = chance.Colors;
     }
     private static void OptimizeStats()
     {
         OPTIMIZED_Overrides_EnchantmentStats.Clear();
-        foreach (Defaults.OverrideStats chance in Overrides_EnchantmentStats.Value)
+        foreach (OverrideStats chance in Overrides_EnchantmentStats.Value)
             foreach (string entry in chance.Items)
                 OPTIMIZED_Overrides_EnchantmentStats[entry] = chance.Stats;
     }
@@ -149,30 +149,30 @@ public static class SyncedData
     }
     private static void ReadOverrideChances()
     {
-        List<Defaults.OverrideChances> result = new();
+        List<OverrideChances> result = new();
 
         foreach (string file in Directory.GetFiles(Directory_Overrides_Chances, "*.yml", SearchOption.TopDirectoryOnly))
-            if (file.FromYAML<List<Defaults.OverrideChances>>() is {} data)
+            if (file.FromYAML<List<OverrideChances>>() is {} data)
                 result.AddRange(data);
 
         Overrides_EnchantmentChances.Value = result;
     }
     private static void ReadOverrideStats()
     {
-        List<Defaults.OverrideStats> result = new();
+        List<OverrideStats> result = new();
 
         foreach (string file in Directory.GetFiles(Directory_Overrides_Stats, "*.yml", SearchOption.TopDirectoryOnly))
-            if (file.FromYAML<List<Defaults.OverrideStats>>() is {} data)
+            if (file.FromYAML<List<OverrideStats>>() is {} data)
                 result.AddRange(data);
 
         Overrides_EnchantmentStats.Value = result;
     }
     private static void ReadOverrideColors()
     {
-        List<Defaults.OverrideColors> result = new();
+        List<OverrideColors> result = new();
 
         foreach (string file in Directory.GetFiles(Directory_Overrides_Colors, "*.yml", SearchOption.TopDirectoryOnly))
-            if (file.FromYAML<List<Defaults.OverrideColors>>() is {} data)
+            if (file.FromYAML<List<OverrideColors>>() is {} data)
                 result.AddRange(data);
 
         Overrides_EnchantmentColors.Value = result;
@@ -332,15 +332,15 @@ public static class SyncedData
         new(ValheimEnchantmentSystem.ConfigSync, "EnchantmentStats_Armor",
             new Dictionary<int, Stat_Data>());
 
-    public static readonly CustomSyncedValue<List<Defaults.OverrideChances>> Overrides_EnchantmentChances =
+    public static readonly CustomSyncedValue<List<OverrideChances>> Overrides_EnchantmentChances =
         new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentChances",
             new());
 
-    public static readonly CustomSyncedValue<List<Defaults.OverrideColors>> Overrides_EnchantmentColors =
+    public static readonly CustomSyncedValue<List<OverrideColors>> Overrides_EnchantmentColors =
             new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentColors",
                 new());
 
-    public static readonly CustomSyncedValue<List<Defaults.OverrideStats>> Overrides_EnchantmentStats =
+    public static readonly CustomSyncedValue<List<OverrideStats>> Overrides_EnchantmentStats =
             new(ValheimEnchantmentSystem.ConfigSync, "Overrides_EnchantmentStats",
                 new());
 
@@ -351,56 +351,6 @@ public static class SyncedData
     private static readonly Dictionary<string, Dictionary<int, Chance_Data>> OPTIMIZED_Overrides_EnchantmentChances = new();
     private static readonly Dictionary<string, Dictionary<int, VFX_Data>> OPTIMIZED_Overrides_EnchantmentColors = new();
     private static readonly Dictionary<string, Dictionary<int, Stat_Data>> OPTIMIZED_Overrides_EnchantmentStats = new();
-    
-    [AutoSerialize]
-    public class Chance_Data : ISerializableParameter
-    {
-        [SerializeField] public int success;
-        [SerializeField] public int destroy;
-        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
-        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
-    }
-    
-    [AutoSerialize]
-    public partial class Stat_Data : ISerializableParameter
-    {
-        [SerializeField] public int durability;
-        [SerializeField] public int durability_percentage;
-        [SerializeField] public int armor_percentage;
-        [SerializeField] public int armor;
-        [SerializeField] public int damage_percentage;
-        [SerializeField] public int damage_true;
-        [SerializeField] public int damage_blunt;
-        [SerializeField] public int damage_slash;
-        [SerializeField] public int damage_pierce;
-        [SerializeField] public int damage_chop;
-        [SerializeField] public int damage_pickaxe;
-        [SerializeField] public int damage_fire;
-        [SerializeField] public int damage_frost;
-        [SerializeField] public int damage_lightning;
-        [SerializeField] public int damage_poison;
-        [SerializeField] public int damage_spirit;
-        [SerializeField] public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
-        [SerializeField] public int attack_speed;
-        [SerializeField] public int movement_speed;
-        
-        //api stats
-        [SerializeField] public int API_backpacks_additionalrow_x;
-        [SerializeField] public int API_backpacks_additionalrow_y;
-        
-        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
-        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
-        public static implicit operator bool(Stat_Data data) => data != null;
-    }
 
     private static List<FieldInfo> _stat_Data_Cached_Fields = AccessTools.GetDeclaredFields(typeof(Stat_Data)).Where(x => x.FieldType.IsValueType).ToList();
     public partial class Stat_Data
@@ -478,6 +428,54 @@ public static class SyncedData
         }
     }
     
+    [AutoSerialize]
+    public partial class Stat_Data : Implicit, ISerializableParameter
+    {
+        [SerializeField] public int durability;
+        [SerializeField] public int durability_percentage;
+        [SerializeField] public int armor_percentage;
+        [SerializeField] public int armor;
+        [SerializeField] public int damage_percentage;
+        [SerializeField] public int damage_true;
+        [SerializeField] public int damage_blunt;
+        [SerializeField] public int damage_slash;
+        [SerializeField] public int damage_pierce;
+        [SerializeField] public int damage_chop;
+        [SerializeField] public int damage_pickaxe;
+        [SerializeField] public int damage_fire;
+        [SerializeField] public int damage_frost;
+        [SerializeField] public int damage_lightning;
+        [SerializeField] public int damage_poison;
+        [SerializeField] public int damage_spirit;
+        [SerializeField] public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
+        [SerializeField] public int attack_speed;
+        [SerializeField] public int movement_speed;
+        
+        //api stats
+        [SerializeField] public int API_backpacks_additionalrow_x;
+        [SerializeField] public int API_backpacks_additionalrow_y;
+        
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+    }
+    
+    [AutoSerialize]
+    public class Chance_Data : ISerializableParameter
+    {
+        [SerializeField] public int success;
+        [SerializeField] public int destroy;
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+    }
     
     [AutoSerialize]
     public class req : ISerializableParameter
@@ -508,6 +506,33 @@ public static class SyncedData
         [SerializeField] public string color = "#00000000";
         [SerializeField] public int variant;
         [SerializeField] public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+    }
+    
+    [AutoSerialize]
+    public class OverrideChances : ISerializableParameter
+    {
+        [SerializeField] public List<string> Items = new();
+        [SerializeField] public Dictionary<int, SyncedData.Chance_Data> Chances = new();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+    }
+
+    [AutoSerialize]
+    public class OverrideColors : ISerializableParameter
+    {
+        [SerializeField] public List<string> Items = new();
+        [SerializeField] public Dictionary<int, SyncedData.VFX_Data> Colors = new();
+        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
+        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
+    }
+
+    [AutoSerialize]
+    public class OverrideStats : ISerializableParameter
+    {
+        [SerializeField] public List<string> Items = new();
+        [SerializeField] public Dictionary<int, SyncedData.Stat_Data> Stats = new();
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }

@@ -138,6 +138,7 @@
         <Compile Include="Managers\AnimationSpeedManager.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Misc\Attributes.cs" />
+        <Compile Include="Misc\Convertions.cs" />
         <Compile Include="Misc\External_AsmLoad.cs" />
         <Compile Include="Other_Mods_APIs.cs" />
         <Compile Include="StatsPanel.cs" />

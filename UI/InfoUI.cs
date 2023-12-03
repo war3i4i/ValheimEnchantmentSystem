@@ -270,8 +270,8 @@ public static class Info_UI
             _fittersUpdate.Add(defaultArmor);
         }
 
-        List<Defaults.OverrideStats> target = SyncedData.Overrides_EnchantmentStats.Value;
-        foreach (Defaults.OverrideStats stat in target)
+        List<SyncedData.OverrideStats> target = SyncedData.Overrides_EnchantmentStats.Value;
+        foreach (SyncedData.OverrideStats stat in target)
         {
             string found = null;
             if (!string.IsNullOrWhiteSpace(_search.text) && !HasAny(stat.Items, _search.text, out found)) continue;
@@ -292,9 +292,9 @@ public static class Info_UI
             _fittersUpdate.Add(defaultChances);
         }
         
-        List<Defaults.OverrideChances> target = SyncedData.Overrides_EnchantmentChances.Value;
+        List<SyncedData.OverrideChances> target = SyncedData.Overrides_EnchantmentChances.Value;
         
-        foreach (Defaults.OverrideChances chance in target)
+        foreach (SyncedData.OverrideChances chance in target)
         {
             string found = null;
             if (!string.IsNullOrWhiteSpace(_search.text) && !HasAny(chance.Items, _search.text, out found)) continue;

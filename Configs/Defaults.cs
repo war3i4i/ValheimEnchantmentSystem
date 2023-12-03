@@ -4,33 +4,6 @@ namespace kg.ValheimEnchantmentSystem.Configs;
 
 public static class Defaults
 {
-    [AutoSerialize]
-    public class OverrideChances : ISerializableParameter
-    {
-        [SerializeField] public List<string> Items = new();
-        [SerializeField] public Dictionary<int, SyncedData.Chance_Data> Chances = new();
-        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
-        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
-    }
-
-    [AutoSerialize]
-    public class OverrideColors : ISerializableParameter
-    {
-        [SerializeField] public List<string> Items = new();
-        [SerializeField] public Dictionary<int, SyncedData.VFX_Data> Colors = new();
-        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
-        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
-    }
-
-    [AutoSerialize]
-    public class OverrideStats : ISerializableParameter
-    {
-        [SerializeField] public List<string> Items = new();
-        [SerializeField] public Dictionary<int, SyncedData.Stat_Data> Stats = new();
-        public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
-        public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
-    }
-    
     private static readonly Dictionary<int, SyncedData.Stat_Data> DefaultStats_Weapons =
         new Dictionary<int, SyncedData.Stat_Data>()
         {
@@ -231,7 +204,7 @@ public static class Defaults
         }
     };
 
-    private static List<OverrideChances> DefaultOverrides_Chances = new()
+    private static List<SyncedData.OverrideChances> DefaultOverrides_Chances = new()
     {
         {new() {
             Items = new() { "SwordCheat", "SledgeCheat" },
@@ -240,7 +213,7 @@ public static class Defaults
         }}
     };
 
-    private static readonly List<OverrideColors> DefaultOverrides_Colors = new()
+    private static readonly List<SyncedData.OverrideColors> DefaultOverrides_Colors = new()
     {
         {new() {
             Items = new() { "SwordCheat", "SledgeCheat" },
@@ -260,7 +233,7 @@ public static class Defaults
         }}
     };
 
-    private static readonly List<OverrideStats> DefaultOverrides_Stats = new()
+    private static readonly List<SyncedData.OverrideStats> DefaultOverrides_Stats = new()
     {
         {new() { 
                 Items = new() { "SwordCheat", "SledgeCheat" } , 

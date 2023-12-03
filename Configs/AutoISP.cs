@@ -1,13 +1,7 @@
 ﻿using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
-using Random = UnityEngine.Random;
-
-namespace System.Runtime.CompilerServices
-{
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public sealed class ModuleInitializerAttribute : Attribute { }
-}
+namespace System.Runtime.CompilerServices { [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)] public sealed class ModuleInitializerAttribute : Attribute { } }
 
 namespace ISP_Auto
 {
@@ -26,85 +20,41 @@ namespace ISP_Auto
             foreach (Type type in typesToPatch)
             {
                 if (type.IsValueType) continue;
-
                 FieldsByType[type] = new();
                 List<FieldInfo> fields = AccessTools.GetDeclaredFields(type).Where(f => f.GetCustomAttribute<SerializeField>() != null).ToList();
                 foreach (FieldInfo field in fields)
                 {
                     ISP_Field info = new ISP_Field();
                     info.Serialize = GetSerializeDelegate(field);
+                    if (info.Serialize == null) { ZLog.LogError($"Error creating Serialize delegate for {field}. Type is not supported"); continue; }
                     info.Deserialize = GetDeserializeDelegate(field);
-                    if (info.Serialize == null)
-                    {
-                        ZLog.LogError($"Error creating Serialize delegate for {field}");
-                        continue;
-                    }
-
-                    if (info.Deserialize == null)
-                    {
-                        ZLog.LogError($"Error creating Deserialize delegate for {field}");
-                        continue;
-                    }
-
+                    if (info.Deserialize == null) { ZLog.LogError($"Error creating Deserialize delegate for {field}. Type is not supported"); continue; }
                     FieldsByType[type].Add(info);
                 }
             }
 
-            Harmony harmony = new Harmony("AutoISP" + Random.Range(int.MinValue, int.MaxValue));
+            Harmony harmony = new Harmony("AutoISP_" + Assembly.GetExecutingAssembly().GetName().Name);
+            HarmonyMethod serializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Serialize)));
+            HarmonyMethod deserializeTranspiler = new(AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Deserialize)));
             foreach (Type type in typesToPatch)
             {
                 MethodInfo serializeMethod = AccessTools.Method(type, nameof(ISerializableParameter.Serialize));
                 MethodInfo deserializeMethod = AccessTools.Method(type, nameof(ISerializableParameter.Deserialize));
-                if (serializeMethod == null || deserializeMethod == null)
-                {
-                    ZLog.LogError($"Error: {type.Name} does not implement ISerializableParameter");
-                    continue;
-                }
-
-                MethodInfo serializeTranspiler = AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Serialize));
-                MethodInfo deserializeTranspiler = AccessTools.Method(typeof(ISP_Patcher), nameof(Transpiler_Deserialize));
-                harmony.Patch(serializeMethod, transpiler: new HarmonyMethod(serializeTranspiler));
-                harmony.Patch(deserializeMethod, transpiler: new HarmonyMethod(deserializeTranspiler));
-            }
-
-        }
-
-        private static IEnumerable<CodeInstruction> Transpiler_Serialize()
-        {
-            yield return new CodeInstruction(OpCodes.Ldarg_0);
-            yield return new CodeInstruction(OpCodes.Ldarg_1);
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ISP_Patcher), nameof(Serialize_Patch)));
-            yield return new CodeInstruction(OpCodes.Ret);
-        }
-
-        private static IEnumerable<CodeInstruction> Transpiler_Deserialize()
-        {
-            yield return new CodeInstruction(OpCodes.Ldarg_0);
-            yield return new CodeInstruction(OpCodes.Ldarg_1);
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ISP_Patcher), nameof(Deserialize_Patch)));
-            yield return new CodeInstruction(OpCodes.Ret);
-        }
-
-        private static void Serialize_Patch(object instance, ref ZPackage pkg)
-        {
-            Type t = instance.GetType();
-            if (!FieldsByType.ContainsKey(t)) return;
-            foreach (ISP_Field field in FieldsByType[t])
-            {
-                field.Serialize(instance, pkg);
+                if (serializeMethod == null || deserializeMethod == null) { ZLog.LogError($"Error: {type.Name} does not implement ISerializableParameter"); continue; }
+                harmony.Patch(serializeMethod, transpiler: serializeTranspiler);
+                harmony.Patch(deserializeMethod, transpiler: deserializeTranspiler);
             }
         }
-
-        private static void Deserialize_Patch(object instance, ref ZPackage pkg)
-        {
-            Type t = instance.GetType();
-            if (!FieldsByType.ContainsKey(t)) return;
-            foreach (ISP_Field field in FieldsByType[t])
-            {
-                field.Deserialize(instance, pkg);
-            }
-        }
-
+        
+        #region HarmonyMethods
+        private static void Replace_Serialize(object instance, ref ZPackage pkg) { Type t = instance.GetType(); if (!FieldsByType.ContainsKey(t)) return; foreach (ISP_Field field in FieldsByType[t]) field.Serialize(instance, pkg); }
+        private static void Replace_Deserialize(object instance, ref ZPackage pkg) { Type t = instance.GetType(); if (!FieldsByType.ContainsKey(t)) return; foreach (ISP_Field field in FieldsByType[t]) field.Deserialize(instance, pkg); }
+        private static CodeInstruction[] TranspileWithMethod(MethodInfo method) => new[] { new CodeInstruction(OpCodes.Ldarg_0), new CodeInstruction(OpCodes.Ldarg_1), new CodeInstruction(OpCodes.Call, method), new CodeInstruction(OpCodes.Ret) };
+        private static IEnumerable<CodeInstruction> Transpiler_Serialize(IEnumerable<CodeInstruction> instructions) => TranspileWithMethod(AccessTools.Method(typeof(ISP_Patcher), nameof(Replace_Serialize)));
+        private static IEnumerable<CodeInstruction> Transpiler_Deserialize(IEnumerable<CodeInstruction> instructions) => TranspileWithMethod(AccessTools.Method(typeof(ISP_Patcher), nameof(Replace_Deserialize)));
+        #endregion
+        
+        #region SerializeDelegates
         private static Action<object, ZPackage> GetSerializeDelegate(FieldInfo field)
         {
             Type t = field.FieldType;
@@ -200,7 +150,9 @@ namespace ISP_Auto
 
             return null;
         }
+        #endregion
 
+        #region DeserializeDelegates
         private static Action<object, ZPackage> GetDeserializeDelegate(FieldInfo field)
         {
             Type t = field.FieldType;
@@ -296,7 +248,9 @@ namespace ISP_Auto
 
             return null;
         }
+        #endregion
 
+        #region SerializeMethods
         private static void SerializeInt(ZPackage pkg, object value) => pkg.Write((int)value);
         private static void SerializeUInt(ZPackage pkg, object value) => pkg.Write((uint)value);
         private static void SerializeLong(ZPackage pkg, object value) => pkg.Write((long)value);
@@ -725,8 +679,9 @@ namespace ISP_Auto
                 ((ISerializableParameter)i.Value)?.Serialize(ref pkg);
             }
         }
+        #endregion
 
-
+        #region DeserializeMethods
         private static int DeserializeInt(ZPackage pkg) => pkg.ReadInt();
         private static uint DeserializeUInt(ZPackage pkg) => pkg.ReadUInt();
         private static long DeserializeLong(ZPackage pkg) => pkg.ReadLong();
@@ -1279,5 +1234,6 @@ namespace ISP_Auto
 
             return dict;
         }
+        #endregion
     }
 }

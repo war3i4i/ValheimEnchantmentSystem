@@ -5,7 +5,6 @@ using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
 using ServerSync;
 using UnityEngine.Rendering;
-using VES.Stats;
 
 namespace kg.ValheimEnchantmentSystem
 {
@@ -93,11 +92,6 @@ namespace kg.ValheimEnchantmentSystem
             VES_UI.Update();
             Info_UI.Update();
             Notifications_UI.Update();
-        }
-
-        private void OnGUI() 
-        { 
-            StatsPanel.OnGUI(); 
         }
         
         private static AssetBundle GetAssetBundle(string filename) 

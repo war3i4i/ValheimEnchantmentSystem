@@ -253,6 +253,7 @@ public static class Enchantment_Core
             {
                 SyncedData.Stat_Data stats = SyncedData.GetStatIncrease(en);
                 string color = SyncedData.GetColor(en, out _, true).IncreaseColorLight();
+                
                 if (stats)
                 {
                     int damagePercent = stats.damage_percentage;
