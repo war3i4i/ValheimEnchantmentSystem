@@ -22,7 +22,11 @@ public class VES_Autoload : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public class ClientOnlyPatch : Attribute{}
+public class ClientOnlyPatch : Attribute
+{
+}
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public class ServerOnlyPatch : Attribute{}
+public class ServerOnlyPatch : Attribute
+{
+}

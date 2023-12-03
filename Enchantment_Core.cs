@@ -12,27 +12,10 @@ namespace kg.ValheimEnchantmentSystem;
 [VES_Autoload]
 public static class Enchantment_Core
 {
-    private static GameObject SlashPrefab;
-    public static GameObject SlashPrefab_Explosion;
-    
     [UsedImplicitly]
     private static void OnInit()
     {
-        SlashPrefab = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentSlash");
-        SlashPrefab_Explosion = ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_EnchantmentSlash_Explosion");
-        SlashPrefab.AddComponent<SlashContoller>();
         AnimationSpeedManager.Add(ModifyAttackSpeed);
-    }
-    
-    [HarmonyPatch(typeof(ZNetScene),nameof(ZNetScene.Awake))]
-    private static class ZNetScene_Awake_Patch
-    {
-        [UsedImplicitly]
-        private static void Postfix(ZNetScene __instance)
-        {
-            __instance.m_namedPrefabs[SlashPrefab.name.GetStableHashCode()] = SlashPrefab;
-            __instance.m_namedPrefabs[SlashPrefab_Explosion.name.GetStableHashCode()] = SlashPrefab_Explosion;
-        }
     }
     
     public static IEnumerator FrameSkipEquip(ItemDrop.ItemData weapon)
@@ -552,24 +535,5 @@ public static class Enchantment_Core
             return speed * (1 + stats.attack_speed / 100f);
         
         return speed;
-    }
-    
-    [HarmonyPatch(typeof(Attack),nameof(Attack.DoMeleeAttack))]
-    private static class Attack_DoMeleeAttack_Patch
-    {
-        [UsedImplicitly]
-        private static void Postfix(Attack __instance)
-        {
-            if (__instance.m_character != Player.m_localPlayer) return;
-            if (__instance.m_weapon?.Data().Get<Enchanted>() is not { level: > 0 } data || SyncedData.GetStatIncrease(data) is not { slash_wave: > 0 } stats) return;
-            Color color = SyncedData.GetColor(data, out _, true).ToColorAlpha();
-            Transform pt = Player.m_localPlayer.transform;
-            SlashContoller.CreateNewSlash(
-                SlashPrefab, 
-                pt.position + Vector3.up * 1.2f, 
-                GameCamera.instance.transform.forward, 
-                color, 
-                stats.slash_wave);
-        }
     }
 }

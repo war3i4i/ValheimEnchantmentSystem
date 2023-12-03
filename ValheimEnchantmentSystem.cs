@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using kg.ValheimEnchantmentSystem.UI;
 using LocalizationManager;
@@ -38,7 +39,6 @@ namespace kg.ValheimEnchantmentSystem
         private void Awake()
         {
             _thistype = this;
-            ISP_Auto.ISP_Patcher.OnInit();
             WorkingAs WorkingAsType = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null ? WorkingAs.Server : WorkingAs.Client;
             JSON.Parameters = new JSONParameters
             {  
@@ -92,7 +92,7 @@ namespace kg.ValheimEnchantmentSystem
         {
             VES_UI.Update();
             Info_UI.Update();
-            Notifications_UI.Update(); 
+            Notifications_UI.Update();
         }
 
         private void OnGUI() 

@@ -80,8 +80,7 @@ public static class Enchantment_VFX
         if (!_enableMainVFX.Value) return;
         if (!isArmor)
         {
-            Light l = item.AddComponent<Light>();
-            if (l)
+            if (item.AddComponent<Light>() is {} l)
             {
                 l.type = LightType.Point;
                 l.color = c;
@@ -114,7 +113,7 @@ public static class Enchantment_VFX
             float boundsMag = renderer.bounds.size.magnitude;
             float lossyMag = item.transform.lossyScale.magnitude;
             Color.RGBToHSV(c, out float h, out float s, out float v);
-            Color mepC = Color.HSVToRGB(h, s, v * 5f);
+            Color mepC = Color.HSVToRGB(h, s, v * 5f, false);
              
             foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>(true))
             {
