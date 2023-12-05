@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Emit;
 using BepInEx.Logging;
+using ItemDataManager;
 using YamlDotNet.Serialization;
 
 namespace kg.ValheimEnchantmentSystem;
@@ -180,6 +181,9 @@ public static class Utils
             return new T();
         }
     }
+
+    public static IEnumerable<Enchantment_Core.Enchanted> EquippedEnchantments(this Player p) =>
+        p.m_inventory.GetEquippedItems().Select(x => x.Data().Get<Enchantment_Core.Enchanted>()).Where(x => x?.level > 0);
 
     private static IEnumerator DelayedAction(Action invoke, int skipFrames)
     {

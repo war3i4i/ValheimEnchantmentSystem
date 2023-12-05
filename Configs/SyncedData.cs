@@ -181,7 +181,6 @@ public static class SyncedData
     private static void ResetInventory()
     {
         Enchantment_VFX.UpdateGrid();
-        Enchantment_AdditionalEffects.UpdateVFXs();
     }
 
     private static DateTime LastConfigChange = DateTime.Now;
@@ -253,18 +252,6 @@ public static class SyncedData
         return trimApha ? defaultValue.Substring(0,7) : defaultValue;
     }
 
-    public static Enchantment_AdditionalEffects.AdditionalEffectsModule GetAdditionalEffects(Enchantment_Core.Enchanted en)
-    {
-        if (en.level == 0) return null;
-        string dropPrefab = en.Item.m_dropPrefab?.name;
-        if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentColors.TryGetValue(dropPrefab, out Dictionary<int, VFX_Data> overriden))
-        {
-            return overriden.TryGetValue(en.level, out VFX_Data overrideChance) ? overrideChance.additionaleffects : null;
-        }
-        
-        return Synced_EnchantmentColors.Value.TryGetValue(en.level, out VFX_Data vfxData) ? vfxData.additionaleffects : null;
-    }
-
     public static Chance_Data GetEnchantmentChance(Enchantment_Core.Enchanted en)
         => GetEnchantmentChance(en.Item.m_dropPrefab?.name, en.level);
 
@@ -274,7 +261,7 @@ public static class SyncedData
         if (dropPrefab != null && OPTIMIZED_Overrides_EnchantmentChances.TryGetValue(dropPrefab, out Dictionary<int, Chance_Data> overriden))
         {
             if (overriden.TryGetValue(level, out Chance_Data overrideChance))
-                return overrideChance;
+                return overrideChance; 
         }
 
         return Synced_EnchantmentChances.Value.TryGetValue(level, out Chance_Data chance) ? chance : new Chance_Data() { success = 0 };
@@ -429,7 +416,7 @@ public static class SyncedData
     }
     
     [AutoSerialize]
-    public partial class Stat_Data : Implicit, ISerializableParameter
+    public partial class Stat_Data : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public int durability;
         [SerializeField] public int durability_percentage;
@@ -447,19 +434,18 @@ public static class SyncedData
         [SerializeField] public int damage_lightning;
         [SerializeField] public int damage_poison;
         [SerializeField] public int damage_spirit;
-        [SerializeField] public HitData.DamageModifier resistance_blunt = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_slash = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_pierce = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_chop = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_pickaxe = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_fire = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_frost = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_lightning = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_poison = HitData.DamageModifier.Normal;
-        [SerializeField] public HitData.DamageModifier resistance_spirit = HitData.DamageModifier.Normal;
+        [SerializeField] public HitData.DamageModifier resistance_blunt;
+        [SerializeField] public HitData.DamageModifier resistance_slash;
+        [SerializeField] public HitData.DamageModifier resistance_pierce;
+        [SerializeField] public HitData.DamageModifier resistance_chop;
+        [SerializeField] public HitData.DamageModifier resistance_pickaxe;
+        [SerializeField] public HitData.DamageModifier resistance_fire;
+        [SerializeField] public HitData.DamageModifier resistance_frost;
+        [SerializeField] public HitData.DamageModifier resistance_lightning;
+        [SerializeField] public HitData.DamageModifier resistance_poison;
+        [SerializeField] public HitData.DamageModifier resistance_spirit;
         [SerializeField] public int attack_speed;
         [SerializeField] public int movement_speed;
-        
         //api stats
         [SerializeField] public int API_backpacks_additionalrow_x;
         [SerializeField] public int API_backpacks_additionalrow_y;
@@ -469,7 +455,7 @@ public static class SyncedData
     }
     
     [AutoSerialize]
-    public class Chance_Data : ISerializableParameter
+    public class Chance_Data : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public int success;
         [SerializeField] public int destroy;
@@ -478,40 +464,39 @@ public static class SyncedData
     }
     
     [AutoSerialize]
-    public class req : ISerializableParameter
+    public class SingleReq : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public string prefab;
         [SerializeField] public int amount;
-        public req() { }
-        public req (string prefab, int amount) { this.prefab = prefab; this.amount = amount; }
+        public SingleReq() { }
+        public SingleReq (string prefab, int amount) { this.prefab = prefab; this.amount = amount; }
         public bool IsValid() => !string.IsNullOrEmpty(prefab) && amount > 0 && ZNetScene.instance.GetPrefab(prefab);
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
     [AutoSerialize]
-    public class EnchantmentReqs : ISerializableParameter
+    public class EnchantmentReqs : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public int required_skill = 0;
-        [SerializeField] public req enchant_prefab = new();
-        [SerializeField] public req blessed_enchant_prefab = new();
+        [SerializeField] public SingleReq enchant_prefab = new();
+        [SerializeField] public SingleReq blessed_enchant_prefab = new();
         [SerializeField] public List<string> Items = new();
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
 
     [AutoSerialize]
-    public class VFX_Data : ISerializableParameter
+    public class VFX_Data : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public string color = "#00000000";
         [SerializeField] public int variant;
-        [SerializeField] public Enchantment_AdditionalEffects.AdditionalEffectsModule additionaleffects;
         public void Serialize  (ref ZPackage pkg) => throw new NotImplementedException();
         public void Deserialize(ref ZPackage pkg) => throw new NotImplementedException();
     }
     
     [AutoSerialize]
-    public class OverrideChances : ISerializableParameter
+    public class OverrideChances : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public List<string> Items = new();
         [SerializeField] public Dictionary<int, Chance_Data> Chances = new();
@@ -520,7 +505,7 @@ public static class SyncedData
     }
 
     [AutoSerialize]
-    public class OverrideColors : ISerializableParameter
+    public class OverrideColors : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public List<string> Items = new();
         [SerializeField] public Dictionary<int, VFX_Data> Colors = new();
@@ -529,7 +514,7 @@ public static class SyncedData
     }
 
     [AutoSerialize]
-    public class OverrideStats : ISerializableParameter
+    public class OverrideStats : ImplicitBool, ISerializableParameter
     {
         [SerializeField] public List<string> Items = new();
         [SerializeField] public Dictionary<int, Stat_Data> Stats = new();

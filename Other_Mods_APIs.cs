@@ -19,9 +19,9 @@ public static class Other_Mods_APIs
     [UsedImplicitly]
     private static void OnInit()
     {
+        if (ValheimEnchantmentSystem.NoGraphics) return;
         API.EquippedBackpackUpdate += Backpacks_API_EquippedBackpackUpdate;
         Jewelcrafting.API.OnItemMirrored(OnItemMirror);
-       
     }
 
     private static void Backpacks_API_EquippedBackpackUpdate(Player obj)

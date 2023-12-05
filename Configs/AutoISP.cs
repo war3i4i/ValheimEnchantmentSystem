@@ -14,7 +14,7 @@ namespace AutoISP
         private static readonly Dictionary<Type, List<ISP_Field>> FieldsByType = new();
         private class ISP_Field { public Action<object, ZPackage> Serialize; public Action<object, ZPackage> Deserialize; }
 
-        [ModuleInitializer]
+        [ModuleInitializer] 
         internal static void Init()
         {
             Harmony harmony = new Harmony("AutoISP_" + Assembly.GetExecutingAssembly().GetName().Name);

@@ -1,6 +1,6 @@
 ﻿namespace kg.ValheimEnchantmentSystem.Misc;
 
-public class Implicit
+public class ImplicitBool
 {
-    public static implicit operator bool(Implicit b) => b != null;
+    public static implicit operator bool(ImplicitBool b) => b != null;
 }

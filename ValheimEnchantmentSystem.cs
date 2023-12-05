@@ -31,6 +31,7 @@ namespace kg.ValheimEnchantmentSystem
             IsLocked = true
         };
         private enum WorkingAs { Client, Server }
+        public static readonly bool NoGraphics = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
          
         private void Awake()
         {
@@ -86,6 +87,7 @@ namespace kg.ValheimEnchantmentSystem
  
         private void Update()
         {
+            if (NoGraphics) return;
             VES_UI.Update();
             Info_UI.Update();
             Notifications_UI.Update();
@@ -102,7 +104,7 @@ namespace kg.ValheimEnchantmentSystem
             string resourceName = execAssembly.GetManifestResourceNames().Single(str => str.EndsWith(filename));
             using Stream stream = execAssembly.GetManifestResourceStream(resourceName)!;
             return AssetBundle.LoadFromStream(stream);
-        }
+        } 
 
         private static ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true) 

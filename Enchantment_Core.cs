@@ -15,6 +15,7 @@ public static class Enchantment_Core
     [UsedImplicitly]
     private static void OnInit()
     {
+        if (ValheimEnchantmentSystem.NoGraphics) return;
         AnimationSpeedManager.Add(ModifyAttackSpeed);
     }
     
@@ -56,7 +57,7 @@ public static class Enchantment_Core
             {
                 ValheimEnchantmentSystem._thistype.DelayedInvoke(() =>
                 {
-                    Item?.Data().Remove<Enchanted>();
+                    Item.Data().Remove<Enchanted>();
                     Enchantment_VFX.UpdateGrid();
                 }, 1);
             }
@@ -82,16 +83,16 @@ public static class Enchantment_Core
 
         private bool HaveReqs(bool bless)
         {
-            SyncedData.req req = bless
+            SyncedData.SingleReq singleReq = bless
                 ? SyncedData.GetReqs(Item.m_dropPrefab.name).blessed_enchant_prefab
                 : SyncedData.GetReqs(Item.m_dropPrefab.name).enchant_prefab;
-            if (req == null || !req.IsValid()) return false;
-            GameObject prefab = ZNetScene.instance.GetPrefab(req.prefab);
+            if (singleReq == null || !singleReq.IsValid()) return false;
+            GameObject prefab = ZNetScene.instance.GetPrefab(singleReq.prefab);
             if (prefab == null) return false;
             int count = Utils.CustomCountItemsNoLevel(prefab.name);
-            if (count >= req.amount)
+            if (count >= singleReq.amount)
             {
-                Utils.CustomRemoveItemsNoLevel(prefab.name, req.amount);
+                Utils.CustomRemoveItemsNoLevel(prefab.name, singleReq.amount);
                 return true;
             }
 
@@ -463,17 +464,10 @@ public static class Enchantment_Core
         [UsedImplicitly]
         private static void Postfix(Player __instance, ref HitData.DamageModifiers mods)
         {
-            if (__instance.m_chestItem?.Data().Get<Enchanted>() is { level: > 0 } en_chest && SyncedData.GetStatIncrease(en_chest) is {} stats_chest)
-                mods.Apply(stats_chest.GetResistancePairs());
-            
-            if (__instance.m_legItem?.Data().Get<Enchanted>() is { level: > 0 } en_legs && SyncedData.GetStatIncrease(en_legs) is {} stats_legs)
-                mods.Apply(stats_legs.GetResistancePairs());
-            
-            if (__instance.m_helmetItem?.Data().Get<Enchanted>() is { level: > 0 } en_helmet && SyncedData.GetStatIncrease(en_helmet) is {} stats_helmet)
-                mods.Apply(stats_helmet.GetResistancePairs());
-            
-            if (__instance.m_shoulderItem?.Data().Get<Enchanted>() is { level: > 0 } en_shoulder && SyncedData.GetStatIncrease(en_shoulder) is {} stats_shoulder)
-                mods.Apply(stats_shoulder.GetResistancePairs());
+            foreach (var en in __instance.EquippedEnchantments())
+            {
+                if (en.Stats is {} stats) mods.Apply(stats.GetResistancePairs());
+            }
         }
     }
     
@@ -484,29 +478,10 @@ public static class Enchantment_Core
         [UsedImplicitly]
         private static void Postfix(Player __instance)
         {
-            if (__instance.m_chestItem?.Data().Get<Enchanted>() is { level: > 0 } en_chest && SyncedData.GetStatIncrease(en_chest) is {} stats_chest)
-                __instance.m_equipmentMovementModifier += stats_chest.movement_speed / 100f;
-            
-            if (__instance.m_legItem?.Data().Get<Enchanted>() is { level: > 0 } en_legs && SyncedData.GetStatIncrease(en_legs) is {} stats_legs)
-                __instance.m_equipmentMovementModifier += stats_legs.movement_speed / 100f;
-            
-            if (__instance.m_helmetItem?.Data().Get<Enchanted>() is { level: > 0 } en_helmet && SyncedData.GetStatIncrease(en_helmet) is {} stats_helmet)
-                __instance.m_equipmentMovementModifier += stats_helmet.movement_speed / 100f;
-            
-            if (__instance.m_shoulderItem?.Data().Get<Enchanted>() is { level: > 0 } en_shoulder && SyncedData.GetStatIncrease(en_shoulder) is {} stats_shoulder)
-                __instance.m_equipmentMovementModifier += stats_shoulder.movement_speed / 100f;
-            
-            if (__instance.m_leftItem?.Data().Get<Enchanted>() is { level: > 0 } en_left && SyncedData.GetStatIncrease(en_left) is {} stats_left)
-                __instance.m_equipmentMovementModifier += stats_left.movement_speed / 100f;
-            else
-                if (__instance.m_hiddenLeftItem?.Data().Get<Enchanted>() is { level: > 0 } en_hiddenleft && SyncedData.GetStatIncrease(en_hiddenleft) is {} stats_hiddenleft)
-                __instance.m_equipmentMovementModifier += stats_hiddenleft.movement_speed / 100f;
-            
-            if (__instance.m_rightItem?.Data().Get<Enchanted>() is { level: > 0 } en_right && SyncedData.GetStatIncrease(en_right) is {} stats_right)
-                __instance.m_equipmentMovementModifier += stats_right.movement_speed / 100f;
-            else
-                if (__instance.m_hiddenRightItem?.Data().Get<Enchanted>() is { level: > 0 } en_hiddenright && SyncedData.GetStatIncrease(en_hiddenright) is {} stats_hiddenright)
-                __instance.m_equipmentMovementModifier += stats_hiddenright.movement_speed / 100f;
+            foreach (var en in __instance.EquippedEnchantments())
+            {
+                if (en.Stats is {} stats) __instance.m_equipmentMovementModifier += stats.movement_speed / 100f;
+            }
         }
     }
 

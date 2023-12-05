@@ -66,18 +66,14 @@ public static class VES_UI
     private static float TIMER_MAX;
     
 
-    public static ConfigEntry<Duration> EnchantmentAnimationDuration;
-    public enum Duration
-    {
-        _1 = 1,
-        _3 = 3,
-        _6 = 6
-    }
+    public static ConfigEntry<Duration> _enchantmentAnimationDuration;
+    public enum Duration { _1 = 1, _3 = 3, _6 = 6 }
     
     [UsedImplicitly]
     private static void OnInit()
     {
-        EnchantmentAnimationDuration = ValheimEnchantmentSystem._thistype.Config.Bind("Visuals", "EnchantmentAnimationDuration", Duration._3, "Duration of the enchantment animation.");
+        if (ValheimEnchantmentSystem.NoGraphics) return;
+        _enchantmentAnimationDuration = ValheimEnchantmentSystem._thistype.Config.Bind("Visuals", "EnchantmentAnimationDuration", Duration._3, "Duration of the enchantment animation.");
         _1sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_1");
         _3sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_3");
         _6sec = ValheimEnchantmentSystem._asset.LoadAsset<AudioClip>("kg_EnchantmentSound_Main_6");
@@ -175,17 +171,17 @@ public static class VES_UI
         }
         else
         {
-            SyncedData.req req = _useBless
+            SyncedData.SingleReq singleReq = _useBless
                 ? SyncedData.GetReqs(_currentItem.m_dropPrefab.name).blessed_enchant_prefab
                 : SyncedData.GetReqs(_currentItem.m_dropPrefab.name).enchant_prefab;
-            if (req == null || !req.IsValid()) return;
-            GameObject prefab = ZNetScene.instance.GetPrefab(req.prefab);
+            if (singleReq == null || !singleReq.IsValid()) return;
+            GameObject prefab = ZNetScene.instance.GetPrefab(singleReq.prefab);
             if (!prefab) return;
-            if (Utils.CustomCountItemsNoLevel(prefab.name) < req.amount) return;
+            if (Utils.CustomCountItemsNoLevel(prefab.name) < singleReq.amount) return;
 
 
             _enchantProcessing = true;
-            TIMER_MAX = (int)EnchantmentAnimationDuration.Value;
+            TIMER_MAX = (int)_enchantmentAnimationDuration.Value;
             _enchantTimer = TIMER_MAX;
             Start_Text.text = "$enchantment_cancel".Localize();
 
@@ -207,7 +203,7 @@ public static class VES_UI
             Scroll_Text.text = "";
             
             AUsrc.Stop();
-            AUsrc.clip = EnchantmentAnimationDuration.Value switch
+            AUsrc.clip = _enchantmentAnimationDuration.Value switch
             {
                 Duration._1 => _1sec,
                 Duration._3 => _3sec,
@@ -370,12 +366,12 @@ public static class VES_UI
 
         SyncedData.EnchantmentReqs reqs = SyncedData.GetReqs(_currentItem.m_dropPrefab?.name);
 
-        SyncedData.req req = _useBless ? reqs.blessed_enchant_prefab : reqs.enchant_prefab;
-        if (req.IsValid())
+        SyncedData.SingleReq singleReq = _useBless ? reqs.blessed_enchant_prefab : reqs.enchant_prefab;
+        if (singleReq.IsValid())
         {
-            GameObject enchant_item = ZNetScene.instance.GetPrefab(req.prefab);
-            Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() + " <color=yellow>x" + req.amount + "</color>";
-            Scroll_Text.color = Utils.CustomCountItemsNoLevel(req.prefab) >= req.amount ? Color.white : Color.red;
+            GameObject enchant_item = ZNetScene.instance.GetPrefab(singleReq.prefab);
+            Scroll_Text.text = enchant_item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name.Localize() + " <color=yellow>x" + singleReq.amount + "</color>";
+            Scroll_Text.color = Utils.CustomCountItemsNoLevel(singleReq.prefab) >= singleReq.amount ? Color.white : Color.red;
             Scroll_Icon.sprite = enchant_item.GetComponent<ItemDrop>().m_itemData.GetIcon();
             Scroll_Trail.gameObject.SetActive(true);
             Scroll_Trail.color = _useBless ? new Color(1f,1f,0f,0.8f) : new Color(1f, 1f, 1f, 0.8f);

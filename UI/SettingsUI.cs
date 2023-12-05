@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Configuration;
+using JetBrains.Annotations;
 using kg.ValheimEnchantmentSystem.Misc;
 using TMPro;
 
@@ -6,8 +7,6 @@ namespace kg.ValheimEnchantmentSystem.UI;
 
 public static class SettingsUI
 {
-    private static GameObject CurrentUI;
-
     [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.Awake))]
     [ClientOnlyPatch]
     static class Menu_Start_Patch
@@ -20,22 +19,25 @@ public static class SettingsUI
             if (!firstInit) return;
             firstInit = false;
             GameObject settingsPrefab = __instance.m_settingsPrefab;
-            Transform controls = settingsPrefab.transform.Find("panel/TabButtons/Controlls");
-            if (!controls) controls = settingsPrefab.transform.Find("panel/TabButtons/Tabs/Controls");
-            if (!controls) return;
-            Transform newButton = UnityEngine.Object.Instantiate(controls);
-            newButton.SetParent(controls.parent, false);
+            Transform gameplay = settingsPrefab.transform.Find("Panel/TabButtons/Gameplay");
+            if (!gameplay) gameplay = settingsPrefab.transform.Find("Panel/TabButtons/Tabs/Gameplay");
+            if (!gameplay) return;
+            Transform newButton = UnityEngine.Object.Instantiate(gameplay);
+            newButton.transform.Find("KeyHint").gameObject.SetActive(false);
+            newButton.SetParent(gameplay.parent, false);
             newButton.name = "kg_Enchantment";
             newButton.SetAsLastSibling();
-            Transform textTransform = newButton.transform.Find("Text");
-            if(!textTransform) textTransform = newButton.transform.Find("Selected/Text");
-            if(!textTransform) return;
+            Transform textTransform = newButton.transform.Find("Label");
+            Transform textTransform_Selected = newButton.transform.Find("Selected/LabelSelected");
+            if (!textTransform || !textTransform_Selected) return;
             textTransform.GetComponent<TMP_Text>().text = "$enchantment_enchantment".Localize();
-            TabHandler tabHandler = settingsPrefab.transform.Find("panel/TabButtons").GetComponent<TabHandler>();
-            Transform page = settingsPrefab.transform.Find("panel/Tabs");
+            textTransform_Selected.GetComponent<TMP_Text>().text = "$enchantment_enchantment".Localize();
+            TabHandler tabHandler = settingsPrefab.transform.Find("Panel/TabButtons").GetComponent<TabHandler>();
+            Transform page = settingsPrefab.transform.Find("Panel/TabContent");
             GameObject newPage = UnityEngine.Object.Instantiate(ValheimEnchantmentSystem._asset.LoadAsset<GameObject>("kg_Enchantments_Settings"));
+            newPage.AddComponent<VesSettings>();
             Localization.instance.Localize(newPage.transform);
-            newPage.transform.SetParent(page); 
+            newPage.transform.SetParent(page);
             newPage.name = "kg_Enchantment";
             newPage.SetActive(false);
             TabHandler.Tab newTab = new TabHandler.Tab
@@ -45,141 +47,125 @@ public static class SettingsUI
                 m_page = newPage.GetComponent<RectTransform>()
             };
             tabHandler.m_tabs.Add(newTab);
-            
-            if (Other_Mods_APIs.AUGA)
-                newPage.transform.localScale *= 0.7f;
-            
+            newPage.transform.localScale *= 1.2f;
         }
     }
 
-    [HarmonyPatch(typeof(Settings), nameof(Settings.Awake))]
-    [ClientOnlyPatch]
-    private static class Settings_Awake_Patch
+    public class VesSettings : Fishlabs.Valheim.SettingsBase
     {
-        [UsedImplicitly]
-        private static void Postfix(Settings __instance)
+        public override void FixBackButtonNavigation(Button backButton)
         {
-            Transform enTab = __instance.transform.Find("panel/Tabs/kg_Enchantment");
-            if (!enTab) return;
-            CurrentUI = enTab.gameObject;
+        }
 
-            Transform options = CurrentUI.transform.Find("Background/options");
+        public override void FixOkButtonNavigation(Button okButton)
+        {
+        }
+
+        private bool _enableHotbarVisual_Internal, _enableMainVFX_Internal, _enableInventoryVisual_Internal;
+        private VES_UI.Duration _enchantmentAnimationDuration_Internal;
+        private Notifications_UI.Filter _filterConfig_Internal;
+        private int _notificationDuration_Internal;
+
+        public override void LoadSettings()
+        {
+            _enableHotbarVisual_Internal = Enchantment_VFX._enableHotbarVisual.Value;
+            _enableMainVFX_Internal = Enchantment_VFX._enableMainVFX.Value;
+            _enableInventoryVisual_Internal = Enchantment_VFX._enableInventoryVisual.Value;
+            _enchantmentAnimationDuration_Internal = VES_UI._enchantmentAnimationDuration.Value;
+            _filterConfig_Internal = Notifications_UI._filterConfig.Value;
+            _notificationDuration_Internal = Notifications_UI._duration.Value;
+
+            Transform options = this.transform.Find("Background/options");
             Transform hotbarVFX = options.Find("HotbarVFX");
             Transform mainVFX = options.Find("MainVFX");
-            Transform wingsVFX = options.Find("WingsVFX");
-            Transform auraVFX = options.Find("AuraVFX");
             Transform inventoryVFX = options.Find("InventoryVFX");
             Transform enchantSpeed = options.Find("EnchantSpeed");
             Transform notifyFilter = options.Find("NotificationsFilter");
             Transform notifyDuration = options.Find("NotificationsDuration");
+
+            hotbarVFX.Find("Button/Checkmark").gameObject.SetActive(_enableHotbarVisual_Internal);
+            mainVFX.Find("Button/Checkmark").gameObject.SetActive(_enableMainVFX_Internal);
+            inventoryVFX.Find("Button/Checkmark").gameObject.SetActive(_enableInventoryVisual_Internal);
+            enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(_enchantmentAnimationDuration_Internal == VES_UI.Duration._1);
+            enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(_enchantmentAnimationDuration_Internal == VES_UI.Duration._3);
+            enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(_enchantmentAnimationDuration_Internal == VES_UI.Duration._6);
+            notifyFilter.Find("Success/Checkmark").gameObject.SetActive(_filterConfig_Internal.HasFlagFast(Notifications_UI.Filter.Success));
+            notifyFilter.Find("Fail/Checkmark").gameObject.SetActive(_filterConfig_Internal.HasFlagFast(Notifications_UI.Filter.Fail));
             
             hotbarVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                Enchantment_VFX._enableHotbarVisual.Value = !Enchantment_VFX._enableHotbarVisual.Value;
-                Enchantment_VFX.UpdateGrid();
-                Enchantment_VFX._enableHotbarVisual.ConfigFile.Save();
-                InitValues();
+                _enableHotbarVisual_Internal = !_enableHotbarVisual_Internal;
+                hotbarVFX.Find("Button/Checkmark").gameObject.SetActive(_enableHotbarVisual_Internal);
             });
             inventoryVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                Enchantment_VFX._enableInventoryVisual.Value = !Enchantment_VFX._enableInventoryVisual.Value;
-                Enchantment_VFX.UpdateGrid();
-                Enchantment_VFX._enableInventoryVisual.ConfigFile.Save();
-                InitValues();
+                _enableInventoryVisual_Internal = !_enableInventoryVisual_Internal;
+                inventoryVFX.Find("Button/Checkmark").gameObject.SetActive(_enableInventoryVisual_Internal);
             });
             mainVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                Enchantment_VFX._enableMainVFX.Value = !Enchantment_VFX._enableMainVFX.Value;
-                Enchantment_VFX._enableMainVFX.ConfigFile.Save();
-                InitValues();
-            });
-            wingsVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() =>
-            {
-                VES_UI.PlayClick();
-                Enchantment_AdditionalEffects._enableWingsEffects.Value = !Enchantment_AdditionalEffects._enableWingsEffects.Value;
-                Enchantment_AdditionalEffects._enableWingsEffects.ConfigFile.Save();
-                InitValues();
-            });
-            auraVFX.Find("Button").GetComponent<Button>().onClick.AddListener(() => 
-            {
-                VES_UI.PlayClick();
-                Enchantment_AdditionalEffects._enableAuraEffects.Value = !Enchantment_AdditionalEffects._enableAuraEffects.Value;
-                Enchantment_AdditionalEffects._enableAuraEffects.ConfigFile.Save();
-                InitValues();
+                _enableMainVFX_Internal = !_enableMainVFX_Internal;
+                mainVFX.Find("Button/Checkmark").gameObject.SetActive(_enableMainVFX_Internal);
             });
             enchantSpeed.Find("Button_1").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                VES_UI.EnchantmentAnimationDuration.Value = VES_UI.Duration._1;
-                VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
-                InitValues();
+                _enchantmentAnimationDuration_Internal = VES_UI.Duration._1; 
+                enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(true);
+                enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(false);
+                enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(false);
             });
             enchantSpeed.Find("Button_3").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                VES_UI.EnchantmentAnimationDuration.Value = VES_UI.Duration._3;
-                VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
-                InitValues();
+                _enchantmentAnimationDuration_Internal = VES_UI.Duration._3;
+                enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(false);
+                enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(true);
+                enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(false);
             });
             enchantSpeed.Find("Button_6").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                VES_UI.EnchantmentAnimationDuration.Value = VES_UI.Duration._6;
-                VES_UI.EnchantmentAnimationDuration.ConfigFile.Save();
-                InitValues();
+                _enchantmentAnimationDuration_Internal = VES_UI.Duration._6;
+                enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(false);
+                enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(false);
+                enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(true);
             });
             notifyFilter.Find("Success").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                Notifications_UI.FilterConfig.Value ^= Notifications_UI.Filter.Success;
-                Notifications_UI.FilterConfig.ConfigFile.Save();
-                InitValues();
+                _filterConfig_Internal ^= Notifications_UI.Filter.Success;
+                notifyFilter.Find("Success/Checkmark").gameObject.SetActive(_filterConfig_Internal.HasFlagFast(Notifications_UI.Filter.Success));
             });
             notifyFilter.Find("Fail").GetComponent<Button>().onClick.AddListener(() =>
             {
                 VES_UI.PlayClick();
-                Notifications_UI.FilterConfig.Value ^= Notifications_UI.Filter.Fail;
-                Notifications_UI.FilterConfig.ConfigFile.Save();
-                InitValues();
+                _filterConfig_Internal ^= Notifications_UI.Filter.Fail;
+                notifyFilter.Find("Fail/Checkmark").gameObject.SetActive(_filterConfig_Internal.HasFlagFast(Notifications_UI.Filter.Fail));
             });
             notifyDuration.Find("Slider").GetComponent<Slider>().onValueChanged.AddListener((val) =>
             {
                 int currentVal = (int)val;
-                Notifications_UI.Duration.Value = currentVal;
-                Notifications_UI.Duration.ConfigFile.Save();
+                _notificationDuration_Internal = currentVal;
                 notifyDuration.Find("text").GetComponent<Text>().text = currentVal + "s";
             });
-            notifyDuration.Find("Slider").GetComponent<Slider>().value = Notifications_UI.Duration.Value;
-            notifyDuration.Find("text").GetComponent<Text>().text = Notifications_UI.Duration.Value + "s";
-            
-            InitValues();
+            notifyDuration.Find("Slider").GetComponent<Slider>().value = _notificationDuration_Internal;
+            notifyDuration.Find("text").GetComponent<Text>().text = _notificationDuration_Internal + "s";
         }
-    }
 
-    private static void InitValues()
-    {
-        if (!CurrentUI) return;
-        
-        Transform options = CurrentUI.transform.Find("Background/options");
-        Transform hotbarVFX = options.Find("HotbarVFX");
-        Transform mainVFX = options.Find("MainVFX");
-        Transform wingsVFX = options.Find("WingsVFX"); 
-        Transform auraVFX = options.Find("AuraVFX");
-        Transform inventoryVFX = options.Find("InventoryVFX"); 
-        Transform enchantSpeed = options.Find("EnchantSpeed");
-        Transform notifyFilter = options.Find("NotificationsFilter");
-        hotbarVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableHotbarVisual.Value);
-        mainVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableMainVFX.Value);
-        wingsVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableWingsEffects.Value);
-        auraVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_AdditionalEffects._enableAuraEffects.Value);
-        inventoryVFX.Find("Button/Checkmark").gameObject.SetActive(Enchantment_VFX._enableInventoryVisual.Value);
-        enchantSpeed.Find("Button_1/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._1);
-        enchantSpeed.Find("Button_3/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._3);
-        enchantSpeed.Find("Button_6/Checkmark").gameObject.SetActive(VES_UI.EnchantmentAnimationDuration.Value == VES_UI.Duration._6);
-        notifyFilter.Find("Success/Checkmark").gameObject.SetActive(Notifications_UI.FilterConfig.Value.HasFlagFast(Notifications_UI.Filter.Success));
-        notifyFilter.Find("Fail/Checkmark").gameObject.SetActive(Notifications_UI.FilterConfig.Value.HasFlagFast(Notifications_UI.Filter.Fail));
+        public override void SaveSettings()
+        {
+            Enchantment_VFX._enableHotbarVisual.Value = _enableHotbarVisual_Internal;
+            Enchantment_VFX._enableMainVFX.Value = _enableMainVFX_Internal;
+            Enchantment_VFX._enableInventoryVisual.Value = _enableInventoryVisual_Internal;
+            VES_UI._enchantmentAnimationDuration.Value = _enchantmentAnimationDuration_Internal;
+            Notifications_UI._filterConfig.Value = _filterConfig_Internal;
+            Notifications_UI._duration.Value = _notificationDuration_Internal;
+            Enchantment_VFX.UpdateGrid();
+            Enchantment_VFX._enableHotbarVisual.ConfigFile.Save();
+        }
     }
 }

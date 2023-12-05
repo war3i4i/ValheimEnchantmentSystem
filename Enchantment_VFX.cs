@@ -25,6 +25,7 @@ public static class Enchantment_VFX
     [UsedImplicitly]
     private static void OnInit()
     {
+        if (ValheimEnchantmentSystem.NoGraphics) return;
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat1"));
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat2"));
         VFXs.Add(ValheimEnchantmentSystem._asset.LoadAsset<Material>("Enchantment_VFX_Mat3")); 
